@@ -1,0 +1,500 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-base: #050505;
+  --bg-secondary: #090909;
+  --accent: #00D4FF;
+  --accent-blue: #0057FF;
+  --gold: #D6B25E;
+  --success: #3CE37D;
+  --warning: #FFC857;
+  --glass: rgba(255, 255, 255, 0.05);
+  --line: rgba(255, 255, 255, 0.08);
+  --ease-lux: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  background: var(--bg-base);
+  scroll-behavior: auto;
+}
+
+body {
+  background: var(--bg-base);
+  color: #f0f0f2;
+  overflow-x: hidden;
+  font-feature-settings: "ss01", "cv01", "cv11";
+}
+
+::selection {
+  background: rgba(0, 212, 255, 0.2);
+  color: #fff;
+  text-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+}
+
+/* Hide default cursor on fine-pointer devices */
+@media (pointer: fine) {
+  body.custom-cursor,
+  body.custom-cursor * {
+    cursor: none !important;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+/* Glass utility — Phase 3: gradient surface, inset top highlight, depth */
+.glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.022) 100%);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.glass-strong {
+  background: linear-gradient(135deg, rgba(12, 12, 14, 0.65) 0%, rgba(8, 8, 10, 0.55) 100%);
+  backdrop-filter: blur(36px) saturate(200%);
+  -webkit-backdrop-filter: blur(36px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 12px 40px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Cinematic top-edge highlight on glass cards — now built into .glass
+   and .glass-strong via inset box-shadow. Kept for backwards compat. */
+.glass-card-highlight::before {
+  content: "";
+  position: absolute;
+  inset-x: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22) 40%, rgba(0,212,255,0.18) 60%, transparent);
+  pointer-events: none;
+}
+
+/* ============================================================
+   Phase 3 — Handcrafted UI polish utilities
+   ============================================================ */
+
+/* Card interactive — minimal hover, building stays dominant */
+.card-interactive {
+  transition: box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-interactive:hover {
+  border-color: rgba(255, 255, 255, 0.07);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 32px -12px rgba(0, 0, 0, 0.35);
+}
+
+/* Glass hover refinement — subtle brightening on interaction */
+.glass-interactive {
+  transition: background 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-interactive:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.065) 0%, rgba(255, 255, 255, 0.035) 100%);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Spotlight — very subtle cursor glow, barely perceptible */
+.spotlight {
+  position: relative;
+}
+.spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120px circle at var(--mx, 50%) var(--my, 50%), rgba(0, 212, 255, 0.025), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+.spotlight:hover::after {
+  opacity: 1;
+}
+.spotlight > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Button depth — layered shadow for primary/solid buttons */
+.btn-depth {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 8px 24px -8px rgba(255, 255, 255, 0.15),
+    0 2px 8px -2px rgba(0, 0, 0, 0.2);
+  transition: box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-depth:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 12px 32px -8px rgba(255, 255, 255, 0.25),
+    0 4px 12px -2px rgba(0, 0, 0, 0.3);
+}
+.btn-depth:active {
+  transform: scale(0.97);
+}
+
+/* Reflection — diagonal light streak on glass surfaces */
+.reflection {
+  position: relative;
+}
+.reflection::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.035) 0%,
+    transparent 30%,
+    transparent 70%,
+    rgba(255, 255, 255, 0.012) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+.reflection > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Loader progress shimmer */
+@keyframes loaderShimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+.loader-shimmer {
+  animation: loaderShimmer 1.8s ease-in-out infinite;
+}
+
+/* Loader path draw */
+@keyframes loaderDraw {
+  0%   { stroke-dashoffset: 320; }
+  60%  { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 0; }
+}
+.loader-path {
+  stroke-dasharray: 320;
+  stroke-dashoffset: 320;
+  animation: loaderDraw 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+/* Glass sheen — a diagonal moving highlight that sweeps on hover.
+   Pairs with .reflection for a premium "light catching the glass" feel. */
+.glass-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.glass-sheen::after {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(255, 255, 255, 0.06) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 2;
+}
+.glass-sheen:hover::after {
+  transform: translateX(100%);
+}
+
+/* Click ripple — spawn a .ripple span inside a button on click. */
+@keyframes rippleOut {
+  0%   { transform: scale(0); opacity: 0.5; }
+  100% { transform: scale(3); opacity: 0; }
+}
+.ripple {
+  position: absolute;
+  border-radius: 9999px;
+  background: currentColor;
+  pointer-events: none;
+  animation: rippleOut 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.gradient-text {
+  background: linear-gradient(160deg, #ffffff 0%, #c8d6e8 60%, #a0b4cc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.accent-text {
+  background: linear-gradient(90deg, #00D4FF 0%, #0057FF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-text {
+  background: linear-gradient(160deg, #f5e4b0 0%, #D6B25E 60%, #b8922e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.shimmer-line {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Cinematic vignette — feather-light, building breathes through */
+.vignette::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 120% 100% at 50% 50%, transparent 42%, rgba(0,0,0,0.14) 75%, rgba(0,0,0,0.30) 100%),
+    linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.18) 100%);
+  z-index: 2;
+}
+
+/* Noise grain — subtle film texture */
+.grain::before {
+  content: "";
+  position: fixed;
+  inset: -50%;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grainShift 8s steps(1) infinite;
+}
+
+/* Horizontal rule — editorial separator */
+.rule {
+  display: block;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12) 30%, rgba(255,255,255,0.12) 70%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Disable GPU-accelerated transforms that are purely decorative */
+  .gpu {
+    will-change: auto !important;
+    transform: none !important;
+  }
+  /* Restore the system cursor — the custom cursor is hidden via JS,
+     but ensure it's visible if the JS guard hasn't run yet. */
+  body.custom-cursor,
+  body.custom-cursor * {
+    cursor: auto !important;
+  }
+}
+
+/* ============================================================
+   Phase 2 — Cinematic depth & transition utilities
+   ============================================================ */
+
+/* Perspective stage for layered 3D content */
+.perspective-stage {
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
+}
+
+/* Depth plane utility — apply to children for parallax planes.
+   depth-1 = far, depth-2 = mid, depth-3 = near. The translateZ
+   gives the GPU compositor a hint to layer them. */
+.depth-1 { transform: translateZ(-40px); }
+.depth-2 { transform: translateZ(0); }
+.depth-3 { transform: translateZ(40px); }
+
+/* Section veils — removed for seamless cinematic background.
+   The building, atmosphere, and lighting form one continuous layer.
+   Sections only contain content overlays with no visible boundaries. */
+
+/* Cinematic letterbox — used at chapter boundaries to give a
+   "shot transition" feel. Apply on a fixed overlay. */
+.letterbox {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 0;
+  background: #050505;
+  transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 50;
+}
+.letterbox-top    { top: 0; }
+.letterbox-bottom { bottom: 0; }
+.letterbox.active { height: 7vh; }
+
+/* Subtle ambient pulse — used on elements that should breathe
+   with the scene. */
+@keyframes ambientPulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+.ambient-pulse {
+  animation: ambientPulse 4s ease-in-out infinite;
+}
+
+/* Slow ambient drift for floating UI elements. */
+@keyframes ambientDrift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -4px, 0); }
+}
+.ambient-drift {
+  animation: ambientDrift 6s ease-in-out infinite;
+}
+
+/* Light leak — diagonal streaks of light that pass across the
+   screen as the user scrolls. Used by SectionTransition's sweep. */
+@keyframes lightLeak {
+  0%   { transform: translateX(-100%) skewX(-15deg); opacity: 0; }
+  50%  { opacity: 0.4; }
+  100% { transform: translateX(200%) skewX(-15deg); opacity: 0; }
+}
+.light-leak {
+  animation: lightLeak 8s ease-in-out infinite;
+}
+
+/* Depth shadow — soft shadow that gives the impression of a
+   plane hovering above the page. */
+.depth-shadow {
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 12px 60px -20px rgba(0,0,0,0.6),
+    0 30px 80px -30px rgba(0,0,0,0.5);
+}
+
+/* Glass depth — extends the .glass utility with a subtle
+   inner-glow on top edge for premium feel. */
+.glass-depth {
+  background: rgba(255, 255, 255, 0.038);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 12px 60px -20px rgba(0,0,0,0.6);
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes grainShift {
+  0%   { transform: translate(0, 0); }
+  10%  { transform: translate(-2%, -3%); }
+  20%  { transform: translate(3%, 1%); }
+  30%  { transform: translate(-1%, 4%); }
+  40%  { transform: translate(4%, -2%); }
+  50%  { transform: translate(-3%, 3%); }
+  60%  { transform: translate(2%, -4%); }
+  70%  { transform: translate(-4%, 1%); }
+  80%  { transform: translate(1%, 3%); }
+  90%  { transform: translate(3%, -1%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Focus ring — premium double-ring */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 6px rgba(0, 212, 255, 0.08);
+}
+
+/* ============================================================
+   Phase 5 — GPU acceleration & performance hints
+   ============================================================ */
+
+/* Force a compositor layer on fixed animated elements so transforms
+   run on the GPU without triggering layout/paint. Applied to canvas,
+   atmosphere, particles, aurora, and lighting overlays. */
+.gpu {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Skip-to-content link — accessibility. Visually hidden until focused. */
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: 1rem;
+  z-index: 999;
+  border-radius: 0 0 12px 12px;
+  background: rgba(5, 5, 5, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 0.75rem 1.25rem;
+  font-size: 0.8rem;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: none;
+  transition: top 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.skip-link:focus {
+  top: 0;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ============================================================
+   Phase 6 — Readability boost: lift muted white text opacities
+   so primary content is brighter/easier to read against the
+   cinematic background. Hierarchy is preserved — tiny decorative
+   captions stay moderately dim, primary copy is near-solid.
+   ============================================================ */
+/* Primary, readable content — brightened close to solid white */
+.text-white\/40,
+.text-white\/50,
+.text-white\/60,
+.text-white\/70,
+.text-white\/\[0\.4\] { color: rgba(255, 255, 255, 0.92) !important; }
+
+/* Small/decorative captions — lifted but kept dimmer for hierarchy */
+.text-white\/20,
+.text-white\/30,
+.text-white\/\[0\.1\],
+.text-white\/\[0\.2\],
+.text-white\/\[0\.3\] { color: rgba(255, 255, 255, 0.58) !important; }
+
+/* Brighten the main body text slightly for overall legibility */
+body {
+  color: #fafafb;
+}

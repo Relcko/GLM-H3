@@ -1,0 +1,19 @@
+node_modules
+.next
+out
+.env*
+!.env.example
+
+# Logs
+dev-err.log
+dev-out.log
+prod-err.log
+prod-out.log
+*.log
+
+# Build artifacts
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+# Local tooling
+.opencode/
