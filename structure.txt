@@ -1,0 +1,61 @@
+﻿Project Structure
+=================
+
+app/
+  layout.tsx
+  page.tsx
+  globals.css
+  favicon.svg
+  robots.ts
+  sitemap.ts
+
+components/
+  layout.tsx
+  ChapterRail.tsx
+  CinematicAtmosphere.tsx
+  CinematicCanvas.tsx
+  Counter.tsx
+  CustomCursor.tsx
+  DynamicGradient.tsx
+  ErrorBoundary.tsx
+  FAQ.tsx
+  Footer.tsx
+  MagneticButton.tsx
+  MouseParallax.tsx
+  Navbar.tsx
+  Particles.tsx
+  PinnedChapter.tsx
+  Reveal.tsx
+  RLKOCalculator.tsx
+  ScrollProgress.tsx
+  SectionLight.tsx
+  SectionTransition.tsx
+  SmoothScroll.tsx
+  VolumetricLight.tsx
+  chapters/
+    Chapter01.tsx
+    Chapter02.tsx
+    Chapter03.tsx
+    Chapter04.tsx
+    Chapter05.tsx
+    Chapter06.tsx
+    Chapter07.tsx
+    Chapter08.tsx
+
+lib/
+  chapters.ts
+  frames.ts
+  hooks.ts
+  motion.ts
+  scroll.ts
+  tokens.ts
+
+public/
+  frames/
+    ezgif-frame-001.jpg ... ezgif-frame-300.jpg
+  relcko-logo.png
+
+package.json
+next.config.ts
+tsconfig.json
+tailwind.config.ts
