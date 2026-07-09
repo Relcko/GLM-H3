@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import { Z } from "@/lib/tokens";
 import { getScrollStore } from "@/lib/scroll";
+import { getDirector } from "@/lib/director";
+import { damp, HERO } from "@/lib/motion";
 
 /**
  * Particles — Phase 2.
@@ -70,6 +72,9 @@ export default function Particles() {
       };
     });
 
+    // Stage 3: particle field initialized — signal the Director.
+    getDirector().markReady("particles-ready");
+
     const mouse = { x: 0, y: 0 };
     const onMove = (e: MouseEvent) => {
       mouse.x = (e.clientX / window.innerWidth - 0.5) * 2;
@@ -83,6 +88,8 @@ export default function Particles() {
     let prevCamera = store.getCamera();
     const start = performance.now();
     let running = true;
+    // Director-gated opacity: particles materialize at Stage >= 3.
+    let partOpacity = 0;
 
     const tick = (now: number) => {
       if (!running) return;
@@ -91,6 +98,13 @@ export default function Particles() {
       const t = (now - start) / 1000;
       const v = store.getVelocity();
       const camera = store.getCamera();
+
+      // Director-gated reveal: particles fade in once initialized (Stage >= 3).
+      const targetOpacity = getDirector().trackProgress("hero", "environment") * HERO.PARTICLES_OPACITY;
+      partOpacity = damp(partOpacity, targetOpacity, HERO.LAYER_RAMP, dt);
+      if (canvas.style.opacity !== partOpacity.toFixed(3)) {
+        canvas.style.opacity = partOpacity.toFixed(3);
+      }
 
       // Per-frame camera delta — drives true depth parallax.
       const dCam = camera - prevCamera;
@@ -208,7 +222,7 @@ export default function Particles() {
       ref={ref}
       aria-hidden="true"
       className="gpu pointer-events-none fixed inset-0 h-full w-full"
-      style={{ zIndex: Z.particles, opacity: 0.55 }}
+      style={{ zIndex: Z.particles, opacity: 0 }}
     />
   );
 }
