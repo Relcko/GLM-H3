@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getFrameSequence, TOTAL_FRAMES } from "@/lib/frames";
 import { getScrollStore } from "@/lib/scroll";
+import { getDirector } from "@/lib/director";
 import { Z } from "@/lib/tokens";
-import { damp, EASE_LUX } from "@/lib/motion";
+import { damp, EASE_LUX, HERO } from "@/lib/motion";
 
 /**
  * Scroll-driven cinematic canvas — Phase 2.
@@ -44,6 +45,8 @@ export default function CinematicCanvas() {
       canvas.height = Math.floor(window.innerHeight * dpr);
     };
     fit();
+    // Stage 1: canvas element mounted and sized — signal the Director.
+    getDirector().markReady("canvas-ready");
     const onResize = () => {
       clearTimeout(timer);
       timer = setTimeout(fit, 180);
@@ -131,6 +134,7 @@ export default function CinematicCanvas() {
     let raf = 0;
     let running = true;
     let frameIndex = 0;            // damped frame index (camera, in frame space)
+    let canvasOpacity = getDirector().trackProgress("hero", "environment"); // 0 until world-ready
     let lastPainted = -1;
     const mouse = { x: 0, y: 0 };
     let mouseSx = 0, mouseSy = 0;
@@ -230,6 +234,14 @@ export default function CinematicCanvas() {
       const elapsed = (now - start) / 1000;
       const v = store.getVelocity();
 
+      // Director opacity ramp: building materializes once the first frame
+      // is rendered (Stage >= 2). Damped so it fades up, never flashes.
+      const targetOpacity = getDirector().trackProgress("hero", "environment");
+      canvasOpacity = damp(canvasOpacity, targetOpacity, HERO.LAYER_RAMP, dt);
+      if (canvas.style.opacity !== canvasOpacity.toFixed(3)) {
+        canvas.style.opacity = canvasOpacity.toFixed(3);
+      }
+
       // Camera target in frame-index space. The store's camera is
       // already weighted + Lenis-smoothed; we add a LIGHT dt-damped
       // ease in frame space so the fractional frame index is stable
@@ -261,13 +273,22 @@ export default function CinematicCanvas() {
       // (keeps mouse parallax smooth without burning a full paint).
       const parallaxDrift = ++parallaxTick % 6 === 0;
 
+      // Director-driven camera track (Stage >= 5). A slow, weighty push-in
+      // (dolly) plus a barely-there orbit/tilt drift — luxury, no aggression.
+      const cam = getDirector().trackProgress("hero", "camera");
+      const dolly = cam * HERO.DOLLY_SCALE;
+      const orbit = cam * HERO.ORBIT_DRIFT;
+      const offXDir = Math.sin(elapsed * HERO.ORBIT_RATE) * orbit * canvas.width;
+      const offYDir = Math.cos(elapsed * HERO.ORBIT_RATE * 0.8) * orbit * canvas.height;
+
       // Parallax offsets — X stronger, Y subtler (cinematic).
-      const offX = mouseSx * 26 * dpr;
-      const offY = mouseSy * 14 * dpr;
+      const offX = mouseSx * 26 * dpr + offXDir;
+      const offY = mouseSy * 14 * dpr + offYDir;
 
       // Camera dolly: scale-out on fast scroll (the "weight" of the
-      // pan pushes the camera back), plus a faint idle depth-breathe.
-      const scale = 1 - v * 0.014 + Math.sin(elapsed * 0.2) * 0.004;
+      // pan pushes the camera back), plus a faint idle depth-breathe,
+      // plus the Director's slow Hero push-in.
+      const scale = 1 - v * 0.014 + Math.sin(elapsed * 0.2) * 0.004 + dolly;
 
       const wantPaint =
         dominant !== lastPainted ||
@@ -396,6 +417,8 @@ export default function CinematicCanvas() {
   // Initial paint of frame 0 once ready
   useEffect(() => {
     if (!ready) return;
+    // Stage 2: first frame successfully rendered — signal the Director.
+    getDirector().markReady("world-ready");
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d", { alpha: false });
