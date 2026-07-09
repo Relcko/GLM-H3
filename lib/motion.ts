@@ -239,3 +239,93 @@ export const HERO = {
   PARTICLES_OPACITY: 0.55,
   ATMOSPHERE_OPACITY: 0.72,
 } as const;
+
+/**
+ * CAMERA — continuous camera language for Sprint 2.
+ *
+ * The camera is a PURE function of journeyProgress (0..1). It never reads
+ * chapter identity, never branches on chapter index, never snaps. Every
+ * curve below is continuous, so a chapter boundary is just another progress
+ * value — the shot never cuts.
+ *
+ * Magnitudes are unitless multipliers / normalized offsets. All easing is
+ * slow and heavy (no bounce, no overshoot) so motion reads as luxury.
+ */
+export const CAMERA = {
+  /** Damping lambda for the frame-index settle (frame-rate independent). */
+  FRAME_LAMBDA: 11,
+  /** Idle depth-breathing amplitude (subtle, never perceived as motion). */
+  BREATHE: 0.004,
+  /** Velocity push-back: fast scroll eases the camera out (weight). */
+  VELOCITY_PUSHBACK: 0.014,
+  /** Idle two-sine drift amplitude (keeps the world alive when paused). */
+  IDLE_DRIFT_A: 0.1,
+  IDLE_DRIFT_B: 0.06,
+
+  // --- Continuous journey gestures (all f(journeyProgress)) ---
+  /** Slow continuous dolly: gentle push-in early, slight pull-back to finale. */
+  DOLLY_AMOUNT: 0.06,
+  DOLLY_PULLBACK: 0.04,
+  /** One gentle orbit arc across the journey (left → right). No per-chapter snap. */
+  ORBIT_AMOUNT: 0.014,
+  /** Faint continuous crane rise across the journey (discovery from below). */
+  CRANE_AMOUNT: 0.02,
+  /** Tiny tilt bias, continuous. */
+  TILT_AMOUNT: 0.006,
+  /** Slow orbit/crane oscillation rate (radians/sec) — barely perceptible. */
+  GESTURE_RATE: 0.12,
+  /** Mouse parallax strength (X stronger, Y subtler) — decoupled from camera. */
+  PARALLAX_X: 26,
+  PARALLAX_Y: 14,
+  PARALLAX_LAMBDA: 8,
+} as const;
+
+/**
+ * WORLD — neutral, scene-agnostic geometry/reveal constants.
+ *
+ * No subject nouns (no "tower"/"building"/"skyline"). These describe generic
+ * layer rects and discovery thresholds so future scenes (one structure,
+ * many, an entire skyline) are pure config — the renderer stays agnostic.
+ */
+export const WORLD = {
+  /** Frame fit overscan so the subject always fills the frame. */
+  FIT_OVSCAN: 1.05,
+  /**
+   * Discovery: how "close" the camera feels as a function of progress.
+   * 0 = far silhouette, 1 = intimate detail. Drives physically-motivated
+   * reveal (proximity reveals detail, never switches on).
+   */
+  PROXIMITY_NEAR: 0.82, // progress at which the subject reads "close"
+  PROXIMITY_FAR: 0.04, // progress at which it reads as a distant mass
+  /** Architectural detail reveal threshold (smoothstep over proximity). */
+  DETAIL_REVEAL: 0.35,
+  /** Lobby/ground-level illumination becomes legible past this proximity. */
+  LOBBY_REVEAL: 0.45,
+  /** Occupied-floor window warmth reveals gradually past this proximity. */
+  WINDOW_REVEAL: 0.3,
+  /** Crown/roof detail is discovered only near the end (final approach). */
+  ROOF_REVEAL: 0.9,
+  /** Maximum alpha for any discovery layer — kept极低 so it reads as lit, not VFX. */
+  DISCOVERY_ALPHA: 0.1,
+  /** Imperceptible interior "breath" amplitude (reads as occupied, not pulsing). */
+  BREATH_AMPLITUDE: 0.03,
+  BREATH_RATE: 0.18,
+} as const;
+
+/** Slow, heavy camera easing — no overshoot, no bounce. */
+export const EASE_CAMERA = [0.22, 1, 0.36, 1] as const;
+
+/**
+ * smoothstep already exists; add a clamped remap helper used by camera
+ * curves and discovery thresholds so no inline math leaks into layers.
+ */
+export function remapClamp(
+  v: number,
+  vMin: number,
+  vMax: number,
+  tMin: number,
+  tMax: number
+): number {
+  const t = (v - vMin) / (vMax - vMin);
+  return tMin + (tMax - tMin) * Math.max(0, Math.min(1, t));
+}
