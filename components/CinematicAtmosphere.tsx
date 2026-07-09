@@ -3,7 +3,8 @@
 import { useEffect, useRef } from "react";
 import { Z } from "@/lib/tokens";
 import { getScrollStore } from "@/lib/scroll";
-import { damp, smootherstep } from "@/lib/motion";
+import { getDirector } from "@/lib/director";
+import { damp, smootherstep, HERO } from "@/lib/motion";
 
 /**
  * Cinematic atmosphere — Phase 2.
@@ -99,6 +100,8 @@ export default function CinematicAtmosphere() {
     let raf = 0;
     let lastT = performance.now();
     const start = performance.now();
+    // Director-gated opacity: atmosphere fades in with the environment track.
+    let atmOpacity = 0;
 
     // Smoothed "sun" position (dt-damped) for buttery travel.
     let sunX = w * 0.2, sunY = h * 0.3;
@@ -109,6 +112,14 @@ export default function CinematicAtmosphere() {
       const t = (now - start) / 1000;
       const v = store.getVelocity();
       const p = store.getProgress();
+
+      // Director-gated reveal: fade the orb field in once the environment
+      // track is live (Stage >= 3). Reuses this rAF; no second loop.
+      const targetAtm = getDirector().trackProgress("hero", "environment") * HERO.ATMOSPHERE_OPACITY;
+      atmOpacity = damp(atmOpacity, targetAtm, HERO.LAYER_RAMP, dt);
+      if (canvas.style.opacity !== atmOpacity.toFixed(3)) {
+        canvas.style.opacity = atmOpacity.toFixed(3);
+      }
       const smooth = store.getSmooth();
       const camera = store.getCamera();
 
@@ -205,7 +216,7 @@ export default function CinematicAtmosphere() {
       ref={ref}
       aria-hidden="true"
       className="gpu pointer-events-none fixed inset-0 h-full w-full"
-      style={{ zIndex: Z.atmosphere, mixBlendMode: "screen", opacity: 0.72 }}
+      style={{ zIndex: Z.atmosphere, mixBlendMode: "screen", opacity: 0 }}
     />
   );
 }

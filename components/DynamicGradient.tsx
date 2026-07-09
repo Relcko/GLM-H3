@@ -3,7 +3,8 @@
 import { useEffect, useRef } from "react";
 import { Z } from "@/lib/tokens";
 import { getScrollStore } from "@/lib/scroll";
-import { smootherstep } from "@/lib/motion";
+import { getDirector } from "@/lib/director";
+import { smootherstep, damp, HERO } from "@/lib/motion";
 
 /**
  * DynamicGradient — Phase 4 "aurora".
@@ -20,6 +21,7 @@ import { smootherstep } from "@/lib/motion";
  */
 export default function DynamicGradient() {
   const ref = useRef<HTMLDivElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -28,8 +30,13 @@ export default function DynamicGradient() {
     const store = getScrollStore();
     let raf = 0;
     let frame = 0;
+    let lastT = performance.now();
+    // Director-gated reveal: aurora fades in with the environment track.
+    let outerOpacity = 0;
 
-    const tick = () => {
+    const tick = (now: number) => {
+      const dt = Math.max(0.001, Math.min(0.1, (now - lastT) / 1000));
+      lastT = now;
       // Throttle: update hue ~10x/s, not every frame.
       if (frame++ % 6 === 0) {
         const smooth = store.getSmooth();
@@ -39,6 +46,12 @@ export default function DynamicGradient() {
         if (ref.current) {
           ref.current.style.filter = `hue-rotate(${h.toFixed(1)}deg)`;
         }
+      }
+      // Opacity ramp (reuses the same rAF — no second loop).
+      const targetOpacity = getDirector().trackProgress("hero", "environment") * 0.5;
+      outerOpacity = damp(outerOpacity, targetOpacity, HERO.LAYER_RAMP, dt);
+      if (outerRef.current && outerRef.current.style.opacity !== outerOpacity.toFixed(3)) {
+        outerRef.current.style.opacity = outerOpacity.toFixed(3);
       }
       raf = requestAnimationFrame(tick);
     };
@@ -64,9 +77,10 @@ export default function DynamicGradient() {
 
   return (
     <div
+      ref={outerRef}
       aria-hidden="true"
       className="gpu pointer-events-none fixed inset-0 overflow-hidden"
-      style={{ zIndex: Z.aurora, opacity: 0.5 }}
+      style={{ zIndex: Z.aurora, opacity: 0 }}
     >
       <div
         ref={ref}
