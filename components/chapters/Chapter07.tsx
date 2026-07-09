@@ -53,7 +53,7 @@ export default function Chapter07() {
             Scale beyond precedent.
           </h2>
 
-          <Reveal className="max-w-sm text-balance text-sm leading-relaxed text-white/50">
+          <Reveal className="max-w-[20rem] text-balance text-sm leading-relaxed text-white/50">
             One building becomes a continent-spanning portfolio. The
             infrastructure for a new asset class.
           </Reveal>

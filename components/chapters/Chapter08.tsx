@@ -46,8 +46,7 @@ export default function Chapter08() {
           </h2>
 
           <p className="mt-8 max-w-sm text-balance text-sm leading-relaxed text-white/45">
-            The building. The blockchain. The future. One token away from
-            yours.
+            The building. The blockchain. One token from yours.
           </p>
 
           <div className="mt-12 flex flex-wrap items-center justify-center gap-4">

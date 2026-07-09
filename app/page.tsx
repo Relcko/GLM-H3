@@ -26,9 +26,8 @@ import { EASE_DIRECTOR, HERO } from "@/lib/motion";
  *   6. Content    z=10  — chapter markup (mouse-parallaxed)
  *   7. SectionLight z=11 — per-chapter atmospheric key light (screen blend)
  *   8. VolumetricLight z=11 — god-ray shafts tied to the key light
- *   9. SectionTransition z=12 — chapter boundary cross-dissolve pulse
- *  10. UI         z=140..200 — rail, nav, progress
- *  11. Cursor     z=300 — premium custom cursor
+ *   9. UI         z=140..200 — rail, nav, progress
+ *  10. Cursor     z=300 — premium custom cursor
  *
  * Phase 5 code-splitting:
  *   - Eager:  SmoothScroll, CinematicCanvas, ScrollProgress, CustomCursor,
@@ -36,8 +35,8 @@ import { EASE_DIRECTOR, HERO } from "@/lib/motion";
  *             These are above-the-fold / first-paint critical.
  *   - Lazy:   Chapters 03–08, FAQ, Footer, and the heavy atmospheric
  *             effects (DynamicGradient, CinematicAtmosphere, Particles,
-*             VolumetricLight, SectionLight, SectionTransition,
-*             MouseParallax). Each loads in its own chunk
+ *             VolumetricLight, SectionLight,
+ *             MouseParallax). Each loads in its own chunk
  *             via next/dynamic with ssr:false for the canvas/effect layers
  *             (they're client-only and not needed for first paint or SEO).
  */
@@ -58,7 +57,6 @@ const CinematicAtmosphere = dynamic(() => import("@/components/CinematicAtmosphe
 const Particles = dynamic(() => import("@/components/Particles"), { ssr: false });
 const VolumetricLight = dynamic(() => import("@/components/VolumetricLight"), { ssr: false });
 const SectionLight = dynamic(() => import("@/components/SectionLight"), { ssr: false });
-const SectionTransition = dynamic(() => import("@/components/SectionTransition"), { ssr: false });
 const MouseParallax = dynamic(() => import("@/components/MouseParallax"), { ssr: false });
 
 export default function Home() {
@@ -124,10 +122,10 @@ export default function Home() {
         <Footer />
       </main>
 
-      {/* Atmospheric lighting & section transitions */}
+      {/* Atmospheric lighting — a single, calm key light (no chapter
+          boundary flashes, letterbox bars, or sweep lines). Restraint. */}
       <SectionLight />
       <VolumetricLight />
-      <SectionTransition />
 
       {/* UI layer */}
       <ScrollProgress />

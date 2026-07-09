@@ -58,7 +58,7 @@ export default function SectionLight() {
       const v = store.getVelocity();
       const smooth = store.getSmooth();
 
-      // Weighted color from cached chapter states (shared with SectionTransition).
+      // Weighted color from cached chapter states.
       let totalWeight = 0;
       let r = 0, g = 0, b = 0;
       let maxIntensity = 0;
@@ -80,7 +80,8 @@ export default function SectionLight() {
         const tg = g / totalWeight;
         const tb = b / totalWeight;
         // Intensity with a subtle velocity flicker (exposure compensation).
-        const ta = Math.min(0.2, maxIntensity * 0.24 * (1 + v * 0.18));
+        // Capped low so the rig reads as a tint, never a flood (restraint).
+        const ta = Math.min(0.14, maxIntensity * 0.16 * (1 + v * 0.14));
         // Fade in with the Director lighting track (Stage >= 4).
         lightGate = damp(lightGate, getDirector().trackProgress("hero", "lighting"), HERO.LAYER_RAMP, dt);
         const taGated = ta * lightGate;

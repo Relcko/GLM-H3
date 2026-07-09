@@ -27,9 +27,9 @@ const config: Config = {
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       fontSize: {
-        mega:    ["clamp(2.75rem, 8.5vw, 7.5rem)", { lineHeight: "0.96", letterSpacing: "-0.04em" }],
-        hero:    ["clamp(2rem, 5vw, 4.75rem)",     { lineHeight: "1.0",  letterSpacing: "-0.03em" }],
-        chapter: ["clamp(1.85rem, 4.2vw, 3.75rem)",{ lineHeight: "1.02", letterSpacing: "-0.03em" }],
+        mega:    ["clamp(2.75rem, 8.5vw, 7.5rem)", { lineHeight: "0.98", letterSpacing: "-0.045em" }],
+        hero:    ["clamp(2rem, 5vw, 4.75rem)",     { lineHeight: "1.0",  letterSpacing: "-0.035em" }],
+        chapter: ["clamp(1.85rem, 4.2vw, 3.75rem)",{ lineHeight: "1.04", letterSpacing: "-0.04em" }],
         display: ["clamp(1.15rem, 2.4vw, 2rem)",   { lineHeight: "1.2",  letterSpacing: "-0.02em" }],
       },
       backdropBlur: {

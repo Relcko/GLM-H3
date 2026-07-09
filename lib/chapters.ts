@@ -20,62 +20,67 @@ export type Chapter = {
   intensity: number;
 };
 
+// Neutral, near-white architectural light — the way real buildings are lit.
+// Only a whisper of temperature separates the beats: cool moonlight at the
+// hero, neutral daylight through the middle, warm-white at the finale. The
+// colors are almost achromatic on purpose — if you notice the light color,
+// it is too strong. Light guides emotion; it never announces itself.
 export const CHAPTERS: Chapter[] = [
   {
     id: "chapter-01",
     num: "01",
     title: "Arrival",
-    light: [0, 212, 255],
-    intensity: 0.55,
+    light: [150, 164, 190],
+    intensity: 0.34,
   },
   {
     id: "chapter-02",
     num: "02",
     title: "Architecture",
-    light: [80, 140, 200],
-    intensity: 0.4,
+    light: [158, 168, 186],
+    intensity: 0.3,
   },
   {
     id: "chapter-03",
     num: "03",
     title: "Innovation",
-    light: [0, 87, 255],
-    intensity: 0.55,
+    light: [160, 170, 188],
+    intensity: 0.34,
   },
   {
     id: "chapter-04",
     num: "04",
     title: "Tokenization",
-    light: [80, 200, 255],
-    intensity: 0.5,
+    light: [172, 176, 184],
+    intensity: 0.32,
   },
   {
     id: "chapter-05",
     num: "05",
     title: "Investment",
-    light: [60, 227, 125],
-    intensity: 0.45,
+    light: [184, 182, 174],
+    intensity: 0.32,
   },
   {
     id: "chapter-06",
     num: "06",
     title: "Ecosystem",
-    light: [120, 180, 255],
-    intensity: 0.45,
+    light: [192, 190, 182],
+    intensity: 0.34,
   },
   {
     id: "chapter-07",
     num: "07",
     title: "Future",
-    light: [214, 178, 94],
-    intensity: 0.5,
+    light: [200, 196, 188],
+    intensity: 0.36,
   },
   {
     id: "chapter-08",
     num: "08",
     title: "Reveal",
-    light: [245, 228, 176],
-    intensity: 0.55,
+    light: [212, 210, 204],
+    intensity: 0.4,
   },
 ];
 

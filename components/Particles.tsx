@@ -65,7 +65,7 @@ export default function Particles() {
         vy: baseVy,
         baseVy,
         r: (0.18 + layer * 0.6 + Math.random() * 0.7) * dpr,
-        a: 0.05 + layer * 0.1 + Math.random() * 0.1,
+        a: 0.03 + layer * 0.06 + Math.random() * 0.05,
         layer,
         phase: Math.random() * Math.PI * 2,
         hue: Math.random(),
@@ -151,7 +151,7 @@ export default function Particles() {
           const r = 130 + p0.hue * 90;
           const g = 205 + p0.hue * 50;
           const b = 255;
-          color = `rgba(${r | 0},${g | 0},${b | 0},${(p0.a * twinkle) * 1.1})`;
+          color = `rgba(${r | 0},${g | 0},${b | 0},${(p0.a * twinkle) * 0.9})`;
         } else if (p0.layer === 1) {
           // Mid: cool blue
           const r = 175 + p0.hue * 30;
@@ -163,7 +163,7 @@ export default function Particles() {
           const r = 210 + p0.hue * 25;
           const g = 228;
           const b = 255;
-          drawR = p0.r * 1.8;
+          drawR = p0.r * 1.5;
           color = `rgba(${r | 0},${g | 0},${b | 0},${p0.a * twinkle * 0.5})`;
         }
 
@@ -173,14 +173,6 @@ export default function Particles() {
         ctx.arc(px, p0.y, drawR, 0, Math.PI * 2);
         ctx.fillStyle = color;
         ctx.fill();
-
-        // Front particles get a tiny glow halo
-        if (p0.layer === 2) {
-          ctx.beginPath();
-          ctx.arc(px, p0.y, p0.r * 2.2, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(150,210,255,${p0.a * 0.18 * twinkle})`;
-          ctx.fill();
-        }
       }
 
       raf = requestAnimationFrame(tick);

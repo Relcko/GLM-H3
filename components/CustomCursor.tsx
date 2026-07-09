@@ -29,7 +29,6 @@ function getFinePointerMq(): MediaQueryList | null {
 export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
 
   const finePointer = useSyncExternalStore(
     (cb) => {
@@ -56,9 +55,6 @@ export default function CustomCursor() {
     // Ring spring state.
     let rx = mx, ry = my;
     let rvx = 0, rvy = 0;
-    // Glow spring state (slower).
-    let gx = mx, gy = my;
-    let gvx = 0, gvy = 0;
     let raf = 0;
     let lastT = performance.now();
     let running = true;
@@ -116,15 +112,6 @@ export default function CustomCursor() {
       rx += rvx * dt;
       ry += rvy * dt;
 
-      // Glow: softer spring, trails behind.
-      const gk = 90, gc = 22;
-      const gax = (mx - gx) * gk - gvx * gc;
-      const gay = (my - gy) * gk - gvy * gc;
-      gvx += gax * dt;
-      gvy += gay * dt;
-      gx += gvx * dt;
-      gy += gvy * dt;
-
       if (ringRef.current) {
         const s = clicking ? 0.7 : hovering ? 1.8 : 1;
         const opacity = hovering ? 0.55 : 0.28;
@@ -137,10 +124,6 @@ export default function CustomCursor() {
         ringRef.current.style.background = hovering
           ? "rgba(0,212,255,0.06)"
           : "transparent";
-      }
-      if (glowRef.current) {
-        glowRef.current.style.transform = `translate3d(${gx}px,${gy}px,0) translate(-50%,-50%)`;
-        glowRef.current.style.opacity = hovering ? "0.2" : "0.09";
       }
       raf = requestAnimationFrame(loop);
     };
@@ -178,14 +161,8 @@ export default function CustomCursor() {
 
   if (!finePointer) return null;
 
-  return (
+    return (
     <div className="pointer-events-none fixed inset-0 z-[300] hidden md:block">
-      {/* Glow halo — slowest, accent-colored */}
-      <div
-        ref={glowRef}
-        className="absolute left-0 top-0 h-24 w-24 rounded-full bg-accent transition-opacity duration-500"
-        style={{ filter: "blur(28px)" }}
-      />
       {/* Ring — spring-lagged, fills on hover */}
       <div
         ref={ringRef}

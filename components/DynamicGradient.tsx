@@ -41,14 +41,16 @@ export default function DynamicGradient() {
       if (frame++ % 6 === 0) {
         const smooth = store.getSmooth();
         const j = smootherstep(smooth);
-        // Cool cyan (start) → warm gold (finale).
-        const h = 190 - j * 145; // 190° (cyan) → 45° (gold)
+        // The field is already near-neutral; allow only a hair of temperature
+        // drift so nothing ever reads as a coloured aurora.
+        const h = 8 - j * 16; // +8° (faint cool) → -8° (faint warm)
         if (ref.current) {
           ref.current.style.filter = `hue-rotate(${h.toFixed(1)}deg)`;
         }
       }
-      // Opacity ramp (reuses the same rAF — no second loop).
-      const targetOpacity = getDirector().trackProgress("hero", "environment") * 0.5;
+      // Opacity ramp (reuses the same rAF — no second loop). Kept ~90% lower
+      // than a visible gradient: this is depth separation, not a colour field.
+      const targetOpacity = getDirector().trackProgress("hero", "environment") * 0.06;
       outerOpacity = damp(outerOpacity, targetOpacity, HERO.LAYER_RAMP, dt);
       if (outerRef.current && outerRef.current.style.opacity !== outerOpacity.toFixed(3)) {
         outerRef.current.style.opacity = outerOpacity.toFixed(3);
@@ -87,7 +89,7 @@ export default function DynamicGradient() {
         className="absolute inset-[-30%]"
         style={{
           background:
-            "radial-gradient(60% 50% at 25% 30%, rgba(0,140,200,0.22) 0%, transparent 60%), radial-gradient(55% 45% at 75% 70%, rgba(0,90,255,0.18) 0%, transparent 60%)",
+            "radial-gradient(60% 50% at 25% 30%, rgba(150,164,188,0.16) 0%, transparent 60%), radial-gradient(55% 45% at 75% 70%, rgba(140,152,176,0.14) 0%, transparent 60%)",
           animation: "auroraDrift 24s ease-in-out infinite alternate",
           willChange: "transform, filter",
         }}

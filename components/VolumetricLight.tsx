@@ -56,7 +56,8 @@ export default function VolumetricLight() {
       const tx = 28 + smooth * 44;
       const ty = 44 - Math.sin(smooth * Math.PI) * 8;
       // Intensity: gentle baseline + a hair of exposure on scroll.
-      const ta = Math.min(0.06, 0.04 + v * 0.02);
+      // Kept very low so the shafts read as atmosphere, not a VFX sweep.
+      const ta = Math.min(0.04, 0.028 + v * 0.014);
 
       // Fade the whole layer in with the Director lighting track.
       const targetVol = getDirector().trackProgress("hero", "lighting");

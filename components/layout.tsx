@@ -111,7 +111,7 @@ export function ContentColumn({
   return (
     <div
       className={[
-        "flex w-full flex-col gap-6",
+        "flex w-full flex-col gap-8",
         SIDE[side],
         COL[width],
         className,

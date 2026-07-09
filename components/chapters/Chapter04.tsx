@@ -53,7 +53,7 @@ export default function Chapter04() {
           <ScrubbedReveal
             progress={progress}
             range={[0.15, 0.4]}
-            className="max-w-sm text-balance text-sm leading-relaxed text-white/50"
+            className="max-w-[20rem] text-balance text-sm leading-relaxed text-white/50"
           >
             A $40M asset becomes 10,000 tokens. You own a slice. Yields flow
             directly to your wallet. Liquidity, always.

@@ -38,13 +38,16 @@ type Orb = {
   hueShift: number;
 };
 
+// Near-achromatic depth tones. The atmosphere must never be *noticed* — it
+// only separates foreground from background. No brand chroma, only the
+// faintest cool/neutral variance so distant planes read slightly recessed.
 const ORB_COLORS: [number, number, number][] = [
-  [0, 212, 255],   // accent cyan
-  [0, 87, 255],    // accent blue
-  [214, 178, 94],  // gold
-  [60, 227, 125],  // success green
-  [120, 180, 255], // soft blue
-  [255, 178, 90],  // warm amber
+  [150, 164, 188], // cool neutral
+  [140, 152, 176], // cool neutral (deeper)
+  [176, 176, 172], // neutral
+  [158, 168, 182], // cool neutral
+  [148, 160, 184], // soft cool
+  [182, 178, 170], // warm neutral
 ];
 
 export default function CinematicAtmosphere() {
@@ -79,7 +82,7 @@ export default function CinematicAtmosphere() {
           baseR: (Math.min(w, h) * (0.28 + Math.random() * 0.22)) * 0.5,
           phase: Math.random() * Math.PI * 2,
           baseColor: ORB_COLORS[i % ORB_COLORS.length],
-          alpha: 0.16 + Math.random() * 0.14,
+          alpha: 0.012 + Math.random() * 0.01,
           speed: 0.18 + Math.random() * 0.28,
           depth,
           hueShift: (i / N) * Math.PI * 2,
@@ -132,13 +135,15 @@ export default function CinematicAtmosphere() {
       const sunTy = h * (0.32 - Math.sin(smooth * Math.PI) * 0.12);
       sunX = damp(sunX, sunTx, 5, dt);
       sunY = damp(sunY, sunTy, 5, dt);
-      // Hue: cool cyan (start) → warm gold (finale) across the journey.
+      // Near-white ambient wash with only a whisper of temperature: faintly
+      // cool at the start, faintly warm at the finale. It must read as depth,
+      // never as a coloured light source. Kept ~90% dimmer than a visible orb.
       const journey = smootherstep(smooth);
-      const sr = 0 + journey * 245;            // 0 → 245
-      const sg = 212 - journey * 34;           // 212 → 178
-      const sb = 255 - journey * 79;           // 255 → 176
+      const sr = 196 + journey * 18;           // 196 → 214 (warms slightly)
+      const sg = 200 - journey * 2;            // ~200
+      const sb = 210 - journey * 22;           // 210 → 188 (cool → neutral)
       const sunR = Math.min(w, h) * 0.42 * (1 + v * 0.18);
-      const sunAlpha = 0.16 + v * 0.05;
+      const sunAlpha = 0.014 + v * 0.006;
       const sg1 = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR);
       sg1.addColorStop(0, `rgba(${sr | 0},${sg | 0},${sb | 0},${sunAlpha})`);
       sg1.addColorStop(0.45, `rgba(${sr | 0},${sg | 0},${sb | 0},${sunAlpha * 0.3})`);

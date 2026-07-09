@@ -43,9 +43,9 @@ export default function Chapter02() {
             Crafted to the millimetre.
           </h2>
 
-          <Reveal className="max-w-sm text-balance text-sm leading-relaxed text-white/50">
-            Every surface, every joint, every shadow — deliberate. Materials
-            chosen once. Refinement that compounds for decades.
+          <Reveal className="max-w-[20rem] text-balance text-sm leading-relaxed text-white/50">
+            Every surface, every joint, every shadow — deliberate.
+            Refinement that compounds for decades.
           </Reveal>
 
           <div ref={cardsRef} className="grid w-full grid-cols-2 gap-4">

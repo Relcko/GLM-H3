@@ -77,13 +77,6 @@ export default function MagneticButton({
       {variant !== "ghost" && (
         <span className="absolute inset-0 -translate-x-full skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-lux group-hover:translate-x-full" />
       )}
-      {/* Hover glow — restrained gold highlight for primary, richer gold for gold */}
-      {hovered && variant === "primary" && (
-        <span className="pointer-events-none absolute inset-0 rounded-full bg-gold/10 blur-xl" />
-      )}
-      {hovered && variant === "gold" && (
-        <span className="pointer-events-none absolute inset-0 rounded-full bg-gold/15 blur-xl" />
-      )}
       {/* Inner top highlight — light refraction on solid buttons */}
       {variant !== "ghost" && (
         <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-full bg-gradient-to-b from-white/15 to-transparent" />

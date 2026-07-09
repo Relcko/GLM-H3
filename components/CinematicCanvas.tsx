@@ -373,19 +373,18 @@ function Loader({ pct, ready }: { pct: number; ready: boolean }) {
                 />
                 <defs>
                   <linearGradient id="g" x1="0" x2="1">
-                    <stop offset="0%" stopColor="#00D4FF" />
-                    <stop offset="100%" stopColor="#0057FF" />
+                    <stop offset="0%" stopColor="rgba(255,255,255,0.85)" />
+                    <stop offset="100%" stopColor="rgba(255,255,255,0.35)" />
                   </linearGradient>
                 </defs>
               </svg>
             </div>
             <div className="relative h-px w-56 overflow-hidden rounded-full bg-white/[0.06]">
               <div
-                className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-accent-blue to-accent"
+                className="absolute inset-y-0 left-0 rounded-full bg-white/80"
                 style={{
                   width: `${pct}%`,
                   transition: "width 250ms cubic-bezier(0.16, 1, 0.3, 1)",
-                  boxShadow: "0 0 8px rgba(0,212,255,0.4)",
                 }}
               />
               {pct > 0 && pct < 100 && (

@@ -55,9 +55,9 @@ export default function Chapter03() {
             Built on unshakeable trust.
           </h2>
 
-          <Reveal className="max-w-sm text-balance text-sm leading-relaxed text-white/50">
-            We replaced lawyers, ledgers and middlemen with cryptography. What
-            remains is something that cannot be corrupted.
+          <Reveal className="max-w-[20rem] text-balance text-sm leading-relaxed text-white/50">
+            Lawyers, ledgers, middlemen — replaced by cryptography. What
+            remains cannot be corrupted.
           </Reveal>
 
           <div ref={cardsRef} className="flex flex-col gap-3">

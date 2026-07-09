@@ -71,10 +71,10 @@ export default function Chapter01() {
       </h1>
 
       <Container className="flex flex-col items-center text-center">
-        <div
-          className="mx-auto flex w-full max-w-5xl flex-col items-center text-center gap-10"
-          data-parallax="0.35"
-        >
+          <div
+            className="mx-auto flex w-full max-w-5xl flex-col items-center text-center gap-12"
+            data-parallax="0.35"
+          >
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -89,7 +89,7 @@ export default function Chapter01() {
           {/* Headline — per-word cinematic reveal (Stage 6) */}
           <h2
             aria-hidden
-            className="font-display text-[clamp(2.75rem,7vw,6.5rem)] font-light leading-[0.98] tracking-[-0.035em]"
+            className="font-display text-[clamp(2.75rem,7vw,6.75rem)] font-light leading-[0.95] tracking-[-0.045em]"
           >
             {HEADLINE_LINES.map((line, li) => (
               <span key={li} className="block">
@@ -130,7 +130,7 @@ export default function Chapter01() {
             initial={{ opacity: 0, y: 12 }}
             animate={beat >= 1 ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
             transition={{ duration: 0.9, delay: 0.2, ease: EASE_LUX }}
-            className="max-w-sm text-balance text-sm leading-relaxed text-white/90"
+            className="max-w-[20rem] text-balance text-sm leading-relaxed text-white/90"
           >
             Own a piece of the world&apos;s most extraordinary buildings.
             Starting at one token.

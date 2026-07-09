@@ -82,6 +82,11 @@ class Director {
     "scroll-hint": false,
   };
 
+  // Pending milestone intents that arrived before their prerequisites were
+  // satisfied. Re-evaluated as later milestones arrive so a mark is never
+  // silently dropped — the Director observes readiness, it never blocks it.
+  private pending = new Set<string>();
+
   private reduced = false;
 
   constructor() {
@@ -139,11 +144,34 @@ class Director {
     const idx = labels.indexOf(milestone);
     if (idx < 0) return;
 
-    // Gate: every prior milestone must already be set.
-    for (let i = 0; i < idx; i++) {
-      if (!this.isStage(labels[i])) return;
+    // Gate: every prior milestone must already be set. If a prerequisite is
+    // still outstanding (e.g. the Hero content signals readiness before the
+    // lazy atmospheric layers mount), remember the intent instead of
+    // dropping it — otherwise a one-shot mark can deadlock the sequence.
+    //
+    // HeroReady is the intro curtain trigger. It must depend only on the
+    // RENDERER being ready (canvas + first frame), never on the optional
+    // decorative atmospheric layers (particles/lighting). Requiring those
+    // would let the curtain deadlock behind lazy components that may mount
+    // late or be deferred — the Director observes renderer readiness, it
+    // never blocks rendering.
+    const prereqs =
+      milestone === "hero-ready"
+        ? ["canvas-ready", "world-ready"]
+        : labels.slice(0, idx);
+    for (const p of prereqs) {
+      if (!this.isStage(p)) {
+        this.pending.add(milestone);
+        return;
+      }
     }
+    this.pending.delete(milestone);
+    this.setMilestone(milestone, idx);
+    // Re-evaluate any marks that were waiting on this one.
+    this.flushPending(labels);
+  }
 
+  private setMilestone(milestone: string, idx: number) {
     if (milestone in this.flags) {
       (this.flags as Record<string, boolean>)[milestone] = true;
     }
@@ -154,6 +182,31 @@ class Director {
     }
     // Boot complete once the last *boot* milestone (hero-ready) is set.
     if (milestone === "hero-ready") this.ready.set(this.activePhase, true);
+  }
+
+  private flushPending(labels: string[]) {
+    if (this.pending.size === 0) return;
+    // Copy so newly-satisfied marks don't mutate the set mid-iteration.
+    for (const m of Array.from(this.pending)) {
+      const i = labels.indexOf(m);
+      if (i < 0) {
+        this.pending.delete(m);
+        continue;
+      }
+      let satisfied = true;
+      const checkPrereqs =
+        m === "hero-ready" ? ["canvas-ready", "world-ready"] : labels.slice(0, i);
+      for (const p of checkPrereqs) {
+        if (!this.isStage(p)) {
+          satisfied = false;
+          break;
+        }
+      }
+      if (satisfied) {
+        this.pending.delete(m);
+        this.setMilestone(m, i);
+      }
+    }
   }
 
   /** Manual content-beat advance (Hero: headline -> cta -> scroll-hint). */

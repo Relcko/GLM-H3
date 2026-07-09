@@ -36,9 +36,9 @@ export default function Chapter05() {
             Wealth, compounded.
           </h2>
 
-          <Reveal className="max-w-sm text-balance text-sm leading-relaxed text-white/50">
-            Real estate returns, without the friction. Distributions settle
-            automatically. Your portfolio, live on-chain.
+          <Reveal className="max-w-[20rem] text-balance text-sm leading-relaxed text-white/50">
+            Real estate returns, without the friction. Your portfolio,
+            live on-chain.
           </Reveal>
 
           {/* Stat cards */}
@@ -135,33 +135,25 @@ function TradingChart() {
     return () => clearInterval(id);
   }, []);
 
-  // Y-axis grid values
-  const minP = Math.min(...pts);
-  const maxP = Math.max(...pts);
-  const gridVals = [0, 0.25, 0.5, 0.75, 1].map((f) =>
-    (minP + (maxP - minP) * f).toFixed(0)
-  );
-
   return (
-    <div className="glass rounded-2xl overflow-hidden">
+    <div className="glass-strong rounded-3xl overflow-hidden border border-white/[0.06]">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
+      <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white/40" />
+          <span className="text-xs font-medium tracking-wide text-white/55">
+            Portfolio · 5-year projection
           </span>
-          <span className="text-xs font-medium text-white/60">Portfolio · 5-year projection</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[0.6rem] text-white/30">RLKO/USD</span>
-          <span className="font-mono text-xs font-medium text-success">+74.8%</span>
+          <span className="font-mono text-[0.6rem] text-white/25">RLKO/USD</span>
+          <span className="font-mono text-xs font-medium text-white/75">+74.8%</span>
         </div>
       </div>
 
       {/* Chart */}
       <div
-        className="relative px-1 pb-1"
+        className="relative px-2 pb-2"
         onMouseLeave={() => setHoverIdx(null)}
       >
         <svg
@@ -169,7 +161,7 @@ function TradingChart() {
           viewBox={`0 0 ${W} ${H}`}
           preserveAspectRatio="none"
           className="w-full"
-          style={{ height: 120 }}
+          style={{ height: 124 }}
           onMouseMove={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
             const xRel = ((e.clientX - rect.left) / rect.width) * W;
@@ -183,58 +175,39 @@ function TradingChart() {
           }}
         >
           <defs>
+            {/* Monochrome area + line — no chroma, just light. */}
             <linearGradient id="chartGrad" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#00D4FF" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="#00D4FF" stopOpacity="0" />
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.10" />
+              <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
             </linearGradient>
             <linearGradient id="lineGrad" x1="0" x2="1" y1="0" y2="0">
-              <stop offset="0%" stopColor="#0057FF" />
-              <stop offset="100%" stopColor="#00D4FF" />
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="#ffffff" stopOpacity="0.95" />
             </linearGradient>
+            {/* Very faint line softness — a hint of glow, not bloom. */}
             <filter id="glow">
-              <feGaussianBlur stdDeviation="2" result="blur" />
+              <feGaussianBlur stdDeviation="1" result="blur" />
               <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
           </defs>
 
-          {/* Y-axis grid lines */}
-          {gridVals.map((_, i) => {
-            const y = PAD.top + CH - (i / 4) * CH;
-            return (
-              <line
-                key={i}
-                x1={PAD.left} y1={y}
-                x2={PAD.left + CW} y2={y}
-                stroke="rgba(255,255,255,0.04)"
-                strokeWidth="0.5"
-              />
-            );
-          })}
+          {/* Single baseline rule — architectural, minimal */}
+          <line
+            x1={PAD.left} y1={PAD.top + CH}
+            x2={PAD.left + CW} y2={PAD.top + CH}
+            stroke="rgba(255,255,255,0.07)"
+            strokeWidth="0.5"
+          />
 
-          {/* Y-axis labels */}
-          {gridVals.map((v, i) => (
-            <text
-              key={i}
-              x={PAD.left - 4}
-              y={PAD.top + CH - (i / 4) * CH + 3}
-              textAnchor="end"
-              fontSize="6"
-              fill="rgba(255,255,255,0.2)"
-              fontFamily="monospace"
-            >
-              {v}
-            </text>
-          ))}
-
-          {/* X-axis year labels */}
+          {/* X-axis year labels — quiet, monochrome */}
           {YEAR_LABELS.map((yr, i) => (
             <text
               key={yr}
               x={PAD.left + (i / (YEAR_LABELS.length - 1)) * CW}
-              y={H - 6}
+              y={H - 5}
               textAnchor="middle"
               fontSize="6"
-              fill="rgba(255,255,255,0.2)"
+              fill="rgba(255,255,255,0.22)"
               fontFamily="monospace"
             >
               {yr}
@@ -244,7 +217,7 @@ function TradingChart() {
           {/* Area fill */}
           <path d={areaPath} fill="url(#chartGrad)" />
 
-          {/* Line — draw animation via strokeDashoffset */}
+          {/* Line — draw-on animation via strokeDashoffset */}
           <path
             ref={pathRef}
             d={linePath}
@@ -260,34 +233,33 @@ function TradingChart() {
             }}
           />
 
-          {/* Hover crosshair */}
+          {/* Hover crosshair — monochrome, restrained */}
           {hCoord && (
             <>
               <line
                 x1={hCoord.x} y1={PAD.top}
                 x2={hCoord.x} y2={PAD.top + CH}
-                stroke="rgba(255,255,255,0.12)"
+                stroke="rgba(255,255,255,0.16)"
                 strokeWidth="0.5"
                 strokeDasharray="2 2"
               />
-              <circle cx={hCoord.x} cy={hCoord.y} r="3" fill="#00D4FF" opacity="0.9" />
-              <circle cx={hCoord.x} cy={hCoord.y} r="5" fill="none" stroke="#00D4FF" strokeWidth="0.8" opacity="0.4" />
-              {/* Hover value bubble */}
+              <circle cx={hCoord.x} cy={hCoord.y} r="3" fill="#ffffff" opacity="0.95" />
+              <circle cx={hCoord.x} cy={hCoord.y} r="5.5" fill="none" stroke="#ffffff" strokeWidth="0.7" opacity="0.35" />
               <rect
-                x={Math.min(hCoord.x - 14, PAD.left + CW - 28)}
-                y={hCoord.y - 16}
-                width="28" height="11"
+                x={Math.min(hCoord.x - 13, PAD.left + CW - 26)}
+                y={hCoord.y - 15}
+                width="26" height="10"
                 rx="3"
-                fill="rgba(0,212,255,0.15)"
-                stroke="rgba(0,212,255,0.3)"
+                fill="rgba(255,255,255,0.10)"
+                stroke="rgba(255,255,255,0.22)"
                 strokeWidth="0.5"
               />
               <text
-                x={Math.min(hCoord.x, PAD.left + CW - 14)}
+                x={Math.min(hCoord.x, PAD.left + CW - 13)}
                 y={hCoord.y - 8}
                 textAnchor="middle"
                 fontSize="5.5"
-                fill="#00D4FF"
+                fill="rgba(255,255,255,0.85)"
                 fontFamily="monospace"
               >
                 {pts[hoverIdx!].toFixed(1)}
@@ -295,14 +267,11 @@ function TradingChart() {
             </>
           )}
 
-          {/* Live tip dot */}
+          {/* Live tip — a quiet white point, no pulsing ring */}
           {!hCoord && (
             <>
-              <circle cx={tip.x} cy={tip.y} r="2.5" fill="#00D4FF" filter="url(#glow)" />
-              <circle cx={tip.x} cy={tip.y} r="5" fill="none" stroke="#00D4FF" strokeWidth="0.6" opacity="0.4">
-                <animate attributeName="r" values="4;8;4" dur="2s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite" />
-              </circle>
+              <circle cx={tip.x} cy={tip.y} r="2.5" fill="#ffffff" filter="url(#glow)" />
+              <circle cx={tip.x} cy={tip.y} r="5" fill="none" stroke="#ffffff" strokeWidth="0.5" opacity="0.3" />
             </>
           )}
         </svg>

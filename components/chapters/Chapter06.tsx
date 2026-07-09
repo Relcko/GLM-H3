@@ -48,7 +48,7 @@ export default function Chapter06() {
           <ScrubbedReveal
             progress={progress}
             range={[0.12, 0.3]}
-            className="max-w-sm text-balance text-sm leading-relaxed text-white/50"
+            className="max-w-[20rem] text-balance text-sm leading-relaxed text-white/50"
           >
             A single platform. Every tool to acquire, govern and exit. Woven
             together — elegantly, securely.

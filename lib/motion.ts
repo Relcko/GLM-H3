@@ -254,29 +254,35 @@ export const HERO = {
 export const CAMERA = {
   /** Damping lambda for the frame-index settle (frame-rate independent). */
   FRAME_LAMBDA: 11,
-  /** Idle depth-breathing amplitude (subtle, never perceived as motion). */
-  BREATHE: 0.004,
   /** Velocity push-back: fast scroll eases the camera out (weight). */
   VELOCITY_PUSHBACK: 0.014,
-  /** Idle two-sine drift amplitude (keeps the world alive when paused). */
-  IDLE_DRIFT_A: 0.1,
-  IDLE_DRIFT_B: 0.06,
 
   // --- Continuous journey gestures (all f(journeyProgress)) ---
+  // Deliberate, film-like moves: slower oscillation, a touch more crane so
+  // the structure is discovered from below, and a gentler finale pull-back
+  // so the building stays intimate through the bright white finale. The
+  // per-beat VISUAL_BEATS table layers emotional composition on top of this
+  // continuous base (see sampleVisualBeat) without any chapter branching.
   /** Slow continuous dolly: gentle push-in early, slight pull-back to finale. */
-  DOLLY_AMOUNT: 0.06,
-  DOLLY_PULLBACK: 0.04,
+  DOLLY_AMOUNT: 0.05,
+  DOLLY_PULLBACK: 0.02,
   /** One gentle orbit arc across the journey (left → right). No per-chapter snap. */
-  ORBIT_AMOUNT: 0.014,
+  ORBIT_AMOUNT: 0.012,
   /** Faint continuous crane rise across the journey (discovery from below). */
-  CRANE_AMOUNT: 0.02,
+  CRANE_AMOUNT: 0.04,
   /** Tiny tilt bias, continuous. */
   TILT_AMOUNT: 0.006,
   /** Slow orbit/crane oscillation rate (radians/sec) — barely perceptible. */
-  GESTURE_RATE: 0.12,
-  /** Mouse parallax strength (X stronger, Y subtler) — decoupled from camera. */
-  PARALLAX_X: 26,
-  PARALLAX_Y: 14,
+  GESTURE_RATE: 0.08,
+  /** Idle depth-breathing — kept minimal so the monument feels weighty/static. */
+  BREATHE: 0.0025,
+  /** Idle two-sine drift amplitude — reduced so the world doesn't float. */
+  IDLE_DRIFT_A: 0.06,
+  IDLE_DRIFT_B: 0.04,
+  /** Mouse parallax strength (X stronger, Y subtler) — decoupled from camera.
+   *  Slightly reduced so the building stays anchored and monumental. */
+  PARALLAX_X: 20,
+  PARALLAX_Y: 10,
   PARALLAX_LAMBDA: 8,
 } as const;
 
@@ -288,8 +294,11 @@ export const CAMERA = {
  * many, an entire skyline) are pure config — the renderer stays agnostic.
  */
 export const WORLD = {
-  /** Frame fit overscan so the subject always fills the frame. */
-  FIT_OVSCAN: 1.05,
+  /** Frame fit overscan — generous so the subject always fills the frame and
+   *  the per-beat compose-scale (monumental ↔ expansive) has room to breathe.
+   *  The per-beat offset is clamped to the effective overscan margin so no
+   *  hard edge is ever revealed. */
+  FIT_OVSCAN: 1.12,
   /**
    * Discovery: how "close" the camera feels as a function of progress.
    * 0 = far silhouette, 1 = intimate detail. Drives physically-motivated
@@ -305,8 +314,8 @@ export const WORLD = {
   WINDOW_REVEAL: 0.3,
   /** Crown/roof detail is discovered only near the end (final approach). */
   ROOF_REVEAL: 0.9,
-  /** Maximum alpha for any discovery layer — kept极低 so it reads as lit, not VFX. */
-  DISCOVERY_ALPHA: 0.1,
+  /** Maximum alpha for any discovery layer — kept low so it reads as lit, not VFX. */
+  DISCOVERY_ALPHA: 0.09,
   /** Imperceptible interior "breath" amplitude (reads as occupied, not pulsing). */
   BREATH_AMPLITUDE: 0.03,
   BREATH_RATE: 0.18,
@@ -328,4 +337,91 @@ export function remapClamp(
 ): number {
   const t = (v - vMin) / (vMax - vMin);
   return tMin + (tMax - tMin) * Math.max(0, Math.min(1, t));
+}
+
+/**
+ * VISUAL_BEATS — the emotional storyboard of the experience.
+ *
+ * One beat per page section, in progress order. The page maps beats to its
+ * chapters 1:1; the RENDERING SYSTEM NEVER SEES CHAPTER IDENTITY. It only
+ * ever samples this table by continuous journey `progress` (see
+ * sampleVisualBeat) and applies the numeric fields. No chapter name, no
+ * chapter index, no branching — purely a function of progress.
+ *
+ * Each beat carries the four cinematic dimensions plus pacing:
+ *   emotion      — what the visitor should feel (documentation / intent)
+ *   camera       — the felt camera move (documentation / intent)
+ *   lighting     — the felt light (documentation / intent)
+ *   composition  — the felt framing (documentation / intent)
+ *   scale        — compose-scale: >1 monumental (tight), <1 expansive (wide)
+ *   offX         — horizontal bias (fraction of width): - left third, + right
+ *   offY         — vertical bias (fraction of height): + drops subject (low-angle sky)
+ *   light        — 0 cool moonlight → 1 bright clean white (tints discovery/vignette)
+ *   pace         — gesture/breath feel (pacing): lower = stiller/more deliberate
+ *
+ * The story it tells: Arrival (monumental, low-angle, cool) → Discovery →
+ * Trust/Ownership/Marketplace (steady, balanced, neutral-premium) → Vision/
+ * Reveal (expansive, bright white). One unbroken emotional progression.
+ */
+export interface VisualBeat {
+  emotion: string;
+  camera: string;
+  lighting: string;
+  composition: string;
+  /** compose-scale: >1 monumental, <1 expansive. */
+  scale: number;
+  /** horizontal bias (fraction of width): negative = left third. */
+  offX: number;
+  /** vertical bias (fraction of height): positive = subject dropped (low-angle). */
+  offY: number;
+  /** 0 cool moonlight → 1 bright clean white. */
+  light: number;
+  /** pacing feel: lower = stiller / more deliberate. */
+  pace: number;
+}
+
+export const VISUAL_BEATS: VisualBeat[] = [
+  // Beat 1 — Arrival: monumental, low-angle, cool moonlight.
+  { emotion: "Arrival",     camera: "Low angle",     lighting: "Cool moonlight",     composition: "Monumental", scale: 1.06, offX: -0.045, offY: 0.05,  light: 0.0,  pace: 0.7 },
+  // Beat 2 — Discovery: rising from below, still monumental.
+  { emotion: "Discovery",   camera: "Rising",        lighting: "Cool moonlight",     composition: "Monumental", scale: 1.05, offX: -0.04,  offY: 0.04,  light: 0.05, pace: 0.8 },
+  // Beat 3 — Trust: eye-level, balanced, clean architectural.
+  { emotion: "Trust",       camera: "Eye level",     lighting: "Clean architectural", composition: "Balanced",   scale: 1.0,  offX: -0.015, offY: 0.0,   light: 0.2,  pace: 1.0 },
+  // Beat 4 — Ownership: gentle push-in, balanced.
+  { emotion: "Ownership",   camera: "Push-in",       lighting: "Neutral premium",    composition: "Balanced",   scale: 1.02, offX: 0.0,    offY: 0.0,   light: 0.35, pace: 0.9 },
+  // Beat 5 — Confidence (Marketplace): eye-level, neutral premium.
+  { emotion: "Confidence",  camera: "Eye level",     lighting: "Neutral premium",    composition: "Balanced",   scale: 1.0,  offX: 0.0,    offY: 0.0,   light: 0.4,  pace: 1.0 },
+  // Beat 6 — Belonging: soft orbit, open.
+  { emotion: "Belonging",   camera: "Soft orbit",    lighting: "Cool neutral",       composition: "Open",       scale: 0.98, offX: 0.02,   offY: 0.01,  light: 0.5,  pace: 1.1 },
+  // Beat 7 — Vision (Future): wide reveal, expansive, bright white.
+  { emotion: "Vision",      camera: "Wide reveal",   lighting: "Bright white",       composition: "Expansive",  scale: 0.9,  offX: 0.03,   offY: 0.02,  light: 0.8,  pace: 1.2 },
+  // Beat 8 — Ascent (Reveal): rising wide, expansive, bright clean white.
+  { emotion: "Ascent",      camera: "Rising wide",   lighting: "Bright clean white", composition: "Expansive",  scale: 0.92, offX: 0.025,  offY: 0.03,  light: 1.0,  pace: 1.15 },
+];
+
+/**
+ * Sample the visual-beat storyboard by continuous progress (0..1).
+ * Pure interpolation between adjacent beats — no chapter lookup, no state,
+ * no branching. Returns the felt numeric intent the renderer applies.
+ */
+export function sampleVisualBeat(p: number): VisualBeat {
+  const n = VISUAL_BEATS.length;
+  const x = Math.max(0, Math.min(1, p)) * (n - 1);
+  const i = Math.floor(x);
+  const j = Math.min(n - 1, i + 1);
+  const f = smoothstep(x - i);
+  const a = VISUAL_BEATS[i];
+  const b = VISUAL_BEATS[j];
+  const mix = (u: number, v: number) => u + (v - u) * f;
+  return {
+    emotion: f < 0.5 ? a.emotion : b.emotion,
+    camera: f < 0.5 ? a.camera : b.camera,
+    lighting: f < 0.5 ? a.lighting : b.lighting,
+    composition: f < 0.5 ? a.composition : b.composition,
+    scale: mix(a.scale, b.scale),
+    offX: mix(a.offX, b.offX),
+    offY: mix(a.offY, b.offY),
+    light: mix(a.light, b.light),
+    pace: mix(a.pace, b.pace),
+  };
 }

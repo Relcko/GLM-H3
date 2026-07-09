@@ -44,7 +44,7 @@ export default function Footer() {
           >
             <SplitWords text="The door is open." />
           </motion.h2>
-          <p className="mt-6 max-w-sm text-balance text-sm leading-relaxed text-white/90">
+          <p className="mt-6 max-w-[20rem] text-balance text-sm leading-relaxed text-white/90">
             Limited tokens. Founding allocation. Be among the first 5,000
             owners of the Relcko flagship.
           </p>
