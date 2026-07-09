@@ -16,14 +16,10 @@ const HEADLINE_LINES = [
 ];
 
 export default function Chapter01() {
-  // Local content beat, derived from the Director's milestone stage.
-  const [beat, setBeat] = useState(() => {
-    const d = getDirector();
-    if (d.isStage("scroll-hint")) return 3;
-    if (d.isStage("cta")) return 2;
-    if (d.isStage("headline")) return 1;
-    return 0;
-  });
+  // Local content beat, synced from the Director's milestone stage.
+  // Starts at 0 on both server and client (no Director read during render)
+  // to avoid hydration mismatch; the subscription advances it per stage.
+  const [beat, setBeat] = useState(0);
 
   useEffect(() => {
     const d = getDirector();

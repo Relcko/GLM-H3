@@ -63,9 +63,10 @@ const MouseParallax = dynamic(() => import("@/components/MouseParallax"), { ssr:
 
 export default function Home() {
   // Stage 5: once the Hero is ready, lift the black intro curtain.
-  // Initialized lazily from the Director so reduced-motion/cached states
-  // are correct on first paint; updated only via the subscription callback.
-  const [heroReady, setHeroReady] = useState(() => getDirector().isHeroReady());
+  // Starts "not ready" on both server and client (no Director read during
+  // render) to avoid hydration mismatch; the subscription flips it when the
+  // Director marks the Hero ready. No synchronous setState in the effect.
+  const [heroReady, setHeroReady] = useState(false);
 
   useEffect(() => {
     const director = getDirector();

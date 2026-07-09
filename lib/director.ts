@@ -263,12 +263,12 @@ const SSR_DIRECTOR = {
   onPhaseChange: () => () => {},
   markReady: () => {},
   advanceStage: () => {},
-  currentStage: () => 8,
-  isStage: () => true,
-  isCanvasReady: () => true,
-  isWorldReady: () => true,
-  isHeroReady: () => true,
-  trackProgress: () => 1,
+  currentStage: () => 0,
+  isStage: () => false,
+  isCanvasReady: () => false,
+  isWorldReady: () => false,
+  isHeroReady: () => false,
+  trackProgress: () => 0,
   subscribe: () => () => {},
 } as unknown as Director;
 
