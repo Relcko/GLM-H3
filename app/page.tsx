@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 import SmoothScroll from "@/components/SmoothScroll";
 import CinematicCanvas from "@/components/CinematicCanvas";
 import ScrollProgress from "@/components/ScrollProgress";
@@ -10,6 +11,8 @@ import ChapterRail from "@/components/ChapterRail";
 import Chapter01 from "@/components/chapters/Chapter01";
 import Chapter02 from "@/components/chapters/Chapter02";
 import { Z } from "@/lib/tokens";
+import { getDirector } from "@/lib/director";
+import { EASE_DIRECTOR, HERO } from "@/lib/motion";
 
 /**
  * Home — Phase 5.
@@ -59,9 +62,35 @@ const SectionTransition = dynamic(() => import("@/components/SectionTransition")
 const MouseParallax = dynamic(() => import("@/components/MouseParallax"), { ssr: false });
 
 export default function Home() {
+  // Stage 5: once the Hero is ready, lift the black intro curtain.
+  // Initialized lazily from the Director so reduced-motion/cached states
+  // are correct on first paint; updated only via the subscription callback.
+  const [heroReady, setHeroReady] = useState(() => getDirector().isHeroReady());
+
+  useEffect(() => {
+    const director = getDirector();
+    const unsub = director.subscribe(() => {
+      if (director.isHeroReady()) setHeroReady(true);
+    });
+    return unsub;
+  }, []);
+
   return (
     <>
       <SmoothScroll />
+
+      {/* Black intro curtain — lifts once the Hero is ready (Stage 5).
+          Opacity-only transition, no layout/paint beyond compositing. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0"
+        style={{
+          zIndex: Z.loader,
+          background: "#050505",
+          opacity: heroReady ? 0 : HERO.CURTAIN_OPACITY,
+          transition: `opacity ${HERO.CURTAIN_FADE}s cubic-bezier(${EASE_DIRECTOR[0]},${EASE_DIRECTOR[1]},${EASE_DIRECTOR[2]},${EASE_DIRECTOR[3]})`,
+        }}
+      />
 
       {/* World layer (background) */}
       <CinematicCanvas />
