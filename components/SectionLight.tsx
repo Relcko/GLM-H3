@@ -4,7 +4,8 @@ import { useEffect, useRef } from "react";
 import { Z } from "@/lib/tokens";
 import { CHAPTERS } from "@/lib/chapters";
 import { getScrollStore } from "@/lib/scroll";
-import { damp } from "@/lib/motion";
+import { getDirector } from "@/lib/director";
+import { damp, HERO } from "@/lib/motion";
 
 /**
  * SectionLight — Phase 2.
@@ -44,6 +45,8 @@ export default function SectionLight() {
     let curA = 0;
     let curX = 30, curY = 42;       // key light position (%)
     let curFx = 70, curFy = 30;     // fill light position (%)
+    // Director-gated reveal: key light fades in with the lighting track.
+    let lightGate = 0;
 
     let lastT = performance.now();
 
@@ -78,6 +81,9 @@ export default function SectionLight() {
         const tb = b / totalWeight;
         // Intensity with a subtle velocity flicker (exposure compensation).
         const ta = Math.min(0.2, maxIntensity * 0.24 * (1 + v * 0.18));
+        // Fade in with the Director lighting track (Stage >= 4).
+        lightGate = damp(lightGate, getDirector().trackProgress("hero", "lighting"), HERO.LAYER_RAMP, dt);
+        const taGated = ta * lightGate;
 
         // Key light travels left→right across the journey and arcs up
         // in the middle (sun passing overhead). Fill light mirrors it.
@@ -91,7 +97,7 @@ export default function SectionLight() {
         curR = damp(curR, tr, lc, dt);
         curG = damp(curG, tg, lc, dt);
         curB = damp(curB, tb, lc, dt);
-        curA = damp(curA, ta, 6, dt);
+        curA = damp(curA, taGated, 6, dt);
         curX = damp(curX, tx, lc, dt);
         curY = damp(curY, ty, lc, dt);
         curFx = damp(curFx, tfx, lc, dt);

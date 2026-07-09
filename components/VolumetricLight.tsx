@@ -3,7 +3,8 @@
 import { useEffect, useRef } from "react";
 import { Z } from "@/lib/tokens";
 import { getScrollStore } from "@/lib/scroll";
-import { damp } from "@/lib/motion";
+import { getDirector } from "@/lib/director";
+import { damp, HERO } from "@/lib/motion";
 
 /**
  * VolumetricLight — Phase 4.
@@ -33,6 +34,12 @@ export default function VolumetricLight() {
     let running = true;
     let lastT = performance.now();
 
+    // Stage 4: lighting rig initialized — signal the Director.
+    getDirector().markReady("lighting-ready");
+
+    // Director-gated intensity: god-rays appear with the lighting track.
+    let volAlpha = 0;
+
     // dt-damped position (matches SectionLight's key-light arc).
     let curX = 30, curY = 42;
     let curA = 0;
@@ -51,9 +58,13 @@ export default function VolumetricLight() {
       // Intensity: gentle baseline + a hair of exposure on scroll.
       const ta = Math.min(0.06, 0.04 + v * 0.02);
 
+      // Fade the whole layer in with the Director lighting track.
+      const targetVol = getDirector().trackProgress("hero", "lighting");
+      volAlpha = damp(volAlpha, targetVol, HERO.LAYER_RAMP, dt);
+
       curX = damp(curX, tx, 5, dt);
       curY = damp(curY, ty, 5, dt);
-      curA = damp(curA, ta, 4, dt);
+      curA = damp(curA, ta * volAlpha, 4, dt);
 
       if (ref.current) {
         // Two soft shafts: a wide radial halo + a narrow conic ray fan
