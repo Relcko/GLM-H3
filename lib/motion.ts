@@ -183,3 +183,59 @@ export function dampWeighted(
   const lambda = lambdaSlow + (lambdaFast - lambdaSlow) * Math.min(1, velocity);
   return damp(current, target, lambda, dt);
 }
+
+/**
+ * Director easing — a slow, luxurious ease used for milestone-driven
+ * cinematic reveals (curtain fade, headline wipe, dolly settle). Long
+ * tail so motion "rests" rather than stopping. Keep all Director timing
+ * values in the HERO constant block below — never inline literals.
+ */
+export const EASE_DIRECTOR = [0.16, 1, 0.3, 1] as const;
+
+/**
+ * HERO phase — shared cinematic constants for the milestone Director.
+ *
+ * All durations are in SECONDS. All magnitudes are unitless multipliers
+ * or normalized offsets. Every value here is consumed by the Director
+ * and the existing layers so no animation hard-codes a magic number.
+ *
+ * Milestone stages (ordinal, event-driven — never time-elapsed):
+ *   0 App Mounted
+ *   1 Canvas Ready
+ *   2 First Frame Rendered (World Ready)
+ *   3 Particles Initialized
+ *   4 Lighting Initialized
+ *   5 Hero Ready
+ *   6 Headline Reveal
+ *   7 CTA Reveal
+ *   8 Scroll Hint
+ */
+export const HERO = {
+  /** Black curtain fade-out once Hero is ready (Stage 5). */
+  CURTAIN_FADE: 1.1,
+  /** Opacity ceiling for the black intro curtain. */
+  CURTAIN_OPACITY: 1,
+  /** Per-stage reveal ramp rates (dt-damping lambda) for layer opacity. */
+  LAYER_RAMP: 6,
+  /** Camera dolly: max scale added during the Hero push-in (Stage 5+). */
+  DOLLY_SCALE: 0.05,
+  /** Camera orbit/tilt: max normalized offset drift (fraction of frame). */
+  ORBIT_DRIFT: 0.012,
+  /** Camera orbit/tilt oscillation rate (radians/sec). */
+  ORBIT_RATE: 0.16,
+  /** Headline per-word reveal stagger (seconds between words). */
+  HEADLINE_STAGGER: 0.12,
+  /** Headline reveal duration (seconds). */
+  HEADLINE_DURATION: 1.1,
+  /** CTA reveal delay after headline completes (seconds). */
+  CTA_DELAY: 0.35,
+  /** CTA reveal duration (seconds). */
+  CTA_DURATION: 0.9,
+  /** Scroll-hint reveal delay after CTA (seconds). */
+  SCROLL_HINT_DELAY: 0.5,
+  /** Scroll-hint reveal duration (seconds). */
+  SCROLL_HINT_DURATION: 1.0,
+  /** Background layer base opacities (re-used so layers stay consistent). */
+  PARTICLES_OPACITY: 0.55,
+  ATMOSPHERE_OPACITY: 0.72,
+} as const;
