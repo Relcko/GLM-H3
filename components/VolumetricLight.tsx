@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { Z } from "@/lib/tokens";
 import { getScrollStore } from "@/lib/scroll";
 import { getDirector } from "@/lib/director";
-import { damp, HERO } from "@/lib/motion";
+import { damp, smootherstep, HERO } from "@/lib/motion";
 
 /**
  * VolumetricLight — Phase 4.
@@ -66,15 +66,22 @@ export default function VolumetricLight() {
       curY = damp(curY, ty, 5, dt);
       curA = damp(curA, ta * volAlpha, 4, dt);
 
+      // Continuous mood: god-rays drift from cool white to a faint warm
+      // near the finale (clean futuristic white). Subtle, journey-driven.
+      const mood = smootherstep(store.getCamera());
+      const hr = Math.round(255 - mood * 18);
+      const hg = Math.round(255 - mood * 4);
+      const hb = Math.round(255 - mood * 36);
+
       if (ref.current) {
         // Two soft shafts: a wide radial halo + a narrow conic ray fan
         // from the key light. Both screen-blended.
         ref.current.style.opacity = curA.toFixed(3);
         ref.current.style.background = [
           // Wide soft halo at the light source
-          `radial-gradient(ellipse 70% 90% at ${curX.toFixed(1)}% ${curY.toFixed(1)}%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.08) 35%, transparent 70%)`,
+          `radial-gradient(ellipse 70% 90% at ${curX.toFixed(1)}% ${curY.toFixed(1)}%, rgba(${hr},${hg},${hb},0.5) 0%, rgba(${hr},${hg},${hb},0.08) 35%, transparent 70%)`,
           // Narrow god-ray fan (conic) emanating downward
-          `conic-gradient(from 200deg at ${curX.toFixed(1)}% ${(curY - 4).toFixed(1)}%, transparent 0deg, rgba(255,255,255,0.18) 8deg, transparent 16deg, transparent 40deg, rgba(255,255,255,0.12) 48deg, transparent 56deg, transparent 360deg)`,
+          `conic-gradient(from 200deg at ${curX.toFixed(1)}% ${(curY - 4).toFixed(1)}%, transparent 0deg, rgba(${hr},${hg},${hb},0.18) 8deg, transparent 16deg, transparent 40deg, rgba(${hr},${hg},${hb},0.12) 48deg, transparent 56deg, transparent 360deg)`,
         ].join(", ");
       }
       raf = requestAnimationFrame(tick);

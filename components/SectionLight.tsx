@@ -5,7 +5,7 @@ import { Z } from "@/lib/tokens";
 import { CHAPTERS } from "@/lib/chapters";
 import { getScrollStore } from "@/lib/scroll";
 import { getDirector } from "@/lib/director";
-import { damp, HERO } from "@/lib/motion";
+import { damp, smootherstep, HERO } from "@/lib/motion";
 
 /**
  * SectionLight — Phase 2.
@@ -103,8 +103,19 @@ export default function SectionLight() {
         curFx = damp(curFx, tfx, lc, dt);
         curFy = damp(curFy, tfy, lc, dt);
 
+        // Continuous lighting mood: a subtle, journey-long warm shift
+        // (cool moonlight → neutral → soft gold → clean futuristic white).
+        // Driven purely by journeyProgress so it never snaps at a chapter
+        // boundary. Capped small so it reads as mood, not a recolor.
+        const j = store.getCamera();
+        const mood = smootherstep(j); // 0 cool → 1 warm/white
+        const warm = (1 - mood) * 10 - mood * 6;  // cool tint early, warm late
+        const wr = curR + warm * 2.2;
+        const wg = curG + warm * 1.0;
+        const wb = curB - warm * 2.6;
+
         if (layerRef.current) {
-          const cr = curR | 0, cg = curG | 0, cb = curB | 0;
+          const cr = wr | 0, cg = wg | 0, cb = wb | 0;
           // Fill is a cooler, dimmer version of the key color.
           const fr = (cr * 0.7 + 60) | 0;
           const fg = (cg * 0.8 + 80) | 0;
