@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Cormorant_Garamond, JetBrains_Mono } from "next/font/google";
+import "@rainbow-me/rainbowkit/styles.css";
 import "./globals.css";
+import Providers from "./providers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -206,7 +208,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased bg-bg-base text-white grain vignette">
         <a href="#top" className="skip-link">Skip to content</a>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

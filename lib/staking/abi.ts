@@ -1,0 +1,118 @@
+export const STAKING_ABI = [
+  {
+    type: "function",
+    name: "stake",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "amount", type: "uint256" },
+      { name: "plan", type: "uint256" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "claim",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "index", type: "uint256" }],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "emergencyWithdraw",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "index", type: "uint256" }],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "getAllPlans",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [
+      { name: "durations", type: "uint256[]" },
+      { name: "returns", type: "uint256[]" },
+    ],
+  },
+  {
+    type: "function",
+    name: "getStakesOfUser",
+    stateMutability: "view",
+    inputs: [{ name: "user", type: "address" }],
+    outputs: [
+      {
+        type: "tuple[]",
+        components: [
+          { name: "user", type: "address" },
+          { name: "amount", type: "uint256" },
+          { name: "totalReturn", type: "uint256" },
+          { name: "planDays", type: "uint256" },
+          { name: "planReturn", type: "uint256" },
+          { name: "stakedOn", type: "uint256" },
+          { name: "maturesOn", type: "uint256" },
+          { name: "claimed", type: "bool" },
+          { name: "emergencyWithdraw", type: "bool" },
+        ],
+      },
+    ],
+  },
+  {
+    type: "function",
+    name: "stakes",
+    stateMutability: "view",
+    inputs: [
+      { name: "user", type: "address" },
+      { name: "index", type: "uint256" },
+    ],
+    outputs: [
+      {
+        type: "tuple",
+        components: [
+          { name: "user", type: "address" },
+          { name: "amount", type: "uint256" },
+          { name: "totalReturn", type: "uint256" },
+          { name: "planDays", type: "uint256" },
+          { name: "planReturn", type: "uint256" },
+          { name: "stakedOn", type: "uint256" },
+          { name: "maturesOn", type: "uint256" },
+          { name: "claimed", type: "bool" },
+          { name: "emergencyWithdraw", type: "bool" },
+        ],
+      },
+    ],
+  },
+  {
+    type: "function",
+    name: "_plans",
+    stateMutability: "view",
+    inputs: [{ name: "index", type: "uint256" }],
+    outputs: [{ name: "duration", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "_returns",
+    stateMutability: "view",
+    inputs: [{ name: "index", type: "uint256" }],
+    outputs: [{ name: "returnPct", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "_withdrawPenalty",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "penalty", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "_token",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "tokenAddr", type: "address" }],
+  },
+  {
+    type: "function",
+    name: "tokenBalanceOf",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "balance", type: "uint256" }],
+  },
+] as const;

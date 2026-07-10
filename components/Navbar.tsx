@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EASE_LUX } from "@/lib/motion";
@@ -14,7 +16,93 @@ const LINKS = [
   { label: "Ecosystem", href: "#chapter-06" },
 ];
 
+function resolveHref(href: string, pathname: string): string {
+  if (pathname !== "/" && href.startsWith("#")) return `/${href}`;
+  return href;
+}
+
+function NavLink({
+  label,
+  href,
+  pathname,
+}: {
+  label: string;
+  href: string;
+  pathname: string;
+}) {
+  const resolved = resolveHref(href, pathname);
+  if (pathname === "/presale") {
+    return (
+      <Link
+        href={resolved}
+        className="group relative rounded-full px-4 py-2 text-[0.82rem] text-white/65 transition-colors duration-300 hover:text-white"
+      >
+        <span className="relative z-10">{label}</span>
+        <span className="absolute inset-0 scale-90 rounded-full bg-white/[0.05] opacity-0 transition-all duration-400 ease-lux group-hover:scale-100 group-hover:opacity-100" />
+        <span className="absolute inset-x-4 bottom-1 h-px origin-left scale-x-0 bg-gradient-to-r from-accent/40 to-accent-blue/40 transition-transform duration-400 ease-lux group-hover:scale-x-100" />
+      </Link>
+    );
+  }
+  const scroll = (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
+  };
+  return (
+    <a
+      href={href}
+      onClick={scroll}
+      className="group relative rounded-full px-4 py-2 text-[0.82rem] text-white/65 transition-colors duration-300 hover:text-white"
+    >
+      <span className="relative z-10">{label}</span>
+      <span className="absolute inset-0 scale-90 rounded-full bg-white/[0.05] opacity-0 transition-all duration-400 ease-lux group-hover:scale-100 group-hover:opacity-100" />
+      <span className="absolute inset-x-4 bottom-1 h-px origin-left scale-x-0 bg-gradient-to-r from-accent/40 to-accent-blue/40 transition-transform duration-400 ease-lux group-hover:scale-x-100" />
+    </a>
+  );
+}
+
+function MobileNavLink({
+  label,
+  href,
+  pathname,
+  onClick,
+}: {
+  label: string;
+  href: string;
+  pathname: string;
+  onClick?: () => void;
+}) {
+  const resolved = resolveHref(href, pathname);
+  if (pathname === "/presale") {
+    return (
+      <Link
+        href={resolved}
+        onClick={onClick}
+        className="group relative rounded-2xl px-4 py-3 text-sm text-white/70 transition-all duration-300 hover:bg-white/[0.06] hover:text-white"
+      >
+        <span className="relative z-10">{label}</span>
+        <span className="absolute left-4 top-1/2 h-0.5 w-0 -translate-y-1/2 bg-accent/30 transition-all duration-400 ease-lux group-hover:w-6" />
+      </Link>
+    );
+  }
+  const scroll = (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
+    onClick?.();
+  };
+  return (
+    <a
+      href={href}
+      onClick={scroll}
+      className="group relative rounded-2xl px-4 py-3 text-sm text-white/70 transition-all duration-300 hover:bg-white/[0.06] hover:text-white"
+    >
+      <span className="relative z-10">{label}</span>
+      <span className="absolute left-4 top-1/2 h-0.5 w-0 -translate-y-1/2 bg-accent/30 transition-all duration-400 ease-lux group-hover:w-6" />
+    </a>
+  );
+}
+
 export default function Navbar() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -25,11 +113,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const go = (href: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
-    setOpen(false);
-  };
+  const isPresale = pathname === "/presale";
 
   return (
     <>
@@ -39,7 +123,6 @@ export default function Navbar() {
         transition={{ duration: 1, ease: EASE_LUX, delay: 0.3 }}
         className="fixed left-0 top-0 z-[160] w-full"
       >
-        {/* Full-width glass bar */}
         <div
           className={`w-full border-b transition-all duration-700 ease-lux ${
             scrolled
@@ -47,44 +130,50 @@ export default function Navbar() {
               : "border-transparent bg-transparent backdrop-blur-sm"
           }`}
         >
-          {/* Inner row: relative so absolute-centered nav works */}
           <div className="relative mx-auto flex h-16 w-full items-center px-5 sm:px-8 md:px-12 lg:px-16">
-            {/* Logo — flush left */}
-            <a
-              href="#top"
-              onClick={go("#top")}
+            <Link
+              href="/"
               className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-90"
               aria-label="Relcko home"
             >
               <Wordmark />
-            </a>
+            </Link>
 
-            {/* Nav — absolutely centered relative to viewport */}
             <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex">
               {LINKS.map((l) => (
-                <a
-                  key={l.href}
-                  href={l.href}
-                  onClick={go(l.href)}
+                <NavLink key={l.href} label={l.label} href={l.href} pathname={pathname} />
+              ))}
+              {isPresale && (
+                <Link
+                  href="/"
                   className="group relative rounded-full px-4 py-2 text-[0.82rem] text-white/65 transition-colors duration-300 hover:text-white"
                 >
-                  <span className="relative z-10">{l.label}</span>
+                  <span className="relative z-10">Home</span>
                   <span className="absolute inset-0 scale-90 rounded-full bg-white/[0.05] opacity-0 transition-all duration-400 ease-lux group-hover:scale-100 group-hover:opacity-100" />
                   <span className="absolute inset-x-4 bottom-1 h-px origin-left scale-x-0 bg-gradient-to-r from-accent/40 to-accent-blue/40 transition-transform duration-400 ease-lux group-hover:scale-x-100" />
-                </a>
-              ))}
+                </Link>
+              )}
             </nav>
 
-            {/* CTA + hamburger — flush right */}
             <div className="ml-auto flex shrink-0 items-center gap-2">
               <div className="hidden sm:block">
-                <MagneticButton
-                  href="#chapter-08"
-                  variant="primary"
-                  className="!px-5 !py-2.5 !text-xs"
-                >
-                  Invest
-                </MagneticButton>
+                {isPresale ? (
+                  <MagneticButton
+                    href="/"
+                    variant="primary"
+                    className="!px-5 !py-2.5 !text-xs"
+                  >
+                    Home
+                  </MagneticButton>
+                ) : (
+                  <MagneticButton
+                    href="/presale"
+                    variant="primary"
+                    className="!px-5 !py-2.5 !text-xs"
+                  >
+                    Presale
+                  </MagneticButton>
+                )}
               </div>
               <button
                 onClick={() => setOpen((v) => !v)}
@@ -131,16 +220,24 @@ export default function Navbar() {
             >
               <div className="mx-5 mt-20 flex flex-col gap-2 rounded-3xl border border-white/[0.08] bg-bg-base/90 p-3 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.7)] backdrop-blur-2xl sm:mx-8">
                 {LINKS.map((l) => (
-                  <a
+                  <MobileNavLink
                     key={l.href}
+                    label={l.label}
                     href={l.href}
-                    onClick={go(l.href)}
+                    pathname={pathname}
+                    onClick={() => setOpen(false)}
+                  />
+                ))}
+                {isPresale && (
+                  <Link
+                    href="/"
+                    onClick={() => setOpen(false)}
                     className="group relative rounded-2xl px-4 py-3 text-sm text-white/70 transition-all duration-300 hover:bg-white/[0.06] hover:text-white"
                   >
-                    <span className="relative z-10">{l.label}</span>
+                    <span className="relative z-10">Home</span>
                     <span className="absolute left-4 top-1/2 h-0.5 w-0 -translate-y-1/2 bg-accent/30 transition-all duration-400 ease-lux group-hover:w-6" />
-                  </a>
-                ))}
+                  </Link>
+                )}
               </div>
             </motion.div>
           </>

@@ -5,28 +5,28 @@ import { Reveal } from "@/components/Reveal";
 
 const TIMELINE = [
   {
-    q: "Q1",
-    y: "2026",
-    t: "Launch",
-    d: "First flagship building tokenized · 4 markets live",
+    q: "2026",
+    y: "Q3",
+    t: "",
+    d: "Platform Launch, Token Launch & Initial Offering, Strategic Partnerships, Community Building & Awareness",
   },
   {
-    q: "Q3",
-    y: "2026",
-    t: "Liquidity",
-    d: "Secondary market opens · instant token trading",
+    q: "2026",
+    y: "Q6",
+    t: "",
+    d: "Real World SVM Launch, First Real Estate Asset Tokenization, Wallet Integration, Governance Framework Introduction",
   },
   {
-    q: "Q2",
-    y: "2027",
-    t: "Scale",
-    d: "12 developments · 3 continents · $1B AUM",
+    q: "2027",
+    y: "Q3",
+    t: "",
+    d: "Cross-Chain Integration, Advanced AI Advisors, Real Estate Index Fund, Institutional Onboarding",
   },
   {
-    q: "Q4",
-    y: "2028",
-    t: "Sovereign",
-    d: "Sovereign-grade portfolio · AI valuation engine",
+    q: "2028",
+    y: "Q6",
+    t: "",
+    d: "Global Expansion & Regulatory Compliance, AI-Powered Property Insights, Ecosystem Growth & Sustainability Vision 2029 Roadmap",
   },
 ];
 
@@ -40,7 +40,7 @@ export default function Chapter07() {
     >
       <Container>
         <ContentColumn side="right" width="reading">
-          <Reveal className="flex items-center gap-4">
+          <Reveal className="flex items-center gap-4 pl-11">
             <ChapterNumber index="07" />
             <span className="h-px w-10 bg-white/20" />
             <Kicker>Future</Kicker>
@@ -48,33 +48,41 @@ export default function Chapter07() {
 
           <h2
             id="chapter-07-title"
-            className="font-display text-chapter font-light gradient-text text-balance"
+            className="pl-11 font-display text-chapter font-light gradient-text text-balance"
           >
             Scale beyond precedent.
           </h2>
 
-          <Reveal className="max-w-[20rem] text-balance text-sm leading-relaxed text-white/50">
+          <Reveal className="max-w-[30rem] pl-11 text-balance text-sm leading-relaxed text-white/50">
             One building becomes a continent-spanning portfolio. The
             infrastructure for a new asset class.
           </Reveal>
 
-          <div className="relative w-full pt-2 pl-2">
-            <div className="absolute bottom-3 left-0 top-3 w-px bg-gradient-to-b from-transparent via-white/15 to-transparent" />
-            <div className="flex flex-col gap-4">
+          <div className="relative w-full pt-0">
+            {/* Timeline line — aligned to first and last milestones */}
+            <div className="absolute left-[11px] top-4 bottom-4 w-[0.5px] bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+
+            <div className="flex flex-col gap-8">
               {TIMELINE.map((m, i) => (
                 <Reveal key={i} delay={i * 0.08}>
-                  <div className="relative pl-7">
-                    <span className="absolute left-[-5px] top-2 h-2.5 w-2.5 rounded-full bg-accent ring-4 ring-accent/15" />
-                    <div className="group relative overflow-hidden rounded-2xl glass card-interactive p-4">
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono text-sm tabular-nums text-white/60">
+                  <div className="relative ml-3 pl-8">
+                    {/* Dot — first milestone anchors the timeline */}
+                    <span
+                      className={`absolute left-[-4px] top-[22px] h-1.5 w-1.5 rounded-full ring-[2px] ${
+                        i === 0
+                          ? "bg-white/50 ring-white/10"
+                          : "bg-white/20 ring-white/5"
+                      }`}
+                    />
+
+                    {/* Editorial glass strip — almost disappears behind text */}
+                    <div className="bg-black/25 backdrop-blur-2xl shadow-[0_4px_24px_-16px_rgba(0,0,0,0.35)] rounded-lg px-6 py-5 sm:px-7 sm:py-6">
+                      <div className="flex flex-col">
+                        <span className="font-mono text-[0.65rem] tabular-nums text-white/70 tracking-widest uppercase">
                           {m.q} {m.y}
                         </span>
-                        <div className="h-4 w-px bg-white/10" />
-                        <div>
-                          <div className="text-xs font-medium gold-text">{m.t}</div>
-                          <div className="mt-0.5 text-xs text-white/45">{m.d}</div>
-                        </div>
+                        {m.t && <h3 className="mt-2 text-base font-semibold text-white">{m.t}</h3>}
+                        <p className={`text-sm text-white/65 leading-relaxed ${m.t ? "mt-1" : "mt-2"}`}>{m.d}</p>
                       </div>
                     </div>
                   </div>

@@ -15,5 +15,14 @@ prod-out.log
 tsconfig.tsbuildinfo
 next-env.d.ts
 
+# Build artifacts
+dist/
+
+# Archives
+*.zip
+
 # Local tooling
 .opencode/
+
+# Solidity cache
+.oz-cache/

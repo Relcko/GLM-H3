@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 
 // Cache the media query so we don't re-create it every snapshot.
 let finePointerMq: MediaQueryList | null = null;
@@ -29,6 +30,7 @@ function getFinePointerMq(): MediaQueryList | null {
 export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
+  const { connectModalOpen } = useConnectModal();
 
   const finePointer = useSyncExternalStore(
     (cb) => {
@@ -43,16 +45,17 @@ export default function CustomCursor() {
 
   useEffect(() => {
     if (!finePointer) return;
-    document.body.classList.add("custom-cursor");
+    if (!connectModalOpen) {
+      document.body.classList.add("custom-cursor");
+    }
     return () => document.body.classList.remove("custom-cursor");
-  }, [finePointer]);
+  }, [finePointer, connectModalOpen]);
 
   useEffect(() => {
-    if (!finePointer) return;
+    if (!finePointer || connectModalOpen) return;
 
     let mx = window.innerWidth / 2;
     let my = window.innerHeight / 2;
-    // Ring spring state.
     let rx = mx, ry = my;
     let rvx = 0, rvy = 0;
     let raf = 0;
@@ -61,7 +64,6 @@ export default function CustomCursor() {
 
     let hovering = false;
     let clicking = false;
-    // Magnetic snap target.
     let snapEl: HTMLElement | null = null;
     let snapCx = 0, snapCy = 0;
 
@@ -91,19 +93,15 @@ export default function CustomCursor() {
       const dt = Math.max(0.001, Math.min(0.1, (now - lastT) / 1000));
       lastT = now;
 
-      // Refresh snap target center each frame (elements scroll).
       if (snapEl) {
         const r = snapEl.getBoundingClientRect();
         snapCx = r.left + r.width / 2;
         snapCy = r.top + r.height / 2;
       }
 
-      // Ring target: magnetic snap pulls gently toward the element center
-      // when hovering; otherwise follows the cursor exactly.
       const rTargetX = hovering ? mx + (snapCx - mx) * 0.35 : mx;
       const rTargetY = hovering ? my + (snapCy - my) * 0.35 : my;
 
-      // Spring-damped ring (stiffness k, damping c — frame-rate independent).
       const k = 320, c = 28;
       const ax = (rTargetX - rx) * k - rvx * c;
       const ay = (rTargetY - ry) * k - rvy * c;
@@ -120,7 +118,6 @@ export default function CustomCursor() {
         ringRef.current.style.borderColor = hovering
           ? "rgba(0,212,255,0.7)"
           : "rgba(255,255,255,0.3)";
-        // Subtle accent fill on hover — reads as the UI embracing the target.
         ringRef.current.style.background = hovering
           ? "rgba(0,212,255,0.06)"
           : "transparent";
@@ -132,10 +129,7 @@ export default function CustomCursor() {
     const onVisibility = () => {
       if (document.hidden) {
         running = false;
-        if (raf) {
-          cancelAnimationFrame(raf);
-          raf = 0;
-        }
+        if (raf) { cancelAnimationFrame(raf); raf = 0; }
       } else if (!running) {
         running = true;
         lastT = performance.now();
@@ -157,19 +151,17 @@ export default function CustomCursor() {
       window.removeEventListener("mousedown", onDown);
       window.removeEventListener("mouseup", onUp);
     };
-  }, [finePointer]);
+  }, [finePointer, connectModalOpen]);
 
-  if (!finePointer) return null;
+  if (!finePointer || connectModalOpen) return null;
 
-    return (
+  return (
     <div className="pointer-events-none fixed inset-0 z-[300] hidden md:block">
-      {/* Ring — spring-lagged, fills on hover */}
       <div
         ref={ringRef}
         className="absolute left-0 top-0 h-9 w-9 rounded-full border transition-[background,border-color] duration-200"
         style={{ borderColor: "rgba(255,255,255,0.25)" }}
       />
-      {/* Dot — instant, difference blend (always visible) */}
       <div
         ref={dotRef}
         className="absolute left-0 top-0 h-1.5 w-1.5 rounded-full bg-white"

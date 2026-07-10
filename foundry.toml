@@ -1,0 +1,11 @@
+[profile.default]
+src = "contracts"
+test = "test"
+libs = ["lib"]
+solc = "0.8.28"
+
+[fmt]
+line_length = 140
+tab_width = 4
+bracket_spacing = true
+int_types = "long"
