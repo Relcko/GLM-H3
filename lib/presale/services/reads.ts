@@ -15,28 +15,30 @@ import { useReadContract } from "wagmi";
 import { PRESALE_ABI, ERC20_ABI } from "../abi";
 import { getPresaleContract, getPaymentTokens } from "../config";
 
+const LIVE_QUERY = { refetchInterval: 15_000 };
+
 /** Current bonding-curve stage index. */
 export function usePresaleStage(chainId: number) {
   const address = getPresaleContract(chainId) ?? undefined;
-  return useReadContract({ address, abi: PRESALE_ABI, functionName: "currentStage", chainId });
+  return useReadContract({ address, abi: PRESALE_ABI, functionName: "currentStage", chainId, query: LIVE_QUERY });
 }
 
 /** Price of 1 token in quote units (e.g. USDT), scaled by token decimals. */
 export function useTokenPrice(chainId: number) {
   const address = getPresaleContract(chainId) ?? undefined;
-  return useReadContract({ address, abi: PRESALE_ABI, functionName: "tokenPrice", chainId });
+  return useReadContract({ address, abi: PRESALE_ABI, functionName: "tokenPrice", chainId, query: LIVE_QUERY });
 }
 
 /** Remaining token supply in the current allocation. */
 export function useTokensRemaining(chainId: number) {
   const address = getPresaleContract(chainId) ?? undefined;
-  return useReadContract({ address, abi: PRESALE_ABI, functionName: "tokensRemaining", chainId });
+  return useReadContract({ address, abi: PRESALE_ABI, functionName: "tokensRemaining", chainId, query: LIVE_QUERY });
 }
 
 /** Total raised amount in the quote token. */
 export function useTotalRaised(chainId: number) {
   const address = getPresaleContract(chainId) ?? undefined;
-  return useReadContract({ address, abi: PRESALE_ABI, functionName: "totalRaised", chainId });
+  return useReadContract({ address, abi: PRESALE_ABI, functionName: "totalRaised", chainId, query: LIVE_QUERY });
 }
 
 /** The connected user's contributed amount (quote units). */
@@ -82,6 +84,23 @@ export function useTokenBalance(
     args: owner ? [owner] : undefined,
     chainId,
     query: { enabled: !!tokenAddress && !!owner },
+  });
+}
+
+/** Preview a purchase: returns (usdtAmount, tokenAmount, stage, remainingSupply). */
+export function usePreviewPurchase(
+  chainId: number,
+  paymentAmount: bigint | undefined,
+  isNative: boolean
+) {
+  const address = getPresaleContract(chainId) ?? undefined;
+  return useReadContract({
+    address,
+    abi: PRESALE_ABI,
+    functionName: "previewPurchase",
+    args: paymentAmount !== undefined ? [paymentAmount, isNative] : undefined,
+    chainId,
+    query: { enabled: !!address && paymentAmount !== undefined && paymentAmount > 0n },
   });
 }
 

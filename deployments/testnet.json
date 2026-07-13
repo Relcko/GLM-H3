@@ -1,0 +1,23 @@
+{
+  "bnbUsdFeed": "0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526",
+  "chainId": 97,
+  "deployer": "0x4ccE54BFeE344442Af2018fb89A1c185C60D29dc",
+  "oracleDecimals": 8,
+  "paymentManager": "0x7226E9d67B93DEd05C0D2595E7a5d9022b1Af106",
+  "presaleSupply": "10000000000000000000000",
+  "rlko": "0xdE27aCe900FB8ae363eBaEE1f18c725d9a13C674",
+  "rlkoDecimals": 18,
+  "rlkoName": "Relcko Token",
+  "rlkoSupply": "1000000000000000000000000000",
+  "rlkoSymbol": "RLKO",
+  "stageId": 0,
+  "stageMax": "100000000000000000000000",
+  "stageMin": 10000000000000000000,
+  "stagePrice": 1150000000000000000,
+  "stageSupply": "10000000000000000000000",
+  "staking": "0x4C6b9E0ca47BA6Be452B408DF2a89Cea3CB314B3",
+  "stakingToken": "0xdE27aCe900FB8ae363eBaEE1f18c725d9a13C674",
+  "timestamp": 1783943092,
+  "treasury": "0x0000000000000000000000000000000000000000",
+  "usdt": "0x701B81ea7F71a3c403cb53A6d465c37D96187E7f"
+}

@@ -1,5 +1,5 @@
 import { http } from "wagmi";
-import { mainnet, bsc, bscTestnet, polygon } from "wagmi/chains";
+import { bsc, bscTestnet, polygon } from "wagmi/chains";
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import {
   metaMaskWallet,
@@ -27,7 +27,7 @@ const wallets = [
 export const wagmiConfig = getDefaultConfig({
   appName: "Relcko",
   projectId: WC_PROJECT_ID,
-  chains: [mainnet, bsc, bscTestnet, polygon],
+  chains: [bscTestnet, bsc, polygon],
   wallets: [
     {
       groupName: "Wallets",
@@ -35,7 +35,6 @@ export const wagmiConfig = getDefaultConfig({
     },
   ],
   transports: {
-    [mainnet.id]: http(),
     [bsc.id]: http(BSC_RPC),
     [bscTestnet.id]: http(),
     [polygon.id]: http(POLYGON_RPC),

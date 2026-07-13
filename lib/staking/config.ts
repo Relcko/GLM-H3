@@ -1,16 +1,21 @@
 import { CHAIN_IDS } from "@/lib/blockchain/chains";
+import { BETA_CONTRACT_ADDRESSES } from "@/lib/beta";
 
 export const STAKING_CONTRACT: Record<number, `0x${string}`> = {
+  [CHAIN_IDS.bscTestnet]: "0x4C6b9E0ca47BA6Be452B408DF2a89Cea3CB314B3",
   [CHAIN_IDS.bsc]: "0x720aAe676854f99B4e48C553Ebd7bd15D9a611cB",
 };
 
 export const RLKO_TOKEN: Record<number, `0x${string}`> = {
+  [CHAIN_IDS.bscTestnet]: BETA_CONTRACT_ADDRESSES.rlko,
   [CHAIN_IDS.bsc]: "0x7F408e0861717b9CD3Bbe3E13b65D5Ff18Cf32C1",
 };
 
 export const MIN_STAKE_AMOUNT = 50;
 
 export const TOKEN_DECIMALS = 18;
+
+export const WITHDRAW_PENALTY_BPS = 2500;
 
 export interface StakePlan {
   label: string;

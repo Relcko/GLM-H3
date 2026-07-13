@@ -64,9 +64,9 @@ export class FrameSequence {
       im.src = PATH(i);
       im.onload = () => this.onOne(i, im);
       im.onerror = () => {
-        if (typeof console !== "undefined") {
-          console.warn(`[FrameSequence] Failed to load frame ${i + 1}: ${PATH(i)}`);
-        }
+    if (typeof console !== "undefined" && process.env.NODE_ENV !== "production") {
+      console.warn(`[FrameSequence] Failed to load frame ${i + 1}: ${PATH(i)}`);
+    }
         this.onOne(i, null);
       };
     }

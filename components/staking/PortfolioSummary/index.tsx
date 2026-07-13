@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useReadContract } from "wagmi";
 import { useAccount, useChainId } from "@/lib/blockchain/wallet";
 import { STAKING_ABI } from "@/lib/staking/abi";
@@ -8,6 +9,7 @@ import { getStakingContract, getRlkoToken } from "@/lib/staking/config";
 import { ERC20_ABI } from "@/lib/blockchain/erc20";
 import { SALE_META } from "@/lib/presale/config";
 import { formatWithCommas } from "@/lib/blockchain/format";
+import { EASE_LUX } from "@/lib/motion";
 
 export default function PortfolioSummary() {
   const { address, isConnected } = useAccount();
@@ -107,13 +109,17 @@ export default function PortfolioSummary() {
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {metrics.map((m) => (
-        <div
+      {metrics.map((m, i) => (
+        <motion.div
           key={m.label}
-          className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 backdrop-blur-sm transition-all duration-500 hover:border-white/[0.12] hover:bg-white/[0.04]"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: EASE_LUX, delay: i * 0.08 }}
+          className="dashboard-card group overflow-hidden p-5"
         >
           <div className="mb-3 flex items-center justify-between">
-            <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${
+            <div className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-300 ${
               m.highlight ? "bg-success/15 text-success" : m.accent ? "bg-accent/10 text-accent" : "bg-white/[0.04] text-white/40"
             }`}>
               {m.icon}
@@ -124,17 +130,15 @@ export default function PortfolioSummary() {
               </span>
             )}
           </div>
-          <div className={`font-mono text-[0.55rem] uppercase tracking-[0.18em] ${
-            m.highlight ? "text-success/60" : "text-white/35"
-          }`}>
+          <div className={`dashboard-label ${m.highlight ? "!text-success/60" : ""}`}>
             {m.label}
           </div>
-          <div className={`mt-1 font-display text-base ${
-            m.accent ? "text-accent" : m.highlight ? "text-success" : "text-white/85"
+          <div className={`mt-1 font-display text-base dashboard-number ${
+            m.accent ? "text-cyber" : m.highlight ? "text-success" : "text-white/85"
           }`}>
             {m.value}
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   );

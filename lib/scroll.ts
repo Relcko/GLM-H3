@@ -92,6 +92,14 @@ class ScrollStore {
     this.lenis = null;
   }
 
+  pauseLenis() {
+    this.lenis?.stop();
+  }
+
+  resumeLenis() {
+    this.lenis?.start();
+  }
+
   start() {
     if (this.started || typeof window === "undefined") return;
     this.started = true;
@@ -313,6 +321,8 @@ const SSR: ScrollStore = {
   getActiveSection: () => null,
   attachLenis: () => {},
   detachLenis: () => {},
+  pauseLenis: () => {},
+  resumeLenis: () => {},
   getChapterStates: () => [],
 } as unknown as ScrollStore;
 

@@ -15,7 +15,7 @@ export type { SupportedChainId };
 
 /** Presale contract addresses keyed by chain id (from dist bundle). */
 export const PRESALE_CONTRACTS: Record<number, `0x${string}`> = {
-  [CHAIN_IDS.bscTestnet]: "0x07F38fB8CE4509C6B90094c1e925950CB229CDc6",
+  [CHAIN_IDS.bscTestnet]: "0x7226E9d67B93DEd05C0D2595E7a5d9022b1Af106",
   [CHAIN_IDS.bsc]: "0xc8cB05330aa1789bceEfC2AF4d3dEec7c7e4c339",
   [CHAIN_IDS.polygon]: "0x727548Fe442a036d0D6a0925A43Fc825a4162967",
 };
@@ -29,15 +29,6 @@ export interface PaymentToken {
 }
 
 export const PAYMENT_TOKENS: Record<number, PaymentToken[]> = {
-  [CHAIN_IDS.ethereum]: [
-    { symbol: "ETH", address: null, decimals: 18, name: "Ethereum" },
-    {
-      symbol: "USDT",
-      address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-      decimals: 6,
-      name: "Tether USD",
-    },
-  ],
   [CHAIN_IDS.bsc]: [
     { symbol: "BNB", address: null, decimals: 18, name: "Binance Coin" },
     {
@@ -51,8 +42,8 @@ export const PAYMENT_TOKENS: Record<number, PaymentToken[]> = {
     { symbol: "tBNB", address: null, decimals: 18, name: "Binance Coin" },
     {
       symbol: "USDT",
-      address: "0x7a7B1e43765a5BaC58e73f3c67CcB5548AC08408",
-      decimals: 6,
+      address: "0x701B81ea7F71a3c403cb53A6d465c37D96187E7f",
+      decimals: 18,
       name: "Tether USD",
     },
   ],
@@ -78,8 +69,6 @@ export const RPC_OVERRIDES: Partial<Record<number, string>> = {
 export const SALE_META = {
   tokenSymbol: "RLKO",
   tokenName: "RELCKO",
-  /** Display: 1 RLKO = $1.15 (marketing rate shown in UI). */
-  displayRateLabel: "1 $RLKO = $1.15",
   /** Total allocation shown in tokenomics (from dist bundle `total: 2e5`). */
   totalAllocation: 200_000,
   /** Payment token always shown as the quote currency. */

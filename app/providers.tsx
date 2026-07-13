@@ -10,7 +10,7 @@ import { relckoTheme } from "@/lib/relckoTheme";
 function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
-      queries: { staleTime: 10_000, refetchOnWindowFocus: false, retry: 1 },
+      queries: { staleTime: 5_000, refetchOnWindowFocus: true, retry: 2, refetchInterval: 30_000 },
     },
   });
 }
@@ -19,7 +19,7 @@ export default function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(makeQueryClient);
   const theme = useMemo(() => relckoTheme(), []);
   return (
-    <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
+    <WagmiProvider config={wagmiConfig} reconnectOnMount={true}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={theme}>{children}</RainbowKitProvider>
       </QueryClientProvider>

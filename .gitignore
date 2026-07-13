@@ -21,6 +21,9 @@ dist/
 # Archives
 *.zip
 
+# Staking dApp bundle
+Staking/
+
 # Local tooling
 .opencode/
 

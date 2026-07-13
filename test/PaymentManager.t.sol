@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "forge-std/Test.sol";
-import "PaymentManager.sol";
-import "./mocks/MockERC20.sol";
-import "./mocks/MockAggregator.sol";
+import { Test } from "forge-std/Test.sol";
+import { PaymentManager } from "contracts/PaymentManager.sol";
+import { MockERC20 } from "contracts/mocks/MockERC20.sol";
+import { MockAggregator } from "contracts/mocks/MockAggregator.sol";
 
 contract PaymentManagerTest is Test {
     MockERC20 usdt;
@@ -16,25 +16,28 @@ contract PaymentManagerTest is Test {
     address internal constant USER = address(0xbeef);
     address internal constant USER2 = address(0xcafe);
 
-    uint256 internal constant PRICE = 0_500_000_000_000_000_000;    // 0.5 USDT
+    uint256 internal constant PRICE = 500_000_000_000_000_000; // 0.5 USDT
     uint256 internal constant SUPPLY = 10_000_000_000_000_000_000_000; // 10 000 tokens
-    uint256 internal constant MIN    = 10_000_000_000_000_000_000;   // 10 USDT
-    uint256 internal constant MAX    = 1_000_000_000_000_000_000_000; // 1 000 USDT
+    uint256 internal constant MIN = 10_000_000_000_000_000_000; // 10 USDT
+    uint256 internal constant MAX = 1_000_000_000_000_000_000_000; // 1 000 USDT
 
-    uint256 internal constant BNB_PRICE = 600_000_000_000_000_000_000_000_000_000; // 1 BNB = 60 000 USDT (18 dec)
+    uint256 internal constant BNB_PRICE = 600_000_000_000_000_000_000_000_000_000; // 1 BNB = 60 000 USDT (18 decimals)
+
+    /// @notice Amount of BNB to send in native purchase tests (≈ 0.0033 BNB = 200 USDT).
+    uint256 internal constant BNB_AMOUNT = 0.003333333333333333 ether;
 
     function setUp() public {
         usdt = new MockERC20("USDT", "USDT", 18);
         saleToken = new MockERC20("RLKO", "RLKO", 18);
         aggregator = new MockAggregator();
 
-        aggregator.setPrice(60_000 * 1e8); // 60 000 USD per BNB (8 dec)
+        aggregator.setPrice(60_000 * 1e8); // 60 000 USD per BNB (8 decimals)
 
         vm.prank(OWNER);
         pm = new PaymentManager(address(saleToken), address(usdt), address(aggregator));
 
-        usdt.mint(USER,    10_000 * 1e18);
-        usdt.mint(USER2,   10_000 * 1e18);
+        usdt.mint(USER, 10_000 * 1e18);
+        usdt.mint(USER2, 10_000 * 1e18);
         saleToken.mint(address(pm), SUPPLY * 3);
 
         _addAndActivateStage();
@@ -52,9 +55,9 @@ contract PaymentManagerTest is Test {
         usdt.approve(address(pm), amount);
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  BUY WITH USDT
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testBuyWithUSDT_Success() public {
         _approveUsdt(USER, 100 * 1e18);
@@ -66,24 +69,28 @@ contract PaymentManagerTest is Test {
         assertEq(pm.totalRaised(), 100 * 1e18);
         assertEq(pm.totalTokensSold(), expectedTokens);
         assertEq(pm.tokensRemaining(), SUPPLY - expectedTokens);
+        assertEq(saleToken.balanceOf(USER), expectedTokens);
+        assertEq(saleToken.balanceOf(address(pm)), SUPPLY * 3 - expectedTokens);
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  BUY WITH BNB
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testBuyWithBNB_Success() public {
-        uint256 bnbAmount = 0.1 ether;
+        vm.deal(USER, BNB_AMOUNT);
         vm.prank(USER);
-        pm.buyWithNative{value: bnbAmount}();
+        pm.buyWithNative{ value: BNB_AMOUNT }();
 
-        uint256 expectedUsdt = (bnbAmount * uint256(60_000 * 1e8)) / 1e8;
+        uint256 expectedUsdt = (BNB_AMOUNT * uint256(60_000 * 1e8)) / 1e8;
         uint256 expectedTokens = (expectedUsdt * 1e18) / PRICE;
 
         assertGt(pm.userInvestment(USER), 0);
         assertEq(pm.userInvestment(USER), expectedUsdt);
         assertEq(pm.totalRaised(), expectedUsdt);
         assertEq(pm.totalTokensSold(), expectedTokens);
+        assertEq(saleToken.balanceOf(USER), expectedTokens);
+        assertEq(saleToken.balanceOf(address(pm)), SUPPLY * 3 - expectedTokens);
     }
 
     function testBuyWithBNB_WithEmergencyOverride() public {
@@ -91,14 +98,17 @@ contract PaymentManagerTest is Test {
         vm.prank(OWNER);
         pm.setNativeToUsdtRate(overrideRate);
 
-        uint256 bnbAmount = 0.1 ether;
+        vm.deal(USER, BNB_AMOUNT);
         vm.prank(USER);
-        pm.buyWithNative{value: bnbAmount}();
+        pm.buyWithNative{ value: BNB_AMOUNT }();
 
-        uint256 expectedUsdt = (bnbAmount * overrideRate) / 1e18;
+        uint256 expectedUsdt = (BNB_AMOUNT * overrideRate) / 1e18;
         uint256 expectedTokens = (expectedUsdt * 1e18) / PRICE;
 
         assertEq(pm.userInvestment(USER), expectedUsdt);
+        assertEq(pm.totalRaised(), expectedUsdt);
+        assertEq(pm.totalTokensSold(), expectedTokens);
+        assertEq(saleToken.balanceOf(USER), expectedTokens);
     }
 
     function testBuyWithBNB_WithOverrideAfterOracleFail() public {
@@ -106,53 +116,58 @@ contract PaymentManagerTest is Test {
         vm.prank(OWNER);
         pm.setNativeToUsdtRate(60_000 * 1e18);
 
-        uint256 bnbAmount = 0.1 ether;
+        vm.deal(USER, BNB_AMOUNT);
         vm.prank(USER);
-        pm.buyWithNative{value: bnbAmount}();
+        pm.buyWithNative{ value: BNB_AMOUNT }();
 
         assertGt(pm.userInvestment(USER), 0);
+        assertGt(saleToken.balanceOf(USER), 0);
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  ORACLE — ERROR PATHS
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testOracle_StaleDate() public {
         aggregator.setPrice(60_000 * 1e8);
         aggregator.setStale(true);
 
+        vm.deal(USER, BNB_AMOUNT);
         vm.prank(USER);
         vm.expectRevert(PaymentManager.StaleOracleData.selector);
-        pm.buyWithNative{value: 0.1 ether}();
+        pm.buyWithNative{ value: BNB_AMOUNT }();
     }
 
     function testOracle_ZeroPrice() public {
         aggregator.setPrice(0);
 
+        vm.deal(USER, BNB_AMOUNT);
         vm.prank(USER);
         vm.expectRevert(PaymentManager.InvalidOraclePrice.selector);
-        pm.buyWithNative{value: 0.1 ether}();
+        pm.buyWithNative{ value: BNB_AMOUNT }();
     }
 
     function testOracle_NegativePrice() public {
         aggregator.setPrice(-1);
 
+        vm.deal(USER, BNB_AMOUNT);
         vm.prank(USER);
         vm.expectRevert(PaymentManager.InvalidOraclePrice.selector);
-        pm.buyWithNative{value: 0.1 ether}();
+        pm.buyWithNative{ value: BNB_AMOUNT }();
     }
 
     function testOracle_Revert() public {
         aggregator.setShouldRevert(true);
 
+        vm.deal(USER, BNB_AMOUNT);
         vm.prank(USER);
         vm.expectRevert(PaymentManager.OracleUnavailable.selector);
-        pm.buyWithNative{value: 0.1 ether}();
+        pm.buyWithNative{ value: BNB_AMOUNT }();
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  STAGE ACTIVATION / DEACTIVATION
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testStageActivation() public {
         vm.prank(OWNER);
@@ -191,21 +206,22 @@ contract PaymentManagerTest is Test {
         pm.activateStage(0);
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  STAGE COMPLETION / OVERSELLING PREVENTION
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testStageCompletion_OversellingPrevention() public {
         // Set up a stage with a tiny supply
+        uint256 lowMin = 1 * 1e18; // 1 USDT minimum
         vm.prank(OWNER);
-        pm.addStage(PRICE, 100 * 1e18, MIN, MAX);
+        pm.addStage(PRICE, 100 * 1e18, lowMin, MAX);
         vm.prank(OWNER);
         pm.activateStage(1);
 
-        _approveUsdt(USER,  1000 * 1e18);
+        _approveUsdt(USER, 1000 * 1e18);
         _approveUsdt(USER2, 1000 * 1e18);
 
-        // Buy 90 tokens for USER  (45 USDT)
+        // Buy 90 tokens for USER (45 USDT)
         vm.prank(USER);
         pm.buyWithToken(address(usdt), 45 * 1e18);
 
@@ -216,15 +232,15 @@ contract PaymentManagerTest is Test {
         // Stage should be sold out
         assertEq(pm.tokensRemaining(), 0);
 
-        // USER2 tries to buy more — should revert
+        // USER2 tries to buy more — should revert with oversupply
         vm.expectRevert(PaymentManager.ExceedsStageSupply.selector);
         vm.prank(USER2);
         pm.buyWithToken(address(usdt), 1 * 1e18);
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  MIN / MAX PURCHASE
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testMinPurchase_Under() public {
         _approveUsdt(USER, MIN);
@@ -239,6 +255,7 @@ contract PaymentManagerTest is Test {
         pm.buyWithToken(address(usdt), MIN);
 
         assertEq(pm.userInvestment(USER), MIN);
+        assertGt(saleToken.balanceOf(USER), 0);
     }
 
     function testMaxPurchase_Over() public {
@@ -262,9 +279,9 @@ contract PaymentManagerTest is Test {
         pm.buyWithToken(address(usdt), 1 * 1e18);
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  PAUSE / RESUME
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testPause_BuyingBlocked() public {
         vm.prank(OWNER);
@@ -275,9 +292,10 @@ contract PaymentManagerTest is Test {
         vm.expectRevert();
         pm.buyWithToken(address(usdt), MIN);
 
-        vm.expectRevert();
+        vm.deal(USER, BNB_AMOUNT);
         vm.prank(USER);
-        pm.buyWithNative{value: 0.1 ether}();
+        vm.expectRevert();
+        pm.buyWithNative{ value: BNB_AMOUNT }();
     }
 
     function testResume_BuyingAllowed() public {
@@ -291,6 +309,7 @@ contract PaymentManagerTest is Test {
         pm.buyWithToken(address(usdt), MIN);
 
         assertEq(pm.userInvestment(USER), MIN);
+        assertGt(saleToken.balanceOf(USER), 0);
     }
 
     function testPause_OnlyOwner() public {
@@ -299,9 +318,9 @@ contract PaymentManagerTest is Test {
         pm.pause();
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  WITHDRAW
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testWithdrawFunds_USDT() public {
         _approveUsdt(USER, 100 * 1e18);
@@ -317,15 +336,16 @@ contract PaymentManagerTest is Test {
     }
 
     function testWithdrawFunds_Native() public {
+        vm.deal(USER, BNB_AMOUNT);
         vm.prank(USER);
-        pm.buyWithNative{value: 0.1 ether}();
+        pm.buyWithNative{ value: BNB_AMOUNT }();
 
         uint256 balanceBefore = OWNER.balance;
         vm.prank(OWNER);
         pm.withdrawFunds(address(0));
         uint256 balanceAfter = OWNER.balance;
 
-        assertEq(balanceAfter - balanceBefore, 0.1 ether);
+        assertEq(balanceAfter - balanceBefore, BNB_AMOUNT);
     }
 
     function testWithdrawSaleTokens_DuringSale_Reverts() public {
@@ -335,26 +355,24 @@ contract PaymentManagerTest is Test {
     }
 
     function testWithdrawSaleTokens_AfterSale() public {
-        // Deactivate the stage
+        // Create a fresh contract with no stages (no sale active → withdraw allowed).
         vm.prank(OWNER);
-        pm.addStage(PRICE, SUPPLY, MIN, MAX);
-        vm.prank(OWNER);
-        pm.activateStage(1);
+        PaymentManager pm2 = new PaymentManager(address(saleToken), address(usdt), address(aggregator));
+        saleToken.mint(address(pm2), SUPPLY);
 
         uint256 balanceBefore = saleToken.balanceOf(OWNER);
         vm.prank(OWNER);
-        pm.withdrawSaleTokens(SUPPLY);
+        pm2.withdrawSaleTokens(SUPPLY);
         uint256 balanceAfter = saleToken.balanceOf(OWNER);
 
         assertEq(balanceAfter - balanceBefore, SUPPLY);
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  INVALID TOKEN / WRONG STAGE
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testInvalidToken_Reverts() public {
-        // Deploy a random ERC20
         MockERC20 fake = new MockERC20("FAKE", "FAKE", 18);
         fake.mint(USER, 100 * 1e18);
 
@@ -371,9 +389,10 @@ contract PaymentManagerTest is Test {
         vm.prank(OWNER);
         pm2 = new PaymentManager(address(saleToken), address(usdt), address(aggregator));
 
-        vm.expectRevert(PaymentManager.NoStagesConfigured.selector);
+        vm.deal(USER, BNB_AMOUNT);
         vm.prank(USER);
-        pm2.buyWithNative{value: 0.1 ether}();
+        vm.expectRevert(PaymentManager.NoStagesConfigured.selector);
+        pm2.buyWithNative{ value: BNB_AMOUNT }();
     }
 
     function testStageSwitchResetsPerStageContributions() public {
@@ -400,9 +419,9 @@ contract PaymentManagerTest is Test {
         assertEq(pm.userInvestment(USER), MIN);
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  ZERO AMOUNT
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testBuyWithToken_ZeroAmount_Reverts() public {
         vm.prank(USER);
@@ -413,12 +432,12 @@ contract PaymentManagerTest is Test {
     function testBuyWithNative_ZeroAmount_Reverts() public {
         vm.prank(USER);
         vm.expectRevert(PaymentManager.InvalidAmount.selector);
-        pm.buyWithNative{value: 0}();
+        pm.buyWithNative{ value: 0 }();
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  CONSTRUCTOR VALIDATION
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testConstructor_ZeroSaleToken_Reverts() public {
         vm.prank(OWNER);
@@ -438,9 +457,9 @@ contract PaymentManagerTest is Test {
         new PaymentManager(address(saleToken), address(usdt), address(0));
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  VIEW HELPERS
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testCurrentStageInfo() public {
         (uint256 price, uint256 supply, uint256 sold, uint256 minPer, uint256 maxPer, bool active) = pm.currentStageInfo();
@@ -462,8 +481,8 @@ contract PaymentManagerTest is Test {
     }
 
     function testPreviewPurchase_BNB() public {
-        (uint256 usdtAmount, uint256 tokenAmount,,) = pm.previewPurchase(0.1 ether, true);
-        uint256 expectedUsdt = (0.1 ether * uint256(60_000 * 1e8)) / 1e8;
+        (uint256 usdtAmount, uint256 tokenAmount,,) = pm.previewPurchase(BNB_AMOUNT, true);
+        uint256 expectedUsdt = (BNB_AMOUNT * uint256(60_000 * 1e8)) / 1e8;
         assertEq(usdtAmount, expectedUsdt);
         assertGt(tokenAmount, 0);
     }
@@ -484,9 +503,9 @@ contract PaymentManagerTest is Test {
         assertEq(stage, 1);
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  STAGE MANAGEMENT
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testUpdateStage() public {
         vm.prank(OWNER);
@@ -516,9 +535,9 @@ contract PaymentManagerTest is Test {
         assertEq(pm.stageCount(), 1);
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  NATIVE RATE OVERRIDE
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testNativeRateOverride_Getter() public {
         assertEq(pm.nativeRateOverride(), 0);
@@ -533,9 +552,9 @@ contract PaymentManagerTest is Test {
         pm.setNativeToUsdtRate(60_000 * 1e18);
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  MULTIPLE CONTRIBUTIONS
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testMultipleContributions_SameUser() public {
         _approveUsdt(USER, MAX);
@@ -544,6 +563,8 @@ contract PaymentManagerTest is Test {
         vm.prank(USER);
         pm.buyWithToken(address(usdt), 200 * 1e18);
         assertEq(pm.userInvestment(USER), 300 * 1e18);
+        uint256 totalExpected = ((100 * 1e18 * 1e18) / PRICE) + ((200 * 1e18 * 1e18) / PRICE);
+        assertEq(saleToken.balanceOf(USER), totalExpected);
     }
 
     function testMultipleUsers() public {
@@ -555,22 +576,26 @@ contract PaymentManagerTest is Test {
         pm.buyWithToken(address(usdt), 200 * 1e18);
         assertEq(pm.userInvestment(USER), 100 * 1e18);
         assertEq(pm.userInvestment(USER2), 200 * 1e18);
+        assertEq(saleToken.balanceOf(USER), (100 * 1e18 * 1e18) / PRICE);
+        assertEq(saleToken.balanceOf(USER2), (200 * 1e18 * 1e18) / PRICE);
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  RECEIVE
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testReceive() public {
+        vm.deal(USER, BNB_AMOUNT);
         vm.prank(USER);
-        (bool success,) = address(pm).call{value: 0.1 ether}("");
+        (bool success,) = address(pm).call{ value: BNB_AMOUNT }("");
         assertTrue(success);
         assertGt(pm.userInvestment(USER), 0);
+        assertGt(saleToken.balanceOf(USER), 0);
     }
 
-    // ──────────────────────────────────────────────────
-    //  UPDATE STAGE EVENTS
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
+    //  STAGE EVENT EMISSION
+    // ══════════════════════════════════════════════════════════════════
 
     function testActivateStageEvent() public {
         vm.prank(OWNER);
@@ -581,9 +606,9 @@ contract PaymentManagerTest is Test {
         pm.activateStage(1);
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  TOTAL RAISED / IMMUTABLES
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testTotalRaised() public {
         assertEq(pm.totalRaised(), 0);
@@ -599,9 +624,9 @@ contract PaymentManagerTest is Test {
         assertEq(address(pm.BNB_USD_FEED()), address(aggregator));
     }
 
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
     //  EDGE: UPDATE INACTIVE STAGE
-    // ──────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════
 
     function testUpdateInactiveStage() public {
         vm.prank(OWNER);
@@ -615,5 +640,107 @@ contract PaymentManagerTest is Test {
         vm.prank(OWNER);
         vm.expectRevert(PaymentManager.InvalidStage.selector);
         pm.updateStage(99, PRICE, SUPPLY, MIN, MAX);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    //  PHASE 1 — NEW VALIDATION TESTS
+    // ══════════════════════════════════════════════════════════════════
+
+    function testAddStage_InvalidPrice() public {
+        vm.prank(OWNER);
+        vm.expectRevert(PaymentManager.InvalidPrice.selector);
+        pm.addStage(0, SUPPLY, MIN, MAX);
+    }
+
+    function testAddStage_ZeroSupply() public {
+        vm.prank(OWNER);
+        vm.expectRevert(PaymentManager.InvalidStageConfig.selector);
+        pm.addStage(PRICE, 0, MIN, MAX);
+    }
+
+    function testAddStage_MaxLessThanMin() public {
+        vm.prank(OWNER);
+        vm.expectRevert(PaymentManager.InvalidStageConfig.selector);
+        pm.addStage(PRICE, SUPPLY, 100 * 1e18, 10 * 1e18);
+    }
+
+    function testUpdateStage_InvalidPrice() public {
+        vm.prank(OWNER);
+        vm.expectRevert(PaymentManager.InvalidPrice.selector);
+        pm.updateStage(0, 0, SUPPLY, MIN, MAX);
+    }
+
+    function testUpdateStage_MaxLessThanMin() public {
+        vm.prank(OWNER);
+        vm.expectRevert(PaymentManager.InvalidStageConfig.selector);
+        pm.updateStage(0, PRICE, SUPPLY, 100 * 1e18, 10 * 1e18);
+    }
+
+    function testUpdateStage_ZeroSupply() public {
+        vm.prank(OWNER);
+        vm.expectRevert(PaymentManager.InvalidStageConfig.selector);
+        pm.updateStage(0, PRICE, 0, MIN, MAX);
+    }
+
+    function testWithdrawSaleTokens_InsufficientBalance() public {
+        vm.prank(OWNER);
+        PaymentManager pm2 = new PaymentManager(address(saleToken), address(usdt), address(aggregator));
+        vm.prank(OWNER);
+        vm.expectRevert(PaymentManager.InsufficientBalance.selector);
+        pm2.withdrawSaleTokens(100 * 1e18);
+    }
+
+    function testReceive_NonReentrant() public {
+        vm.deal(USER, BNB_AMOUNT);
+        vm.prank(USER);
+        (bool success,) = address(pm).call{ value: BNB_AMOUNT }("");
+        assertTrue(success);
+        assertGt(pm.userInvestment(USER), 0);
+        assertGt(saleToken.balanceOf(USER), 0);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    //  INSUFFICIENT RLKO INVENTORY
+    // ══════════════════════════════════════════════════════════════════
+
+    function testBuyWithInsufficientRLKO_Reverts() public {
+        // Deploy a fresh contract with a tiny RLKO balance
+        vm.prank(OWNER);
+        PaymentManager pm2 = new PaymentManager(address(saleToken), address(usdt), address(aggregator));
+        saleToken.mint(address(pm2), 1 * 1e18); // Only 1 RLKO in PM
+
+        vm.prank(OWNER);
+        pm2.addStage(PRICE, SUPPLY, MIN, MAX);
+        vm.prank(OWNER);
+        pm2.activateStage(0);
+
+        // The PM has only 1 RLKO, but the purchase would require > 1 RLKO
+        // USDT amount 100 USDT would calculate to 200 RLKO — exceeds both supply AND PM balance
+        // Use a smaller amount that passes stage checks but exceeds PM balance
+        uint256 smallAmount = 0.6 * 1e18; // 0.6 USDT — below minimum
+        _approveUsdt(USER, 100 * 1e18);
+        vm.prank(USER);
+        // expected: 0.6 * 1e18 / PRICE = 0.6/0.5 = 1.2 RLKO -> PM only has 1 RLKO
+        vm.expectRevert();
+        pm2.buyWithToken(address(usdt), smallAmount);
+    }
+
+    function testBuyWithInsufficientRLKO_BNB_Reverts() public {
+        vm.prank(OWNER);
+        PaymentManager pm2 = new PaymentManager(address(saleToken), address(usdt), address(aggregator));
+        saleToken.mint(address(pm2), 1 * 1e18); // Only 1 RLKO in PM
+
+        vm.prank(OWNER);
+        pm2.addStage(PRICE, SUPPLY, MIN, MAX);
+        vm.prank(OWNER);
+        pm2.activateStage(0);
+
+        // Send BNB worth just over 1 RLKO (0.5 USDT min / oracle)
+        // 0.5 USDT / 60000 BNB/USD = 0.00000833 BNB
+        uint256 bnbAmount = 0.000009 ether;
+        vm.deal(USER, bnbAmount);
+        vm.prank(USER);
+        vm.expectRevert();
+        pm2.buyWithNative{ value: bnbAmount }();
     }
 }

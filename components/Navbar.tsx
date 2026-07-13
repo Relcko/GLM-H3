@@ -16,31 +16,56 @@ const LINKS = [
   { label: "Ecosystem", href: "#chapter-06" },
 ];
 
-function resolveHref(href: string, pathname: string): string {
-  if (pathname !== "/" && href.startsWith("#")) return `/${href}`;
-  return href;
-}
+const PRESALE_LINKS = [
+  { label: "Overview", href: "#dashboard" },
+  { label: "Staking", href: "#staking" },
+  { label: "Portfolio", href: "#portfolio" },
+  { label: "Tokenomics", href: "#tokenomics" },
+];
 
 function NavLink({
   label,
   href,
   pathname,
+  isActive,
 }: {
   label: string;
   href: string;
   pathname: string;
+  isActive?: boolean;
 }) {
-  const resolved = resolveHref(href, pathname);
   if (pathname === "/presale") {
+    const scroll = (e: React.MouseEvent) => {
+      e.preventDefault();
+      const id = href.replace("#", "");
+      const el = document.getElementById(id);
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - 100;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
+    };
     return (
-      <Link
-        href={resolved}
-        className="group relative rounded-full px-4 py-2 text-[0.82rem] text-white/65 transition-colors duration-300 hover:text-white"
+      <a
+        href={href}
+        onClick={scroll}
+        className={`group relative rounded-full px-4 py-2 text-[0.82rem] transition-all duration-300 ${
+          isActive
+            ? "text-accent"
+            : "text-white/65 hover:text-white"
+        }`}
       >
         <span className="relative z-10">{label}</span>
-        <span className="absolute inset-0 scale-90 rounded-full bg-white/[0.05] opacity-0 transition-all duration-400 ease-lux group-hover:scale-100 group-hover:opacity-100" />
-        <span className="absolute inset-x-4 bottom-1 h-px origin-left scale-x-0 bg-gradient-to-r from-accent/40 to-accent-blue/40 transition-transform duration-400 ease-lux group-hover:scale-x-100" />
-      </Link>
+        <span
+          className={`absolute inset-0 rounded-full transition-all duration-400 ease-lux ${
+            isActive
+              ? "bg-accent/8 scale-100"
+              : "bg-accent/0 scale-90 group-hover:bg-accent/8 group-hover:scale-100"
+          }`}
+        />
+        {isActive && (
+          <span className="absolute inset-x-4 bottom-1 h-px bg-gradient-to-r from-accent/80 to-accent-blue/80" />
+        )}
+      </a>
     );
   }
   const scroll = (e: React.MouseEvent) => {
@@ -65,23 +90,40 @@ function MobileNavLink({
   href,
   pathname,
   onClick,
+  isActive,
 }: {
   label: string;
   href: string;
   pathname: string;
   onClick?: () => void;
+  isActive?: boolean;
 }) {
-  const resolved = resolveHref(href, pathname);
   if (pathname === "/presale") {
+    const scroll = (e: React.MouseEvent) => {
+      e.preventDefault();
+      const id = href.replace("#", "");
+      const el = document.getElementById(id);
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - 100;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
+      onClick?.();
+    };
     return (
-      <Link
-        href={resolved}
-        onClick={onClick}
-        className="group relative rounded-2xl px-4 py-3 text-sm text-white/70 transition-all duration-300 hover:bg-white/[0.06] hover:text-white"
+      <a
+        href={href}
+        onClick={scroll}
+        className={`group relative rounded-2xl px-4 py-3 text-sm transition-all duration-300 ${
+          isActive
+            ? "bg-accent/8 text-accent"
+            : "text-white/70 hover:bg-white/[0.06] hover:text-white"
+        }`}
       >
         <span className="relative z-10">{label}</span>
-        <span className="absolute left-4 top-1/2 h-0.5 w-0 -translate-y-1/2 bg-accent/30 transition-all duration-400 ease-lux group-hover:w-6" />
-      </Link>
+        {isActive && (
+          <span className="absolute left-4 top-1/2 h-0.5 w-6 -translate-y-1/2 bg-accent/30" />
+        )}
+      </a>
     );
   }
   const scroll = (e: React.MouseEvent) => {
@@ -105,6 +147,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -113,12 +156,33 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (pathname !== "/presale") return;
+    const ids = PRESALE_LINKS.map((l) => l.href.replace("#", ""));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: "-15% 0px -55% 0px" }
+    );
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, [pathname]);
+
   const isPresale = pathname === "/presale";
+  const navLinks = isPresale ? PRESALE_LINKS : LINKS;
 
   return (
     <>
       <motion.header
-        initial={{ y: -40, opacity: 0 }}
+        initial={false}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 1, ease: EASE_LUX, delay: 0.3 }}
         className="fixed left-0 top-0 z-[160] w-full"
@@ -131,28 +195,30 @@ export default function Navbar() {
           }`}
         >
           <div className="relative mx-auto flex h-16 w-full items-center px-5 sm:px-8 md:px-12 lg:px-16">
-            <Link
-              href="/"
-              className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-90"
-              aria-label="Relcko home"
-            >
-              <Wordmark />
-            </Link>
+            {!isPresale && (
+              <Link
+                href="/"
+                className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-90"
+                aria-label="Relcko home"
+              >
+                <Wordmark />
+              </Link>
+            )}
 
-            <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex">
-              {LINKS.map((l) => (
-                <NavLink key={l.href} label={l.label} href={l.href} pathname={pathname} />
+            <nav
+              className={`hidden items-center gap-1 md:flex ${
+                isPresale ? "" : "absolute left-1/2 -translate-x-1/2"
+              }`}
+            >
+              {navLinks.map((l) => (
+                <NavLink
+                  key={l.href}
+                  label={l.label}
+                  href={l.href}
+                  pathname={pathname}
+                  isActive={isPresale && activeSection === l.href.replace("#", "")}
+                />
               ))}
-              {isPresale && (
-                <Link
-                  href="/"
-                  className="group relative rounded-full px-4 py-2 text-[0.82rem] text-white/65 transition-colors duration-300 hover:text-white"
-                >
-                  <span className="relative z-10">Home</span>
-                  <span className="absolute inset-0 scale-90 rounded-full bg-white/[0.05] opacity-0 transition-all duration-400 ease-lux group-hover:scale-100 group-hover:opacity-100" />
-                  <span className="absolute inset-x-4 bottom-1 h-px origin-left scale-x-0 bg-gradient-to-r from-accent/40 to-accent-blue/40 transition-transform duration-400 ease-lux group-hover:scale-x-100" />
-                </Link>
-              )}
             </nav>
 
             <div className="ml-auto flex shrink-0 items-center gap-2">
@@ -219,23 +285,24 @@ export default function Navbar() {
               className="fixed inset-x-0 top-0 z-[159] md:hidden"
             >
               <div className="mx-5 mt-20 flex flex-col gap-2 rounded-3xl border border-white/[0.08] bg-bg-base/90 p-3 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.7)] backdrop-blur-2xl sm:mx-8">
-                {LINKS.map((l) => (
+                {navLinks.map((l) => (
                   <MobileNavLink
                     key={l.href}
                     label={l.label}
                     href={l.href}
                     pathname={pathname}
                     onClick={() => setOpen(false)}
+                    isActive={isPresale && activeSection === l.href.replace("#", "")}
                   />
                 ))}
                 {isPresale && (
                   <Link
                     href="/"
                     onClick={() => setOpen(false)}
-                    className="group relative rounded-2xl px-4 py-3 text-sm text-white/70 transition-all duration-300 hover:bg-white/[0.06] hover:text-white"
+                    className="group relative mt-1 rounded-2xl px-4 py-3 text-sm text-accent/70 transition-all duration-300 hover:bg-accent/8 hover:text-accent"
                   >
                     <span className="relative z-10">Home</span>
-                    <span className="absolute left-4 top-1/2 h-0.5 w-0 -translate-y-1/2 bg-accent/30 transition-all duration-400 ease-lux group-hover:w-6" />
+                    <span className="absolute left-4 top-1/2 h-0.5 w-6 -translate-y-1/2 bg-accent/30" />
                   </Link>
                 )}
               </div>

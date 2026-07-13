@@ -1,0 +1,22 @@
+{
+  "transactions": [
+    {
+      "rpc": "https://bsc-testnet-rpc.publicnode.com"
+    },
+    {
+      "rpc": "https://bsc-testnet-rpc.publicnode.com"
+    },
+    {
+      "rpc": "https://bsc-testnet-rpc.publicnode.com"
+    },
+    {
+      "rpc": "https://bsc-testnet-rpc.publicnode.com"
+    },
+    {
+      "rpc": "https://bsc-testnet-rpc.publicnode.com"
+    },
+    {
+      "rpc": "https://bsc-testnet-rpc.publicnode.com"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, type Variants, useInView } from "framer-motion";
-import { useEffect, useRef, useState, type ReactNode, type MouseEvent } from "react";
+import { motion, useInView, type Variants } from "framer-motion";
+import { useRef, type ReactNode, type MouseEvent } from "react";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -40,16 +40,6 @@ export function Reveal({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-12% 0px" });
-  const [revealed, setRevealed] = useState(false);
-
-  useEffect(() => {
-    if (inView) setRevealed(true);
-  }, [inView]);
-
-  useEffect(() => {
-    const t = setTimeout(() => setRevealed(true), 4000);
-    return () => clearTimeout(t);
-  }, []);
 
   const Tag = motion[as] as typeof motion.div;
   return (
@@ -58,7 +48,7 @@ export function Reveal({
       className={className}
       variants={variants}
       initial="hidden"
-      animate={revealed ? "show" : "hidden"}
+      animate={inView ? "show" : "hidden"}
       transition={{ delay }}
       onMouseMove={onMouseMove}
     >
@@ -78,16 +68,6 @@ export function SplitWords({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-10% 0px" });
-  const [revealed, setRevealed] = useState(false);
-
-  useEffect(() => {
-    if (inView) setRevealed(true);
-  }, [inView]);
-
-  useEffect(() => {
-    const t = setTimeout(() => setRevealed(true), 4000);
-    return () => clearTimeout(t);
-  }, []);
 
   const words = text.split(" ");
   return (
@@ -97,50 +77,10 @@ export function SplitWords({
           <motion.span
             className="inline-block"
             initial={{ y: "105%", opacity: 0 }}
-            animate={revealed ? { y: "0%", opacity: 1 } : {}}
+            animate={inView ? { y: "0%", opacity: 1 } : { y: "105%", opacity: 0 }}
             transition={{ duration: 0.85, ease, delay: delay + i * 0.07 }}
           >
             {w}{i < words.length - 1 ? "\u00A0" : ""}
-          </motion.span>
-        </span>
-      ))}
-    </span>
-  );
-}
-
-export function SplitLines({
-  lines,
-  className = "",
-  delay = 0,
-}: {
-  lines: string[];
-  className?: string;
-  delay?: number;
-}) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-8% 0px" });
-  const [revealed, setRevealed] = useState(false);
-
-  useEffect(() => {
-    if (inView) setRevealed(true);
-  }, [inView]);
-
-  useEffect(() => {
-    const t = setTimeout(() => setRevealed(true), 4000);
-    return () => clearTimeout(t);
-  }, []);
-
-  return (
-    <span ref={ref} className={`block ${className}`}>
-      {lines.map((line, i) => (
-        <span key={i} className="block overflow-hidden">
-          <motion.span
-            className="block"
-            initial={{ y: "100%", opacity: 0 }}
-            animate={revealed ? { y: "0%", opacity: 1 } : {}}
-            transition={{ duration: 0.8, ease, delay: delay + i * 0.1 }}
-          >
-            {line}
           </motion.span>
         </span>
       ))}

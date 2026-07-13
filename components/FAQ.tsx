@@ -63,8 +63,10 @@ export default function FAQ() {
               >
                 <button
                   onClick={() => setOpen(isOpen ? null : i)}
-                  className="group flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors duration-300"
+                  className="group flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-accent/50 focus-visible:outline-offset-2 focus-visible:rounded-lg"
                   aria-expanded={isOpen}
+                  aria-controls={`faq-answer-${i}`}
+                  id={`faq-question-${i}`}
                 >
                   <span
                     className={`text-sm font-medium transition-colors duration-300 sm:text-base ${
@@ -97,10 +99,13 @@ export default function FAQ() {
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.div
+                      id={`faq-answer-${i}`}
                       initial={{ height: 0, opacity: 0, filter: "blur(4px)" }}
                       animate={{ height: "auto", opacity: 1, filter: "blur(0px)" }}
                       exit={{ height: 0, opacity: 0, filter: "blur(4px)" }}
                       transition={{ duration: 0.5, ease: EASE_LUX }}
+                      role="region"
+                      aria-labelledby={`faq-question-${i}`}
                     >
                       <p className="px-5 pb-5 text-sm leading-relaxed text-white/65">
                         {item.a}

@@ -1,11 +1,27 @@
 [profile.default]
 src = "contracts"
 test = "test"
-libs = ["lib"]
+libs = ["contracts/lib", "node_modules"]
 solc = "0.8.28"
+via_ir = true
+ffi = true
+fs_permissions = [
+  { access = "read", path = "./deployments" },
+  { access = "write", path = "./deployments" },
+]
+remappings = [
+  "forge-std/=contracts/lib/forge-std/src/",
+  "@openzeppelin/=node_modules/@openzeppelin/",
+  "contracts/=contracts/",
+]
 
 [fmt]
 line_length = 140
 tab_width = 4
 bracket_spacing = true
 int_types = "long"
+
+[profile.ci]
+via_ir = true
+optimizer = true
+optimizer_runs = 10_000

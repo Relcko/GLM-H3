@@ -1,0 +1,22 @@
+{
+  "_comment": "BNB Mainnet deployment artifact. Generated/updated by the Relcko deployment scripts (DeployAll.s.sol). Placeholders are overwritten on deploy.",
+  "chainId": 56,
+  "deployer": "0x0000000000000000000000000000000000000000",
+  "rlko": "0x0000000000000000000000000000000000000000",
+  "paymentManager": "0x0000000000000000000000000000000000000000",
+  "usdt": "0x55d398326f99059ff775485246999027b3197955",
+  "bnbUsdFeed": "0x0567F2323251f0Aab15c8dFb1967E4e8A7D42aeE",
+  "treasury": "0x0000000000000000000000000000000000000000",
+  "rlkoName": "",
+  "rlkoSymbol": "",
+  "rlkoDecimals": 0,
+  "rlkoSupply": 0,
+  "presaleSupply": 0,
+  "stageId": 0,
+  "stagePrice": 0,
+  "stageSupply": 0,
+  "stageMin": 0,
+  "stageMax": 0,
+  "oracleDecimals": 0,
+  "timestamp": 0
+}

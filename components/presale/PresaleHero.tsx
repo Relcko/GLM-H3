@@ -6,8 +6,10 @@ import { Section, Kicker } from "@/components/layout";
 import MagneticButton from "@/components/MagneticButton";
 import Counter from "@/components/Counter";
 import { EASE_LUX } from "@/lib/motion";
-import { SALE_META } from "@/lib/presale/config";
+import { SALE_META, DEFAULT_CHAIN_ID } from "@/lib/presale/config";
 import { formatCountdown, PRESALE_START } from "@/lib/presale/math";
+import { useTokenPrice } from "@/lib/presale/services/reads";
+import { formatUnits } from "viem";
 
 export default function PresaleHero() {
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1e3));
@@ -16,6 +18,12 @@ export default function PresaleHero() {
     const id = setInterval(() => setNow(Math.floor(Date.now() / 1e3)), 1000);
     return () => clearInterval(id);
   }, []);
+
+  const { data: tokenPrice } = useTokenPrice(DEFAULT_CHAIN_ID);
+  const tokenPriceFormatted =
+    tokenPrice !== undefined
+      ? Number(formatUnits(tokenPrice as bigint, 18))
+      : 0;
 
   const isLive = now >= PRESALE_START;
 
@@ -64,8 +72,8 @@ export default function PresaleHero() {
             transition={{ duration: 0.9, delay: 1.2, ease: EASE_LUX }}
             className="max-w-md text-balance text-[0.975rem] leading-relaxed text-white/60"
           >
-            Secure your {SALE_META.tokenName} tokens at the earliest stage.
-            {SALE_META.displayRateLabel} — prices increase with each stage.
+            Secure your             {SALE_META.tokenName} tokens at the earliest stage.
+            Prices increase with each stage.
           </motion.p>
 
           <motion.div
@@ -92,10 +100,7 @@ export default function PresaleHero() {
                   <path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </MagneticButton>
-              <MagneticButton
-                href={SALE_META.displayRateLabel ? "#tokenomics" : "#"}
-                variant="ghost"
-              >
+              <MagneticButton href="#tokenomics" variant="ghost">
                 View Tokenomics
               </MagneticButton>
             </div>
@@ -109,10 +114,10 @@ export default function PresaleHero() {
           >
             <div className="text-center">
               <div className="font-display text-2xl font-light text-white/90">
-                $1.15
+                {tokenPriceFormatted > 0 ? `$${tokenPriceFormatted.toFixed(4)}` : "—"}
               </div>
               <div className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-white/35 mt-1">
-                Initial Price
+                Token Price
               </div>
             </div>
             <div className="h-10 w-px bg-white/10" />

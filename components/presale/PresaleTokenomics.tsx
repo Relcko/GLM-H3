@@ -82,12 +82,6 @@ export default function PresaleTokenomics() {
                     {(TOTAL_SUPPLY * 0.2).toLocaleString("en-US")}
                   </span>
                 </div>
-                <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                  <span className="text-sm text-white/50">Initial Price</span>
-                  <span className="font-mono text-sm text-white/80">
-                    $1.15
-                  </span>
-                </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-white/50">Fundraising Target</span>
                   <span className="font-mono text-sm text-accent">

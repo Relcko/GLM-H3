@@ -54,7 +54,8 @@ function AccordionItem({
       <button
         onClick={onToggle}
         aria-expanded={open}
-        className="flex w-full items-center justify-between py-5 text-left text-sm text-white/70 transition-colors hover:text-white"
+        aria-controls={`faq-answer-${q.slice(0, 20).replace(/\s/g, "-")}`}
+        className="flex w-full items-center justify-between py-5 text-left text-sm text-white/70 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-accent/50 focus-visible:outline-offset-2 focus-visible:rounded-lg"
       >
         <span className="pr-4">{q}</span>
         <motion.svg
@@ -74,11 +75,14 @@ function AccordionItem({
         {open && (
           <motion.div
             key="content"
+            id={`faq-answer-${q.slice(0, 20).replace(/\s/g, "-")}`}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.5, ease: EASE_LUX }}
             className="overflow-hidden"
+            role="region"
+            aria-labelledby={`faq-question-${q.slice(0, 20).replace(/\s/g, "-")}`}
           >
             <p className="pb-5 text-sm leading-relaxed text-white/45">{a}</p>
           </motion.div>

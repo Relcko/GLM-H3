@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { formatUnits } from "viem";
 import { motion, AnimatePresence } from "framer-motion";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -31,6 +31,7 @@ import {
   useTokenBalance,
 } from "@/lib/presale/services/reads";
 import { estimateTokensForQuote, estimateRate } from "@/lib/presale/math";
+import { saveTxEntry, CHAIN_EXPLORERS } from "@/lib/blockchain/txHistory";
 
 type TxStage =
   | "idle"
@@ -52,7 +53,6 @@ const TX_LABEL: Record<TxStage, string> = {
 };
 
 const CHAIN_LABELS: Record<number, string> = {
-  [CHAIN_IDS.ethereum]: "Ethereum",
   [CHAIN_IDS.bsc]: "BNB Smart Chain",
   [CHAIN_IDS.bscTestnet]: "BSC Testnet",
   [CHAIN_IDS.polygon]: "Polygon",
@@ -116,6 +116,34 @@ export default function PresalePurchasePanel() {
 
   const [intentNonce, setIntentNonce] = useState(0);
 
+  // Tracks whether the current tx flow is approve or buy
+  const [pendingAction, setPendingAction] = useState<"approve" | "buy" | null>(null);
+
+  // Purchase modal state
+  const [showModal, setShowModal] = useState(false);
+
+  const numericAmount = parseFloat(amount) || 0;
+  const selectedDecimals = selectedToken?.decimals ?? 18;
+  const rawAmount = toRawAmount(amount || "0", selectedDecimals);
+
+  const { data: allowance } = useTokenAllowance(
+    chainId,
+    selectedToken?.address ?? null,
+    address,
+    presaleContract
+  );
+
+  const { data: tokenBal } = useTokenBalance(
+    chainId,
+    selectedToken?.address ?? null,
+    address
+  );
+
+  const needsApproval =
+    selectedToken?.address &&
+    allowance !== undefined &&
+    rawAmount > (allowance as bigint);
+
   const txStage: TxStage = (() => {
     if (!intentNonce) return "idle";
     if (isTxSuccess) return "complete";
@@ -135,36 +163,93 @@ export default function PresalePurchasePanel() {
     return "Transaction failed. Please try again.";
   })();
 
+  const active = intentNonce !== 0 && txStage !== "idle" && txStage !== "complete" && txStage !== "failed";
+
+  // Save tx to history when complete
+  useEffect(() => {
+    if (txStage === "complete" && writeResult && pendingAction === "buy") {
+      saveTxEntry({
+        hash: writeResult,
+        type: "buy",
+        amount,
+        timestamp: Date.now(),
+        status: "complete",
+        network: chainId,
+      });
+    }
+  }, [txStage, writeResult, pendingAction, amount, chainId]);
+
+  // Auto-buy after approve completes
+  const prevStageRef = useRef<TxStage>("idle");
+  const [needsAutoBuy, setNeedsAutoBuy] = useState(false);
+
+  useEffect(() => {
+    const prev = prevStageRef.current;
+    prevStageRef.current = txStage;
+
+    if (pendingAction === "approve" && prev === "awaiting_confirmation" && txStage === "complete") {
+      // Approve just completed — trigger buy
+      setNeedsAutoBuy(true);
+    }
+
+    if (pendingAction === "approve" && txStage === "failed") {
+      // Approve failed — reset
+      setPendingAction(null);
+      setNeedsAutoBuy(false);
+    }
+  }, [txStage, pendingAction]);
+
+  // Fire the actual buy when needsAutoBuy is set
+  useEffect(() => {
+    if (needsAutoBuy && pendingAction === "approve") {
+      setNeedsAutoBuy(false);
+      setPendingAction("buy");
+      if (presaleContract) {
+        setIntentNonce((n) => n + 1);
+        if (!selectedToken?.address) {
+          writeContract({
+            address: presaleContract,
+            abi: PRESALE_ABI,
+            functionName: "buyWithNative",
+            value: rawAmount,
+          });
+        } else {
+          writeContract({
+            address: presaleContract,
+            abi: PRESALE_ABI,
+            functionName: "buyWithToken",
+            args: [selectedToken.address, rawAmount],
+          });
+        }
+      }
+    }
+  }, [needsAutoBuy, pendingAction, presaleContract, selectedToken, rawAmount, writeContract]);
+
+  // Scroll lock when modal is open
+  useEffect(() => {
+    if (showModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [showModal]);
+
+  // Reset tx state after timeout
   useEffect(() => {
     if (txStage === "complete" || txStage === "failed") {
-      const t = setTimeout(() => setIntentNonce(0), txStage === "complete" ? 4000 : 5000);
+      const t = setTimeout(() => {
+        setIntentNonce(0);
+        if (txStage === "complete" && pendingAction === "buy") {
+          // Keep modal on success until user dismisses
+        }
+        if (txStage === "failed") {
+          setPendingAction(null);
+        }
+      }, txStage === "complete" ? 500 : 5000);
       return () => clearTimeout(t);
     }
-  }, [txStage]);
-
-  const { data: allowance } = useTokenAllowance(
-    chainId,
-    selectedToken?.address ?? null,
-    address,
-    presaleContract
-  );
-
-  const { data: tokenBal } = useTokenBalance(
-    chainId,
-    selectedToken?.address ?? null,
-    address
-  );
-
-  const numericAmount = parseFloat(amount) || 0;
-  const selectedDecimals = selectedToken?.decimals ?? 18;
-  const rawAmount = toRawAmount(amount || "0", selectedDecimals);
-
-  const needsApproval =
-    selectedToken?.address &&
-    allowance !== undefined &&
-    rawAmount > (allowance as bigint);
-
-  const active = intentNonce !== 0 && txStage !== "idle" && txStage !== "complete" && txStage !== "failed";
+  }, [txStage, pendingAction]);
 
   const formattedNative =
     nativeBal && nativeBal.value > 0n
@@ -178,6 +263,7 @@ export default function PresalePurchasePanel() {
 
   const handleApprove = () => {
     if (!selectedToken?.address || !presaleContract) return;
+    setPendingAction("approve");
     setIntentNonce((n) => n + 1);
     writeContract({
       address: selectedToken.address,
@@ -189,6 +275,7 @@ export default function PresalePurchasePanel() {
 
   const handleBuy = () => {
     if (!presaleContract) return;
+    setPendingAction("buy");
     setIntentNonce((n) => n + 1);
     if (!selectedToken?.address) {
       writeContract({
@@ -207,9 +294,34 @@ export default function PresalePurchasePanel() {
     }
   };
 
+  const handleBuyClick = () => {
+    if (needsApproval) {
+      handleApprove();
+    } else {
+      setShowModal(true);
+    }
+  };
+
+  const handleConfirmPurchase = () => {
+    setShowModal(false);
+    handleBuy();
+  };
+
+  const handleCloseModal = useCallback(() => {
+    if (txStage === "complete" || txStage === "failed" || txStage === "idle") {
+      setShowModal(false);
+      if (txStage === "complete" || txStage === "failed") {
+        setIntentNonce(0);
+        setPendingAction(null);
+      }
+    }
+  }, [txStage]);
+
   const rate = estimateRate();
   const estimatedTokens =
     numericAmount > 0 ? estimateTokensForQuote(numericAmount) : 0;
+
+  const explorer = CHAIN_EXPLORERS[chainId] || CHAIN_EXPLORERS[DEFAULT_CHAIN_ID] || "https://bscscan.com";
 
   return (
     <Section id="purchase" height="auto" center={false} className="py-16">
@@ -227,33 +339,34 @@ export default function PresalePurchasePanel() {
           <Reveal>
             <div className={glassCardClass}>
               {/* Wallet section */}
-              <div className="mb-6 border-b border-white/[0.06] pb-6">
-                <ConnectButton.Custom>
-                  {({ openConnectModal, account, chain, mounted }) => {
-                    const ready = mounted;
-                    const connected = ready && isConnected;
+              {!isConnected && (
+                <div className="mb-6 border-b border-white/[0.06] pb-6">
+                  <ConnectButton.Custom>
+                    {({ openConnectModal }) => (
+                      <div>
+                        <h4 className="font-display text-base font-light text-white/80">
+                          Wallet
+                        </h4>
+                        <p className="mt-1 text-xs text-white/40">
+                          Connect to start investing
+                        </p>
+                        <MagneticButton
+                          onClick={openConnectModal}
+                          variant="primary"
+                          className="mt-4 w-full"
+                        >
+                          Connect Wallet
+                        </MagneticButton>
+                      </div>
+                    )}
+                  </ConnectButton.Custom>
+                </div>
+              )}
 
-                    if (!connected) {
-                      return (
-                        <div>
-                          <h4 className="font-display text-base font-light text-white/80">
-                            Wallet
-                          </h4>
-                          <p className="mt-1 text-xs text-white/40">
-                            Connect to start investing
-                          </p>
-                          <MagneticButton
-                            onClick={openConnectModal}
-                            variant="primary"
-                            className="mt-4 w-full"
-                          >
-                            Connect Wallet
-                          </MagneticButton>
-                        </div>
-                      );
-                    }
-
-                    return (
+              {isConnected && (
+                <div className="mb-6 border-b border-white/[0.06] pb-6">
+                  <ConnectButton.Custom>
+                    {({ account, chain }) => (
                       <div>
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-display text-base font-light text-white/80">
@@ -307,10 +420,10 @@ export default function PresalePurchasePanel() {
                           </div>
                         </div>
                       </div>
-                    );
-                  }}
-                </ConnectButton.Custom>
-              </div>
+                    )}
+                  </ConnectButton.Custom>
+                </div>
+              )}
 
               {/* Network switch */}
               {isConnected && !isBSC && (
@@ -383,6 +496,7 @@ export default function PresalePurchasePanel() {
                     </div>
                   </div>
 
+                  {/* Purchase summary */}
                   {numericAmount > 0 && txStage === "idle" && (
                     <div className="rounded-xl bg-white/[0.03] px-4 py-3">
                       <div className="flex items-center justify-between text-sm">
@@ -405,75 +519,40 @@ export default function PresalePurchasePanel() {
                     </div>
                   )}
 
-                  <AnimatePresence mode="wait">
-                    {active && (
-                      <motion.div
-                        key="tx-stage"
-                        initial={{ opacity: 0, y: -8, height: 0 }}
-                        animate={{ opacity: 1, y: 0, height: "auto" }}
-                        exit={{ opacity: 0, y: -8, height: 0 }}
-                        transition={{ duration: 0.4, ease: EASE_LUX }}
-                        className="flex items-center gap-3 rounded-xl bg-white/[0.03] px-4 py-3"
-                      >
+                  <div className="flex gap-3">
+                    {!showModal && pendingAction !== "approve" && pendingAction !== "buy" ? (
+                      needsApproval ? (
+                        <MagneticButton
+                          onClick={handleApprove}
+                          variant="primary"
+                          className="flex-1"
+                          disabled={numericAmount <= 0 || active}
+                        >
+                          {active ? TX_LABEL[txStage] || "Processing..." : `Approve ${selectedToken?.symbol}`}
+                        </MagneticButton>
+                      ) : (
+                        <MagneticButton
+                          onClick={handleBuyClick}
+                          variant="primary"
+                          className="flex-1"
+                          disabled={numericAmount <= 0 || !presaleContract || active}
+                        >
+                          {active ? TX_LABEL[txStage] || "Processing..." : `Buy ${SALE_META.tokenSymbol}`}
+                        </MagneticButton>
+                      )
+                    ) : null}
+
+                    {(pendingAction === "approve" || pendingAction === "buy") && active && (
+                      <div className="flex w-full items-center gap-3 rounded-xl bg-white/[0.03] px-4 py-3">
                         <motion.span
                           className="h-2 w-2 rounded-full bg-accent"
                           animate={{ opacity: [0.4, 1, 0.4] }}
                           transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
                         />
                         <span className="text-sm text-white/70 font-light">
-                          {TX_LABEL[txStage]}
+                          {pendingAction === "approve" ? "Approving..." : TX_LABEL[txStage]}
                         </span>
-                      </motion.div>
-                    )}
-
-                    {friendlyError && (
-                      <motion.div
-                        key="tx-error"
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.35, ease: EASE_LUX }}
-                        className="rounded-xl bg-warning/10 px-4 py-3 text-sm text-warning/90"
-                      >
-                        {friendlyError}
-                      </motion.div>
-                    )}
-
-                    {txStage === "complete" && (
-                      <motion.div
-                        key="tx-complete"
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.4, ease: EASE_LUX }}
-                        className="flex items-center gap-3 rounded-xl bg-success/10 px-4 py-3 text-sm text-success"
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.4" opacity="0.3" />
-                          <path d="M8 12l3 3 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        <span>Investment Complete</span>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <div className="flex gap-3">
-                    {needsApproval && txStage === "idle" ? (
-                      <MagneticButton
-                        onClick={handleApprove}
-                        variant="primary"
-                        className="flex-1"
-                      >
-                        Approve {selectedToken?.symbol}
-                      </MagneticButton>
-                    ) : (
-                      <MagneticButton
-                        onClick={handleBuy}
-                        variant="primary"
-                        className="flex-1"
-                        disabled={numericAmount <= 0 || !presaleContract || active}
-                      >
-                        {active ? TX_LABEL[txStage] || "Processing..." : `Buy ${SALE_META.tokenSymbol}`}
-                      </MagneticButton>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -482,6 +561,185 @@ export default function PresalePurchasePanel() {
           </Reveal>
         </div>
       </Container>
+
+      {/* ── Purchase Modal ────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            className="fixed inset-0 z-[9999] grid place-items-center bg-black/90 backdrop-blur-lg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: EASE_LUX }}
+            onClick={handleCloseModal}
+          >
+            <motion.div
+              className="relative w-full max-w-2xl mx-4 rounded-2xl border border-white/[0.08] bg-[#0c0c0e] shadow-2xl"
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              transition={{ duration: 0.4, ease: EASE_LUX }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Sticky header */}
+              <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-2xl border-b border-white/[0.06] bg-[#0c0c0e] px-6 py-4">
+                <h3 className="font-display text-lg font-light text-white/90">
+                  {txStage === "complete"
+                    ? "Investment Complete"
+                    : txStage === "failed"
+                      ? "Transaction Failed"
+                      : "Confirm Purchase"}
+                </h3>
+                <button
+                  onClick={handleCloseModal}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-white/50 transition-colors hover:border-white/20 hover:text-white/80"
+                  aria-label="Close"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M6 6l12 12M18 6l-12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="px-6 py-6 space-y-6">
+                {/* Processing screen */}
+                {(active || txStage === "preparing" || txStage === "awaiting_wallet" || txStage === "submitting" || txStage === "awaiting_confirmation") && (
+                  <div className="flex flex-col items-center py-8 text-center">
+                    <motion.div
+                      className="mb-6 h-14 w-14 rounded-full border-2 border-accent/30"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+                    >
+                      <div className="flex h-full items-center justify-center">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-accent">
+                          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                        </svg>
+                      </div>
+                    </motion.div>
+                    <h4 className="font-display text-xl font-light text-white/80">
+                      {TX_LABEL[txStage]}
+                    </h4>
+                    <p className="mt-2 max-w-xs text-sm text-white/40">
+                      {txStage === "awaiting_wallet" && "Please confirm the transaction in your wallet."}
+                      {txStage === "submitting" && "Broadcasting your transaction to the network."}
+                      {txStage === "awaiting_confirmation" && "Waiting for blockchain confirmation."}
+                      {txStage === "preparing" && "Preparing your transaction."}
+                    </p>
+                  </div>
+                )}
+
+                {/* Success screen */}
+                {txStage === "complete" && (
+                  <div className="flex flex-col items-center py-8 text-center">
+                    <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-success/20">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-success">
+                        <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                    <h4 className="font-display text-xl font-light text-white/90">
+                      Purchase Successful
+                    </h4>
+                    <p className="mt-2 text-sm text-white/50">
+                      You received{" "}
+                      <span className="text-accent">
+                        {estimatedTokens.toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                      </span>{" "}
+                      {SALE_META.tokenSymbol}
+                    </p>
+                    {writeResult && (
+                      <a
+                        href={`${explorer}/tx/${writeResult}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-5 flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-xs text-white/50 transition-colors hover:text-accent"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                          <path d="M7 17l10-10M17 7v10M17 7H7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        View on Explorer
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* Failed screen */}
+                {txStage === "failed" && (
+                  <div className="flex flex-col items-center py-8 text-center">
+                    <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-warning/20">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-warning">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" opacity="0.3" />
+                        <path d="M12 8v4M12 16h0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    <h4 className="font-display text-xl font-light text-white/80">
+                      Transaction Failed
+                    </h4>
+                    <p className="mt-2 text-sm text-white/40">
+                      {friendlyError || "Something went wrong. Please try again."}
+                    </p>
+                  </div>
+                )}
+
+                {/* Idle summary */}
+                {txStage === "idle" && (
+                  <>
+                    <div className="rounded-xl bg-white/[0.03] px-5 py-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-white/40">You pay</span>
+                        <span className="font-display text-lg text-white/90">
+                          {numericAmount.toLocaleString("en-US", { maximumFractionDigits: 4 })}{" "}
+                          {selectedToken?.symbol || "BNB"}
+                        </span>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-sm text-white/40">You receive</span>
+                        <span className="font-display text-lg text-accent">
+                          ≈{" "}
+                          {estimatedTokens.toLocaleString("en-US", {
+                            maximumFractionDigits: 2,
+                          })}{" "}
+                          {SALE_META.tokenSymbol}
+                        </span>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between text-xs">
+                        <span className="text-white/25">Rate</span>
+                        <span className="text-white/40">
+                          1 {selectedToken?.symbol || "BNB"} ={" "}
+                          {rate.toFixed(2)} {SALE_META.tokenSymbol}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Sticky footer */}
+              <div className="sticky bottom-0 flex items-center justify-end gap-3 rounded-b-2xl border-t border-white/[0.06] bg-[#0c0c0e] px-6 py-4">
+                {(txStage === "idle" || txStage === "complete" || txStage === "failed") && (
+                  <>
+                    {txStage === "idle" && (
+                      <button
+                        onClick={handleCloseModal}
+                        className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-xs text-white/50 transition-colors hover:border-white/20 hover:text-white/80"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                    <MagneticButton
+                      onClick={txStage === "idle" ? handleConfirmPurchase : handleCloseModal}
+                      variant="primary"
+                      className="px-6"
+                    >
+                      {txStage === "idle" ? "Confirm Purchase" : "Done"}
+                    </MagneticButton>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Section>
   );
 }

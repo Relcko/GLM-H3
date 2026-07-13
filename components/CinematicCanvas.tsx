@@ -75,12 +75,12 @@ export default function CinematicCanvas() {
     const timeout = setTimeout(() => {
       if (seq.isDone) return;
       const loaded = seq.forceComplete();
-      if (typeof console !== "undefined") {
-        console.warn(
-          `[Loader] Force-completed after timeout. ` +
-          `${loaded}/${TOTAL_FRAMES} frames were loaded.`
-        );
-      }
+if (typeof console !== "undefined" && process.env.NODE_ENV !== "production") {
+  console.warn(
+    `[Loader] Force-completed after timeout. ` +
+    `${loaded}/${TOTAL_FRAMES} frames were loaded.`
+  );
+}
       setLoaded(TOTAL_FRAMES);
       setReady(true);
     }, 8000);
@@ -291,9 +291,9 @@ export default function CinematicCanvas() {
         // a white flash. The canvas rAF loop will paint when frames arrive.
         ctx.fillStyle = "#050505";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        if (typeof console !== "undefined") {
-          console.warn("[CinematicCanvas] No frames available for initial paint.");
-        }
+if (typeof console !== "undefined" && process.env.NODE_ENV !== "production") {
+  console.warn("[CinematicCanvas] No frames available for initial paint.");
+}
       }
       return;
     }

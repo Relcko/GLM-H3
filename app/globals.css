@@ -170,6 +170,224 @@ body {
   z-index: 1;
 }
 
+/* ============================================================
+   Phase 8 — Premium Dashboard 2.0 Utilities
+   ============================================================ */
+
+/* Dashboard glass — premium variant for cards */
+.dashboard-glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 100%);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 8px 32px -16px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dashboard-glass:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 12px 40px -16px rgba(0, 0, 0, 0.6);
+}
+
+/* Dashboard glass strong — for elevated elements */
+.dashboard-glass-strong {
+  background: linear-gradient(135deg, rgba(10, 10, 12, 0.75) 0%, rgba(6, 6, 8, 0.65) 100%);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 20px 60px -20px rgba(0, 0, 0, 0.6);
+}
+
+/* Dashboard card — interactive card with cyan accent border on hover */
+.dashboard-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dashboard-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), transparent 40%, transparent 60%, rgba(0, 212, 255, 0.03));
+  opacity: 0;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dashboard-card:hover::before {
+  opacity: 1;
+}
+
+.dashboard-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Dashboard section header accent line */
+.dashboard-accent-line {
+  width: 1.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0, 212, 255, 0.6), transparent);
+}
+
+/* Cyber cyan glow */
+.cyber-glow {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.08), 0 0 40px rgba(0, 212, 255, 0.04);
+}
+
+.cyber-glow-strong {
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.15), 0 0 60px rgba(0, 212, 255, 0.08);
+}
+
+/* Cyber text gradient */
+.text-cyber {
+  background: linear-gradient(135deg, #00D4FF 0%, #0057FF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Dashboard number — large tabular display numbers */
+.dashboard-number {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Dashboard stat label */
+.dashboard-label {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Dashboard divider */
+.dashboard-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+}
+
+/* Dashboard scrollbar */
+.dashboard-scroll::-webkit-scrollbar {
+  width: 2px;
+}
+.dashboard-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.dashboard-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+}
+.dashboard-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Status dot animation */
+@keyframes statusPulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+.status-dot {
+  animation: statusPulse 2.4s ease-in-out infinite;
+}
+
+/* Dashboard button base */
+.dashboard-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.dashboard-btn-primary {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 212, 255, 0.08));
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  color: #00D4FF;
+}
+
+.dashboard-btn-primary:hover {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.25), rgba(0, 212, 255, 0.12));
+  border-color: rgba(0, 212, 255, 0.35);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+}
+
+/* Dashboard gradient backgrounds */
+.dashboard-gradient-dark {
+  background: linear-gradient(135deg, rgba(5, 5, 5, 1) 0%, rgba(6, 8, 12, 1) 50%, rgba(5, 5, 5, 1) 100%);
+}
+
+.dashboard-gradient-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 212, 255, 0.015) 100%);
+}
+
+/* Metric value animation */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.metric-enter {
+  animation: countUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Health bar */
+.health-bar {
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.health-bar-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Input refinements for dashboard */
+.dashboard-input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.75rem 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dashboard-input::placeholder {
+  color: rgba(255, 255, 255, 0.15);
+}
+
+.dashboard-input:focus {
+  border-color: rgba(0, 212, 255, 0.3);
+  background: rgba(0, 212, 255, 0.03);
+}
+
+/* Pulse ring for notifications */
+@keyframes pulseRing {
+  0% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.15); }
+  70% { box-shadow: 0 0 0 8px rgba(0, 212, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0); }
+}
+
+.pulse-ring {
+  animation: pulseRing 2s ease-out infinite;
+}
+
 /* Loader progress shimmer */
 @keyframes loaderShimmer {
   0%   { transform: translateX(-100%); }

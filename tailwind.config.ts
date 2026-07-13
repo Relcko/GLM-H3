@@ -43,12 +43,17 @@ const config: Config = {
         "btn-hover": "inset 0 1px 0 rgba(255,255,255,0.4), 0 12px 32px -8px rgba(255,255,255,0.25), 0 4px 12px -2px rgba(0,0,0,0.3)",
         "glow-accent":"0 0 24px rgba(0,212,255,0.3)",
         "glow-gold":  "0 0 24px rgba(214,178,94,0.3)",
+        cyber:       "0 0 20px rgba(0,212,255,0.08), 0 0 40px rgba(0,212,255,0.04)",
+        "cyber-strong":"0 0 30px rgba(0,212,255,0.15), 0 0 60px rgba(0,212,255,0.08)",
       },
       animation: {
         "float-slow":  "float 8s ease-in-out infinite",
         "shimmer":     "shimmer 3s linear infinite",
         "pulse-glow":  "pulseGlow 4s ease-in-out infinite",
         "grain-shift": "grainShift 8s steps(1) infinite",
+        "status-pulse":"statusPulse 2.4s ease-in-out infinite",
+        "pulse-ring":  "pulseRing 2s ease-out infinite",
+        "count-up":    "countUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
       },
       keyframes: {
         float: {
@@ -70,6 +75,19 @@ const config: Config = {
           "60%":  { transform: "translate(-1%,4%)" },
           "80%":  { transform: "translate(4%,-2%)" },
           "100%": { transform: "translate(0,0)" },
+        },
+        statusPulse: {
+          "0%,100%": { opacity: "0.4", transform: "scale(1)" },
+          "50%":     { opacity: "1", transform: "scale(1.1)" },
+        },
+        pulseRing: {
+          "0%":   { boxShadow: "0 0 0 0 rgba(0, 212, 255, 0.15)" },
+          "70%":  { boxShadow: "0 0 0 8px rgba(0, 212, 255, 0)" },
+          "100%": { boxShadow: "0 0 0 0 rgba(0, 212, 255, 0)" },
+        },
+        countUp: {
+          from: { opacity: "0", transform: "translateY(4px)" },
+          to:   { opacity: "1", transform: "translateY(0)" },
         },
       },
       transitionTimingFunction: {

@@ -2,7 +2,10 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useSpring, useTransform } from "framer-motion";
+import { formatUnits } from "viem";
 import { EASE_LUX } from "@/lib/motion";
+import { useTokenPrice } from "@/lib/presale/services/reads";
+import { DEFAULT_CHAIN_ID } from "@/lib/presale/config";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -119,9 +122,19 @@ function PriceSlider({
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function RLKOCalculator() {
+  const { data: tokenPrice } = useTokenPrice(DEFAULT_CHAIN_ID);
+  const livePrice =
+    tokenPrice !== undefined
+      ? Number(formatUnits(tokenPrice as bigint, 18))
+      : 0;
+
   const [rawAmount, setRawAmount] = useState("10,000");
   const [lockIdx, setLockIdx]     = useState(3); // 1Y default
   const [price, setPrice]         = useState(1.15);
+
+  useEffect(() => {
+    if (livePrice > 0) setPrice(livePrice);
+  }, [livePrice]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const amount = parseAmount(rawAmount);
