@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState, useCallback, useEffect } from "react";
+import { memo, useState, useCallback, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
@@ -52,7 +52,7 @@ const StakePanel = memo(function StakePanel() {
   const rlkoToken = getRlkoToken(chainId);
   const isBSC = chainId === CHAIN_IDS.bsc || chainId === CHAIN_IDS.bscTestnet;
 
-  const { data: balance } = useReadContract({
+  const { data: balance, isFetching: isFetchingBalance, refetch: refetchBalance } = useReadContract({
     address: rlkoToken ?? undefined,
     abi: ERC20_ABI,
     functionName: "balanceOf",
@@ -61,7 +61,7 @@ const StakePanel = memo(function StakePanel() {
     query: { enabled: !!rlkoToken && !!address },
   });
 
-  const { data: allowance } = useReadContract({
+  const { data: allowance, isFetching: isFetchingAllowance, refetch: refetchAllowance } = useReadContract({
     address: rlkoToken ?? undefined,
     abi: ERC20_ABI,
     functionName: "allowance",
@@ -80,8 +80,58 @@ const StakePanel = memo(function StakePanel() {
   const reward = numericAmount > 0 ? (numericAmount * selectedPlan.returnPct) / 100 : 0;
   const totalReturn = numericAmount + reward;
 
+  const planIndex = STAKING_PLANS.findIndex((p) => p.durationDays === selectedPlan.durationDays);
+  const isPlanValid = planIndex !== -1;
+  const isOverBalance = balance !== undefined && rawAmount > balance;
+
+  // ── Debug instrumentation ──────────────────────────────────────
+  const _debug = useRef({});
+  _debug.current = {
+    allowance: allowance?.toString() ?? "undef",
+    balance: balance?.toString() ?? "undef",
+    needsApproval,
+    step,
+    writeHash,
+    isTxSuccess,
+    isTxLoading,
+    isFetchingAllowance,
+    isFetchingBalance,
+    rawAmount: rawAmount.toString(),
+    numericAmount,
+    isOverBalance,
+    planIndex,
+    amount,
+  };
+
+  const _renderCount = useRef(0);
+  _renderCount.current += 1;
+  console.log(`[Render #${_renderCount.current}]`, _debug.current);
+
+  useEffect(() => {
+    console.log("[Allowance refetch]", {
+      allowance: allowance?.toString() ?? "undef",
+      isFetchingAllowance,
+      renderCount: _renderCount.current,
+    });
+  }, [allowance, isFetchingAllowance]);
+
+  useEffect(() => {
+    if (isFetchingAllowance) {
+      console.log("[Allowance] isFetching = true", { renderCount: _renderCount.current });
+    }
+  }, [isFetchingAllowance]);
+
+  useEffect(() => {
+    if (isFetchingBalance) {
+      console.log("[Balance] isFetching = true", { renderCount: _renderCount.current });
+    }
+  }, [isFetchingBalance]);
+
+  // ── End debug instrumentation ──────────────────────────────────
+
   useEffect(() => {
     if (isTxSuccess && step === "staking") {
+      console.log("[Stake] mined", _debug.current);
       trackEvent({ type: "stake_success", chainId, txHash: writeHash, amount: rawAmount.toString() });
       saveTxEntry({
         hash: writeHash || "",
@@ -96,6 +146,7 @@ const StakePanel = memo(function StakePanel() {
       setAmount("");
     }
     if (isTxSuccess && step === "approving") {
+      console.log("[Approve] mined, allowance should refetch", _debug.current);
       setStep("idle");
     }
   }, [isTxSuccess, writeHash, step, numericAmount, chainId, queryClient, rawAmount]);
@@ -109,6 +160,10 @@ const StakePanel = memo(function StakePanel() {
 
   const handleApprove = useCallback(() => {
     if (!rlkoToken || !stakingContract) return;
+    console.log("[Approve] before writeContract", {
+      ..._debug.current,
+      action: "approve",
+    });
     setStep("approving");
     writeContract({
       address: rlkoToken,
@@ -118,12 +173,12 @@ const StakePanel = memo(function StakePanel() {
     });
   }, [rlkoToken, stakingContract, rawAmount, writeContract]);
 
-  const planIndex = STAKING_PLANS.findIndex((p) => p.durationDays === selectedPlan.durationDays);
-  const isPlanValid = planIndex !== -1;
-  const isOverBalance = balance !== undefined && rawAmount > balance;
-
   const handleStake = useCallback(() => {
     if (!stakingContract || planIndex === -1) return;
+    console.log("[Stake] before writeContract", {
+      ..._debug.current,
+      action: "stake",
+    });
     setStep("staking");
     writeContract({
       address: stakingContract,
