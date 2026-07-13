@@ -212,19 +212,61 @@ export default function PresalePurchasePanel() {
       if (presaleContract) {
         setIntentNonce((n) => n + 1);
         if (!selectedToken?.address) {
-          writeContract({
+          const tx = {
             address: presaleContract,
             abi: PRESALE_ABI,
-            functionName: "buyWithNative",
+            functionName: "buyWithNative" as const,
             value: rawAmount,
-          });
+            chainId,
+            account: address,
+          };
+          const nativeAbiFragment = PRESALE_ABI.find(a => a.name === "buyWithNative");
+          console.log("[RC16.3.2] writeContract instrument (native)");
+          console.log(JSON.stringify({
+            address: presaleContract,
+            functionName: "buyWithNative",
+            abiFragment: nativeAbiFragment,
+            args: [],
+            value: rawAmount.toString(),
+            chainId,
+            account: address,
+            gas: undefined,
+            gasLimit: undefined,
+            maxFeePerGas: undefined,
+            maxPriorityFeePerGas: undefined,
+            rawTx: JSON.parse(JSON.stringify(tx, (k, v) =>
+              typeof v === "bigint" ? v.toString() : typeof v === "string" && v.startsWith("0x") ? v : v
+            )),
+          }, null, 2));
+          writeContract(tx);
         } else {
-          writeContract({
+          const tx = {
             address: presaleContract,
             abi: PRESALE_ABI,
+            functionName: "buyWithToken" as const,
+            args: [selectedToken.address, rawAmount] as const,
+            chainId,
+            account: address,
+          };
+          const tokenAbiFragment = PRESALE_ABI.find(a => a.name === "buyWithToken");
+          console.log("[RC16.3.2] writeContract instrument (token)");
+          console.log(JSON.stringify({
+            address: presaleContract,
             functionName: "buyWithToken",
-            args: [selectedToken.address, rawAmount],
-          });
+            abiFragment: tokenAbiFragment,
+            args: [selectedToken.address, rawAmount.toString()],
+            value: undefined,
+            chainId,
+            account: address,
+            gas: undefined,
+            gasLimit: undefined,
+            maxFeePerGas: undefined,
+            maxPriorityFeePerGas: undefined,
+            rawTx: JSON.parse(JSON.stringify(tx, (k, v) =>
+              typeof v === "bigint" ? v.toString() : typeof v === "string" && v.startsWith("0x") ? v : v
+            )),
+          }, null, 2));
+          writeContract(tx);
         }
       }
     }
@@ -270,12 +312,33 @@ export default function PresalePurchasePanel() {
     if (!selectedToken?.address || !presaleContract) return;
     setPendingAction("approve");
     setIntentNonce((n) => n + 1);
-    writeContract({
+    const tx = {
       address: selectedToken.address,
       abi: ERC20_ABI,
+      functionName: "approve" as const,
+      args: [presaleContract, rawAmount] as const,
+      chainId,
+      account: address,
+    };
+    const approveAbiFragment = ERC20_ABI.find(a => a.name === "approve");
+    console.log("[RC16.3.2] writeContract instrument (approve)");
+    console.log(JSON.stringify({
+      address: selectedToken.address,
       functionName: "approve",
-      args: [presaleContract, rawAmount],
-    });
+      abiFragment: approveAbiFragment,
+      args: [presaleContract, rawAmount.toString()],
+      value: undefined,
+      chainId,
+      account: address,
+      gas: undefined,
+      gasLimit: undefined,
+      maxFeePerGas: undefined,
+      maxPriorityFeePerGas: undefined,
+      rawTx: JSON.parse(JSON.stringify(tx, (k, v) =>
+        typeof v === "bigint" ? v.toString() : typeof v === "string" && v.startsWith("0x") ? v : v
+      )),
+    }, null, 2));
+    writeContract(tx);
   };
 
   const handleBuy = () => {
@@ -283,19 +346,61 @@ export default function PresalePurchasePanel() {
     setPendingAction("buy");
     setIntentNonce((n) => n + 1);
     if (!selectedToken?.address) {
-      writeContract({
+      const tx = {
         address: presaleContract,
         abi: PRESALE_ABI,
-        functionName: "buyWithNative",
+        functionName: "buyWithNative" as const,
         value: rawAmount,
-      });
+        chainId,
+        account: address,
+      };
+      const hbNativeAbiFragment = PRESALE_ABI.find(a => a.name === "buyWithNative");
+      console.log("[RC16.3.2] writeContract instrument (handleBuy native)");
+      console.log(JSON.stringify({
+        address: presaleContract,
+        functionName: "buyWithNative",
+        abiFragment: hbNativeAbiFragment,
+        args: [],
+        value: rawAmount.toString(),
+        chainId,
+        account: address,
+        gas: undefined,
+        gasLimit: undefined,
+        maxFeePerGas: undefined,
+        maxPriorityFeePerGas: undefined,
+        rawTx: JSON.parse(JSON.stringify(tx, (k, v) =>
+          typeof v === "bigint" ? v.toString() : typeof v === "string" && v.startsWith("0x") ? v : v
+        )),
+      }, null, 2));
+      writeContract(tx);
     } else {
-      writeContract({
+      const tx = {
         address: presaleContract,
         abi: PRESALE_ABI,
+        functionName: "buyWithToken" as const,
+        args: [selectedToken.address, rawAmount] as const,
+        chainId,
+        account: address,
+      };
+      const hbTokenAbiFragment = PRESALE_ABI.find(a => a.name === "buyWithToken");
+      console.log("[RC16.3.2] writeContract instrument (handleBuy token)");
+      console.log(JSON.stringify({
+        address: presaleContract,
         functionName: "buyWithToken",
-        args: [selectedToken.address, rawAmount],
-      });
+        abiFragment: hbTokenAbiFragment,
+        args: [selectedToken.address, rawAmount.toString()],
+        value: undefined,
+        chainId,
+        account: address,
+        gas: undefined,
+        gasLimit: undefined,
+        maxFeePerGas: undefined,
+        maxPriorityFeePerGas: undefined,
+        rawTx: JSON.parse(JSON.stringify(tx, (k, v) =>
+          typeof v === "bigint" ? v.toString() : typeof v === "string" && v.startsWith("0x") ? v : v
+        )),
+      }, null, 2));
+      writeContract(tx);
     }
   };
 
