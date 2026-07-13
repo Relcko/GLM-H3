@@ -54,7 +54,7 @@ const TX_LABEL: Record<TxStage, string> = {
 
 const CHAIN_LABELS: Record<number, string> = {
   [CHAIN_IDS.bsc]: "BNB Smart Chain",
-  [CHAIN_IDS.bscTestnet]: "BSC Testnet",
+  [CHAIN_IDS.bscTestnet]: "BNB Smart Chain Testnet",
   [CHAIN_IDS.polygon]: "Polygon",
 };
 
@@ -106,7 +106,7 @@ export default function PresalePurchasePanel() {
 
   const presaleContract = getPresaleContract(chainId);
   const tokens = getPaymentTokens(chainId);
-  const isBSC = chainId === CHAIN_IDS.bsc;
+  const isDefaultChain = chainId === DEFAULT_CHAIN_ID;
 
   const [selectedTokenSymbol, setSelectedTokenSymbol] = useState<string | null>(
     tokens.length > 0 ? tokens[0].symbol : null
@@ -381,12 +381,12 @@ export default function PresalePurchasePanel() {
                             <span className="text-xs text-white/50">Connected</span>
                           </span>
                         </div>
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                          <div className="rounded-xl bg-white/[0.03] px-3 py-2.5">
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 items-stretch">
+                          <div className="rounded-xl bg-white/[0.03] px-3 py-2.5 flex flex-col">
                             <div className="font-mono text-[0.5rem] uppercase tracking-[0.2em] text-white/30">
                               Address
                             </div>
-                            <div className="mt-0.5 font-mono text-xs text-white/70">
+                            <div className="mt-0.5 font-mono text-xs text-white/70 truncate whitespace-nowrap">
                               {account?.address
                                 ? `${account.address.slice(0, 6)}...${account.address.slice(-4)}`
                                 : address
@@ -394,27 +394,29 @@ export default function PresalePurchasePanel() {
                                   : "—"}
                             </div>
                           </div>
-                          <div className="rounded-xl bg-white/[0.03] px-3 py-2.5">
+                          <div className="rounded-xl bg-white/[0.03] px-3 py-2.5 flex flex-col">
                             <div className="font-mono text-[0.5rem] uppercase tracking-[0.2em] text-white/30">
                               Network
                             </div>
-                            <div className="mt-0.5 font-mono text-xs text-white/70">
-                              {chain?.name ?? CHAIN_LABELS[chainId] ?? `Chain ${chainId}`}
+                            <div className="mt-0.5 font-mono text-xs text-white/70 truncate whitespace-nowrap">
+                              {chainId === DEFAULT_CHAIN_ID
+                                ? "BNB Smart Chain Testnet"
+                                : chain?.name ?? CHAIN_LABELS[chainId] ?? `Chain ${chainId}`}
                             </div>
                           </div>
-                          <div className="rounded-xl bg-white/[0.03] px-3 py-2.5">
+                          <div className="rounded-xl bg-white/[0.03] px-3 py-2.5 flex flex-col">
                             <div className="font-mono text-[0.5rem] uppercase tracking-[0.2em] text-white/30">
                               Native
                             </div>
-                            <div className="mt-0.5 font-mono text-xs text-white/70">
+                            <div className="mt-0.5 font-mono text-xs text-white/70 truncate whitespace-nowrap">
                               {formattedNative}
                             </div>
                           </div>
-                          <div className="rounded-xl bg-white/[0.03] px-3 py-2.5">
+                          <div className="rounded-xl bg-white/[0.03] px-3 py-2.5 flex flex-col">
                             <div className="font-mono text-[0.5rem] uppercase tracking-[0.2em] text-white/30">
                               USDT
                             </div>
-                            <div className="mt-0.5 font-mono text-xs text-white/70">
+                            <div className="mt-0.5 font-mono text-xs text-white/70 truncate whitespace-nowrap">
                               {formattedUSDT}
                             </div>
                           </div>
@@ -426,7 +428,7 @@ export default function PresalePurchasePanel() {
               )}
 
               {/* Network switch */}
-              {isConnected && !isBSC && (
+              {isConnected && !isDefaultChain && (
                 <div className="mb-6 rounded-xl border border-warning/20 bg-warning/5 px-4 py-3">
                   <p className="text-xs text-warning/80">
                     Wrong network — switch to BNB Smart Chain to participate.
@@ -442,7 +444,7 @@ export default function PresalePurchasePanel() {
               )}
 
               {/* Buy form */}
-              {isConnected && isBSC && (
+              {isConnected && isDefaultChain && (
                 <div className="space-y-5">
                   <div>
                     <label className="mb-2 block font-mono text-[0.6rem] uppercase tracking-[0.15em] text-white/40">
@@ -466,6 +468,28 @@ export default function PresalePurchasePanel() {
                     </div>
                   </div>
 
+                  {tokenBal !== undefined && !active && (
+                    <div className="flex gap-1.5">
+                      {[25, 50, 75].map((pct) => (
+                        <button
+                          key={pct}
+                          onClick={() => {
+                            const bal = formatUnits(tokenBal as bigint, selectedDecimals);
+                            setAmount((parseFloat(bal) * pct / 100).toFixed(selectedDecimals <= 6 ? 2 : 4));
+                          }}
+                          className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-1 font-mono text-[0.55rem] uppercase tracking-wider text-white/40 transition-colors hover:border-accent/30 hover:text-accent"
+                        >
+                          {pct}%
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => setAmount(formatUnits(tokenBal as bigint, selectedDecimals))}
+                        className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-1 font-mono text-[0.55rem] uppercase tracking-wider text-white/40 transition-colors hover:border-accent/30 hover:text-accent"
+                      >
+                        MAX
+                      </button>
+                    </div>
+                  )}
                   <div>
                     <label className="mb-2 block font-mono text-[0.6rem] uppercase tracking-[0.15em] text-white/40">
                       Amount ({selectedToken?.symbol || "BNB"})
@@ -479,20 +503,7 @@ export default function PresalePurchasePanel() {
                         disabled={active}
                         className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3.5 text-lg text-white/90 outline-none transition-all duration-300 placeholder:text-white/20 focus:border-accent/40 focus:bg-accent/[0.02] disabled:opacity-40"
                       />
-                      {tokenBal !== undefined && !active && (
-                        <button
-                          onClick={() =>
-                            setAmount(
-                              Number(
-                                formatUnits(tokenBal as bigint, selectedDecimals)
-                              ).toString()
-                            )
-                          }
-                          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-white/[0.06] px-2 py-1 font-mono text-[0.55rem] uppercase tracking-wider text-accent/70 transition-colors hover:text-accent"
-                        >
-                          Max
-                        </button>
-                      )}
+
                     </div>
                   </div>
 
