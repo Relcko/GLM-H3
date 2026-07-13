@@ -14,8 +14,29 @@ import { SALE_META, DEFAULT_CHAIN_ID } from "@/lib/presale/config";
 import { CHAIN_IDS } from "@/lib/blockchain/chains";
 import { saveTxEntry } from "@/lib/blockchain/txHistory";
 import { trackEvent } from "@/lib/analytics";
+import { formatUnits } from "viem";
 
 const QUICK_AMOUNTS = [25, 50, 75, 100];
+
+function parseAmount(value: string, decimals: number): bigint {
+  if (!value) return 0n;
+  const cleaned = value.replace(/[^0-9.-]/g, "");
+  const dot = cleaned.indexOf(".");
+  if (dot === -1) {
+    try {
+      return BigInt(cleaned) * 10n ** BigInt(decimals);
+    } catch {
+      return 0n;
+    }
+  }
+  const whole = cleaned.substring(0, dot) || "0";
+  const frac = cleaned.substring(dot + 1).padEnd(decimals, "0").slice(0, decimals);
+  try {
+    return BigInt(whole + frac);
+  } catch {
+    return 0n;
+  }
+}
 
 const StakePanel = memo(function StakePanel() {
   const { address, isConnected } = useAccount();
@@ -53,9 +74,9 @@ const StakePanel = memo(function StakePanel() {
   const { isLoading: isTxLoading, isSuccess: isTxSuccess } = useWaitForTransactionReceipt({ hash: writeHash });
 
   const numericAmount = parseFloat(amount) || 0;
-  const rawAmount = BigInt(Math.floor(numericAmount * 1e18));
+  const rawAmount = parseAmount(amount, 18);
   const needsApproval = allowance !== undefined ? rawAmount > allowance : true;
-  const balanceNum = balance !== undefined ? Number(balance) / 1e18 : 0;
+  const balanceNum = balance !== undefined ? Number(formatUnits(balance, 18)) : 0;
   const reward = numericAmount > 0 ? (numericAmount * selectedPlan.returnPct) / 100 : 0;
   const totalReturn = numericAmount + reward;
 
@@ -177,7 +198,11 @@ const StakePanel = memo(function StakePanel() {
                   {QUICK_AMOUNTS.map((pct) => (
                     <button
                       key={pct}
-                      onClick={() => setAmount(((balanceNum * pct) / 100).toFixed(2))}
+                      onClick={() => {
+                        if (!balance) return;
+                        const wei = (balance * BigInt(pct)) / 100n;
+                        setAmount(formatUnits(wei, 18).replace(/\.?0+$/, ""));
+                      }}
                       className="rounded-lg border border-white/[0.06] px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-wider text-accent/60 transition-all duration-200 hover:border-accent/30 hover:text-accent hover:bg-accent/5"
                     >
                       {pct}%

@@ -21,15 +21,35 @@ export function estimateStage(now = Math.floor(Date.now() / 1e3)): number {
   return Math.min(TOTAL_STAGES, Math.floor(presaleProgress(now) * TOTAL_STAGES));
 }
 
-/** Fallback token price (USDT per RLKO, 18-decimals) used when on-chain data is not yet available. */
-const FALLBACK_TOKEN_PRICE = 1150000000000000000n; // 1.15 USDT
+/**
+ * ── FALLBACK ORACLE PRICES ───────────────────────────────────────
+ * Used ONLY while the on-chain preview (previewPurchase) is loading.
+ * These are optimistic placeholders, NOT the source of truth.
+ *
+ * The on-chain contract computes:
+ *   native → USDT via Chainlink BNB/USD feed (8 decimals)
+ *   USDT → RLKO via active stage tokenPrice (18 decimals)
+ *   final = (nativeAmount * bnbUsd * 1e10) / tokenPrice
+ */
 
-/** Optimistic rate estimate: tokens received per 1 unit of quote currency. */
+/** Fallback BNB/USD price (8 decimals, Chainlink format). ~580 USDT/BNB. */
+const FALLBACK_BNB_USD = 58_000_000_000n; // 580e8
+
+/** Fallback token price (USDT per RLKO, 18 decimals). */
+const FALLBACK_TOKEN_PRICE = 1_150_000_000_000_000_000n; // 1.15 USDT
+
+/**
+ * Optimistic rate estimate: tokens received per 1 native token.
+ * Formula: (1 native * BNB_USD * 1e10) / tokenPrice  (mirrors _nativeToUsdt × _calculateTokenAmount).
+ */
 export function estimateRate(now?: number): number {
-  return 1e18 / Number(FALLBACK_TOKEN_PRICE);
+  return Number(FALLBACK_BNB_USD * 10_000_000_000n) / Number(FALLBACK_TOKEN_PRICE);
 }
 
-/** Optimistic token estimate: tokens received for a given payment amount. */
+/**
+ * Optimistic token estimate: tokens received for a given native payment amount.
+ * Formula: (amount * BNB_USD * 1e10) / tokenPrice
+ */
 export function estimateTokensForQuote(amount: number, now?: number): number {
-  return (amount * 1e18) / Number(FALLBACK_TOKEN_PRICE);
+  return (amount * Number(FALLBACK_BNB_USD * 10_000_000_000n)) / Number(FALLBACK_TOKEN_PRICE);
 }

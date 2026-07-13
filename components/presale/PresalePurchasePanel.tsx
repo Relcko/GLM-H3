@@ -29,6 +29,7 @@ import { PRESALE_ABI, ERC20_ABI } from "@/lib/presale/abi";
 import {
   useTokenAllowance,
   useTokenBalance,
+  usePreviewPurchase,
 } from "@/lib/presale/services/reads";
 import { estimateTokensForQuote, estimateRate } from "@/lib/presale/math";
 import { saveTxEntry, CHAIN_EXPLORERS } from "@/lib/blockchain/txHistory";
@@ -138,6 +139,10 @@ export default function PresalePurchasePanel() {
     selectedToken?.address ?? null,
     address
   );
+
+  const isNative = selectedToken?.address === null;
+  const previewQty = numericAmount > 0 ? rawAmount : 0n;
+  const { data: previewData } = usePreviewPurchase(chainId, previewQty > 0n ? previewQty : undefined, isNative);
 
   const needsApproval =
     selectedToken?.address &&
@@ -317,9 +322,20 @@ export default function PresalePurchasePanel() {
     }
   }, [txStage]);
 
-  const rate = estimateRate();
+  // On-chain preview singleton — drives summary, rate, and modal
+  const previewToken = previewData?.[1] as bigint | undefined;
+
   const estimatedTokens =
-    numericAmount > 0 ? estimateTokensForQuote(numericAmount) : 0;
+    previewToken !== undefined
+      ? Number(formatUnits(previewToken, 18))
+      : numericAmount > 0
+        ? estimateTokensForQuote(numericAmount)
+        : 0;
+
+  const rate =
+    previewToken !== undefined && previewQty > 0n
+      ? Number(formatUnits(previewToken, 18)) / Number(formatUnits(previewQty, selectedDecimals))
+      : estimateRate();
 
   const explorer = CHAIN_EXPLORERS[chainId] || CHAIN_EXPLORERS[DEFAULT_CHAIN_ID] || "https://bscscan.com";
 
