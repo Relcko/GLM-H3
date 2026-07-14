@@ -86,9 +86,9 @@ const InvestorActivity = memo(function InvestorActivity() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, ease: EASE_LUX }}
-      className="dashboard-glass overflow-hidden rounded-2xl"
+      className="dashboard-glass overflow-hidden"
     >
-      <div className="px-6 py-5 sm:px-8 sm:py-6">
+      <div className="px-6 py-5 sm:px-7 sm:py-6">
         <div className="mb-5 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -103,7 +103,7 @@ const InvestorActivity = memo(function InvestorActivity() {
             <motion.span
               className="h-1.5 w-1.5 rounded-full bg-accent"
               animate={{ opacity: [0.4, 1, 0.4] }}
-              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: EASE_LUX }}
             />
             <span className="font-mono text-[0.5rem] uppercase tracking-wider text-accent">Live</span>
           </span>
@@ -120,22 +120,22 @@ const InvestorActivity = memo(function InvestorActivity() {
                   animate={{ opacity: 1, x: 0, height: "auto", marginBottom: 8 }}
                   exit={{ opacity: 0, x: 12, height: 0, marginBottom: 0 }}
                   transition={{ duration: 0.45, ease: EASE_LUX }}
-                  className="flex items-center gap-3 rounded-xl bg-white/[0.03] px-4 py-3 transition-all duration-300 hover:bg-white/[0.05]"
+                  className="flex items-center gap-3 rounded-2xl bg-white/[0.03] px-4 py-3 transition-all duration-[280ms] ease-lux hover:bg-white/[0.05]"
                   role="listitem"
                 >
-                  <div className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${typeColor(act.type)}`}>
+                  <div className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${typeColor(act.type)}`}>
                     {act.type === "purchase" ? (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
                         <path d="M12 8v8M8 12h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                       </svg>
                     ) : act.type === "stake" ? (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" strokeWidth="1.5" />
                         <path d="M12 8v8M9 12h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                       </svg>
                     ) : (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <path d="M12 2v20M17 7H9.5a3 3 0 000 6h5a3 3 0 010 6H7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
@@ -166,3 +166,4 @@ const InvestorActivity = memo(function InvestorActivity() {
 });
 
 export default InvestorActivity;
+

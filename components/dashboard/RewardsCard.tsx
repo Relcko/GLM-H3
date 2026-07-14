@@ -85,7 +85,7 @@ const RewardsCard = memo(function RewardsCard() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.7, ease: EASE_LUX }}
-        className="dashboard-card overflow-hidden px-6 py-6 sm:px-8 sm:py-8"
+        className="dashboard-card overflow-hidden px-6 py-6 sm:px-7 sm:py-7"
       >
         <div className="mb-4 flex items-center gap-3">
           <span className="dashboard-accent-line" />
@@ -118,7 +118,7 @@ const RewardsCard = memo(function RewardsCard() {
       viewport={{ once: true }}
       transition={{ duration: 0.7, ease: EASE_LUX }}
     >
-      <div className="dashboard-card overflow-hidden px-6 py-6 sm:px-8 sm:py-8">
+      <div className="dashboard-card overflow-hidden px-6 py-6 sm:px-7 sm:py-7">
         <div className="mb-6 flex items-center gap-3">
           <span className="dashboard-accent-line" />
           <span className="dashboard-label">Claimable Rewards</span>
@@ -158,15 +158,12 @@ const RewardsCard = memo(function RewardsCard() {
                   document.getElementById("staking")?.scrollIntoView({ behavior: "smooth" });
                 }}
                 disabled={claimableRewards <= 0}
-                className={`group relative flex items-center gap-2.5 rounded-xl px-6 py-3 font-display text-sm tracking-wide transition-all duration-300 ${
+                className={`group relative flex items-center gap-2.5 rounded-full px-6 py-3 font-display text-sm tracking-wide transition-all duration-[280ms] ease-lux ${
                   claimableRewards > 0
-                    ? "bg-success/15 text-success shadow-[0_0_20px_rgba(60,227,125,0.12)] hover:bg-success/20 hover:shadow-[0_0_30px_rgba(60,227,125,0.2)]"
+                    ? "bg-success/15 text-success shadow-[0_0_10px_rgba(60,227,125,0.08)] hover:bg-success/20 hover:shadow-[0_0_16px_rgba(60,227,125,0.12)]"
                     : "bg-white/[0.03] text-white/20 cursor-not-allowed"
                 }`}
               >
-                {claimableRewards > 0 && (
-                  <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-success/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                )}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="relative">
                   <path d="M12 2v20M17 7H9.5a3 3 0 000 6h5a3 3 0 010 6H7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>

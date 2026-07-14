@@ -16,7 +16,7 @@ function TimelineDot({ status }: { status: string }) {
   return (
     <div className="relative flex flex-col items-center">
       <div
-        className={`flex h-6 w-6 items-center justify-center rounded-full border transition-all duration-300 ${
+        className={`flex h-6 w-6 items-center justify-center rounded-full border transition-all duration-[280ms] ease-lux ${
           isComplete
             ? "border-success/30 bg-success/10 shadow-[0_0_8px_rgba(60,227,125,0.15)]"
             : isFailed
@@ -67,7 +67,7 @@ const TransactionTimeline = memo(function TransactionTimeline() {
 
   if (!isConnected) {
     return (
-      <div className="dashboard-glass rounded-2xl p-6 text-center sm:p-8">
+      <div className="dashboard-glass p-6 text-center sm:p-8">
         <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.03] border border-white/[0.06]">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/30">
             <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.3" />
@@ -93,7 +93,7 @@ const TransactionTimeline = memo(function TransactionTimeline() {
 
   if (loading) {
     return (
-      <div className="dashboard-glass rounded-2xl p-6 sm:p-8">
+      <div className="dashboard-glass p-6 sm:p-8">
         <SkeletonTimeline items={4} />
       </div>
     );
@@ -124,7 +124,7 @@ const TransactionTimeline = memo(function TransactionTimeline() {
             href={`${explorer}/address/${address}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white/50 transition-all duration-300 hover:border-accent/20 hover:text-accent hover:bg-accent/5"
+            className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white/50 transition-all duration-[280ms] ease-lux hover:border-accent/20 hover:text-accent hover:bg-accent/5"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M7 17l10-10M17 7v10M17 7H7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -174,7 +174,7 @@ const TransactionTimeline = memo(function TransactionTimeline() {
                         href={`${explorer}/tx/${tx.hash}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-1.5 inline-flex items-center gap-1.5 font-mono text-xs text-accent/60 transition-all duration-200 hover:text-accent group/link"
+                        className="mt-1.5 inline-flex items-center gap-1.5 font-mono text-xs text-accent/60 transition-all duration-[280ms] ease-lux hover:text-accent group/link"
                       >
                         <span className="border-b border-transparent group-hover/link:border-accent/30 transition-colors">
                           {shortenAddress(tx.hash)}
@@ -213,3 +213,4 @@ const TransactionTimeline = memo(function TransactionTimeline() {
 });
 
 export default TransactionTimeline;
+

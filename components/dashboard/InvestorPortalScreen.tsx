@@ -72,7 +72,7 @@ export default function InvestorPortalScreen({
   return (
     <>
       <motion.div
-        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#0A0A0A]"
+        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#0E0F13]"
         initial={{ opacity: 1, scale: 1, y: 0 }}
         animate={
           phase === "exiting"

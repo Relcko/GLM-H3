@@ -20,7 +20,7 @@ function HealthRow({ label, status, detail }: { label: string; status: "ok" | "w
   };
   const c = colors[status];
   return (
-    <div className="group flex items-center justify-between rounded-xl bg-white/[0.03] px-3 py-3 transition-all duration-300 hover:bg-white/[0.05]">
+    <div className="group flex items-center justify-between rounded-2xl bg-white/[0.03] px-3 py-3 transition-all duration-[280ms] ease-lux hover:bg-white/[0.05]">
       <div className="flex items-center gap-2.5">
         <span className={`flex h-2 w-2 rounded-full ${c.dot} shadow-[0_0_6px_rgba(60,227,125,0.3)]`} />
         <div>
@@ -61,7 +61,7 @@ const WalletHealth = memo(function WalletHealth() {
 
   if (!isConnected) {
     return (
-      <div className="dashboard-glass rounded-xl p-5">
+      <div className="dashboard-glass p-5">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="dashboard-accent-line" />
@@ -70,7 +70,7 @@ const WalletHealth = memo(function WalletHealth() {
         </div>
         <button
           onClick={openConnectModal}
-          className="w-full rounded-xl border border-accent/15 bg-accent/5 px-4 py-2.5 text-xs text-accent transition-all duration-300 hover:bg-accent/10 hover:border-accent/30 text-left"
+          className="w-full rounded-full border border-accent/15 bg-accent/5 px-4 py-2.5 text-xs text-accent transition-all duration-[280ms] ease-lux hover:bg-accent/10 hover:border-accent/30 text-left"
         >
           <span className="font-mono">Connect to check wallet health</span>
         </button>
@@ -80,7 +80,7 @@ const WalletHealth = memo(function WalletHealth() {
 
   if (isLoading) {
     return (
-      <div className="dashboard-glass rounded-xl p-5">
+      <div className="dashboard-glass p-5">
         <div className="mb-3">
           <SkeletonMetric />
         </div>
@@ -94,7 +94,7 @@ const WalletHealth = memo(function WalletHealth() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, ease: EASE_LUX }}
-      className="dashboard-glass rounded-xl"
+      className="dashboard-glass"
     >
       <div className="p-5">
         <div className="mb-4 flex items-center justify-between">
@@ -108,8 +108,8 @@ const WalletHealth = memo(function WalletHealth() {
           </span>
         </div>
 
-        <div className="mb-4 flex items-center gap-3 rounded-xl bg-white/[0.03] px-4 py-3 transition-all duration-300 hover:bg-white/[0.05]">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
+        <div className="mb-4 flex items-center gap-3 rounded-2xl bg-white/[0.03] px-4 py-3 transition-all duration-[280ms] ease-lux hover:bg-white/[0.05]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-accent">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
             </svg>
@@ -145,3 +145,4 @@ const WalletHealth = memo(function WalletHealth() {
 });
 
 export default WalletHealth;
+

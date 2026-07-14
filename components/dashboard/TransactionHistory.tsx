@@ -40,7 +40,7 @@ export default function TransactionHistory() {
   if (!isConnected) {
     return (
       <section id="transactions" className="relative scroll-mt-24">
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-10 text-center backdrop-blur-sm">
+          <div className="dashboard-glass p-10 text-center">
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.03]">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/30">
               <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.3" />
@@ -65,7 +65,7 @@ export default function TransactionHistory() {
 
   return (
     <section id="transactions" className="relative scroll-mt-24">
-      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-sm sm:p-8">
+        <div className="dashboard-glass p-6 sm:p-8">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h3 className="font-display text-lg font-light text-white/90">
@@ -79,7 +79,7 @@ export default function TransactionHistory() {
             href={`${explorer}/address/${address}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white/50 transition-colors hover:text-accent"
+            className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white/50 transition-colors duration-[280ms] ease-lux hover:text-accent"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M7 17l10-10M17 7v10M17 7H7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -93,10 +93,10 @@ export default function TransactionHistory() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-white/[0.06]">
-                  <th className="pb-3 text-left font-mono text-[0.55rem] uppercase tracking-[0.15em] text-white/30">Transaction</th>
-                  <th className="pb-3 text-left font-mono text-[0.55rem] uppercase tracking-[0.15em] text-white/30">Type</th>
-                  <th className="pb-3 text-left font-mono text-[0.55rem] uppercase tracking-[0.15em] text-white/30">Status</th>
-                  <th className="pb-3 text-right font-mono text-[0.55rem] uppercase tracking-[0.15em] text-white/30">Time</th>
+                  <th className="pb-3 text-left font-mono text-[0.55rem] uppercase tracking-[0.2em] text-white/35">Transaction</th>
+                  <th className="pb-3 text-left font-mono text-[0.55rem] uppercase tracking-[0.2em] text-white/35">Type</th>
+                  <th className="pb-3 text-left font-mono text-[0.55rem] uppercase tracking-[0.2em] text-white/35">Status</th>
+                  <th className="pb-3 text-right font-mono text-[0.55rem] uppercase tracking-[0.2em] text-white/35">Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -106,9 +106,9 @@ export default function TransactionHistory() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.04, ease: EASE_LUX }}
-                    className="border-b border-white/[0.03] last:border-0"
+                    className="border-b border-white/[0.04] last:border-0 transition-colors duration-[280ms] ease-lux hover:bg-white/[0.03]"
                   >
-                    <td className="py-3 pr-4">
+                    <td className="py-2.5 pr-4">
                       <a
                         href={`${explorer}/tx/${tx.hash}`}
                         target="_blank"
@@ -118,12 +118,12 @@ export default function TransactionHistory() {
                         {shortenAddress(tx.hash)}
                       </a>
                     </td>
-                    <td className="py-3 pr-4">
+                    <td className="py-2.5 pr-4">
                       <span className="rounded-md border border-white/[0.06] bg-white/[0.03] px-2 py-0.5 font-mono text-[0.55rem] uppercase tracking-wider text-white/50">
                         {tx.type}
                       </span>
                     </td>
-                    <td className="py-3 pr-4">
+                    <td className="py-2.5 pr-4">
                       <span
                         className={`inline-flex items-center gap-1.5 font-mono text-[0.55rem] uppercase tracking-wider ${
                           tx.status === "complete" || tx.status === "success"
@@ -145,7 +145,7 @@ export default function TransactionHistory() {
                         {tx.status}
                       </span>
                     </td>
-                    <td className="py-3 text-right font-mono text-xs text-white/35">
+                    <td className="py-2.5 text-right font-mono text-xs text-white/35">
                       {new Date(tx.timestamp).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
