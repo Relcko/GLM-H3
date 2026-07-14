@@ -184,6 +184,14 @@ export default function PresalePurchasePanel() {
   );
 
   const isNative = selectedToken?.address === null;
+
+  // Effective payment-asset balance for the quick-amount chips.
+  // Native (tBNB) reads the on-chain native balance; ERC-20 (USDT) reads the token balance.
+  const activeBalance: bigint | undefined = isNative
+    ? (nativeBal?.value ?? undefined)
+    : (tokenBal as bigint | undefined);
+  const activeDecimals = isNative ? 18 : selectedDecimals;
+
   const previewQty = numericAmount > 0 ? rawAmount : 0n;
   const { data: previewData } = usePreviewPurchase(chainId, previewQty > 0n ? previewQty : undefined, isNative);
 
@@ -617,14 +625,14 @@ export default function PresalePurchasePanel() {
                         className="w-full bg-transparent pt-2.5 text-3xl font-light tracking-tight tabular-nums text-white/90 outline-none placeholder:text-white/20 placeholder:transition-opacity placeholder:duration-200 focus:placeholder:opacity-0 disabled:opacity-40 sm:text-4xl"
                       />
                     </div>
-                    {tokenBal !== undefined && !active && (
+                    {activeBalance !== undefined && !active && (
                       <div className="grid grid-cols-4 gap-1.5">
                         {[25, 50, 75].map((pct) => (
                           <button
                             key={pct}
                             onClick={() => {
-                              const bal = formatUnits(tokenBal as bigint, selectedDecimals);
-                              setAmount((parseFloat(bal) * pct / 100).toFixed(selectedDecimals <= 6 ? 2 : 4));
+                              const bal = formatUnits(activeBalance, activeDecimals);
+                              setAmount((parseFloat(bal) * pct / 100).toFixed(activeDecimals <= 6 ? 2 : 4));
                             }}
                             className="lux-chip rounded-xl border border-white/[0.08] bg-white/[0.02] py-2 font-mono text-[0.6rem] uppercase tracking-wider text-white/55 transition-all active:scale-[0.96] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent/40"
                           >
@@ -632,7 +640,7 @@ export default function PresalePurchasePanel() {
                           </button>
                         ))}
                         <button
-                          onClick={() => setAmount(formatUnits(tokenBal as bigint, selectedDecimals))}
+                          onClick={() => setAmount(formatUnits(activeBalance, activeDecimals))}
                           className="lux-chip rounded-xl border border-white/[0.08] bg-white/[0.02] py-2 font-mono text-[0.6rem] uppercase tracking-wider text-white/55 transition-all active:scale-[0.96] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent/40"
                         >
                           MAX
