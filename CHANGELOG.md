@@ -5,6 +5,19 @@ All notable changes to the Relcko web application are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to Semantic Versioning.
 
+## [1.0.1] - 2026-07-14
+
+Stable baseline release. Builds on `v1.0.0-rc20` (includes the native quick-amount chips hotfix).
+
+### Fixed
+- Quick amount chips (25%, 50%, 75%, MAX) now render for native BNB/tBNB purchases.
+- Quick amount calculations use the balance of the currently selected payment asset.
+
+### Unchanged
+- No UI changes. No smart contract changes. No blockchain logic changes. No breaking changes.
+
+> **New baseline:** `v1.0.1` is the version we build on. Do not develop new features from `v1.0.0-rc20`.
+
 ## [1.0.0-rc20] - 2026-07-14
 
 ### Added
@@ -38,6 +51,7 @@ and this project adheres to Semantic Versioning.
 ## [1.0.0-rc18] - 2026-07 (prior)
 - Presale polish across RC18.0–RC18.3 (flow, states, typography, motion micro-interactions).
 
+[1.0.1]: https://github.com/Relcko/GLM-H3/releases/tag/v1.0.1
 [1.0.0-rc20]: https://github.com/relcko/relcko/releases/tag/v1.0.0-rc20
 [1.0.0-rc19]: https://github.com/relcko/relcko/releases/tag/v1.0.0-rc19
 [1.0.0-rc18]: https://github.com/relcko/relcko/releases/tag/v1.0.0-rc18
