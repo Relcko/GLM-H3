@@ -1,0 +1,28 @@
+import type { NavItem } from "@/lib/shared/types";
+
+export const ADMIN_NAV_ITEMS: NavItem[] = [
+  { id: "dashboard", label: "Dashboard", href: "/admin/executive-dashboard", icon: "LayoutDashboard" },
+  { id: "users", label: "Users", href: "/admin/users", icon: "Users" },
+  { id: "roles", label: "Roles", href: "/admin/roles", icon: "Shield" },
+  { id: "permissions", label: "Permissions", href: "/admin/permissions", icon: "Key" },
+  { id: "properties", label: "Properties", href: "/admin/properties", icon: "Building2" },
+  { id: "marketplace", label: "Marketplace", href: "/admin/marketplace", icon: "Store" },
+  { id: "investments", label: "Investments", href: "/admin/investments", icon: "TrendingUp" },
+  { id: "nfts", label: "NFT Management", href: "/admin/nfts", icon: "Image" },
+  { id: "portfolio", label: "Portfolio Oversight", href: "/admin/portfolio", icon: "PieChart" },
+  { id: "treasury", label: "Treasury", href: "/admin/treasury", icon: "Wallet" },
+  { id: "governance", label: "Governance", href: "/admin/governance", icon: "Vote" },
+  { id: "compliance", label: "Compliance", href: "/admin/compliance", icon: "ClipboardCheck" },
+  { id: "kyc-aml", label: "KYC / AML", href: "/admin/kyc-aml", icon: "Scan" },
+  { id: "operations", label: "Operations", href: "/admin/operations", icon: "Settings" },
+  { id: "monitoring", label: "Monitoring", href: "/admin/monitoring", icon: "Activity" },
+  { id: "ai-control-center", label: "AI Platform", href: "/admin/ai-control-center", icon: "Bot" },
+  { id: "audit-logs", label: "Audit Logs", href: "/admin/audit-logs", icon: "FileSearch" },
+  { id: "notifications", label: "Notifications", href: "/admin/notifications", icon: "Bell" },
+  { id: "announcements", label: "Announcements", href: "/admin/announcements", icon: "Megaphone" },
+  { id: "feature-flags", label: "Feature Flags", href: "/admin/feature-flags", icon: "Flag" },
+  { id: "system-config", label: "System Config", href: "/admin/system-configuration", icon: "Cog" },
+  { id: "jobs", label: "Jobs", href: "/admin/jobs", icon: "Timer" },
+  { id: "backups", label: "Backups", href: "/admin/backups", icon: "HardDrive" },
+  { id: "emergency-controls", label: "Emergency", href: "/admin/emergency-controls", icon: "AlertTriangle" },
+];
