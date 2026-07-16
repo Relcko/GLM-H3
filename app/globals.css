@@ -16,6 +16,174 @@
   --motion-fast: 180ms;
   --motion-normal: 280ms;
   --motion-slow: 450ms;
+
+  /* === Design System Tokens === */
+
+  /* Color - Brand */
+  --color-brand-primary: #47C2FF;
+  --color-brand-secondary: #1E6BFF;
+  --color-brand-accent: #47C2FF;
+
+  /* Color - Surface */
+  --color-surface-base: #0E0F13;
+  --color-surface-secondary: #12141A;
+  --color-surface-elevated: #1A1D24;
+  --color-surface-modal: #12141A;
+
+  /* Color - Text */
+  --color-text-primary: #FAFAFB;
+  --color-text-secondary: rgba(255, 255, 255, 0.7);
+  --color-text-muted: rgba(255, 255, 255, 0.4);
+  --color-text-inverse: #0E0F13;
+  --color-text-link: #47C2FF;
+
+  /* Color - Border */
+  --color-border-default: rgba(255, 255, 255, 0.08);
+  --color-border-muted: rgba(255, 255, 255, 0.05);
+  --color-border-strong: rgba(255, 255, 255, 0.15);
+
+  /* Color - Financial */
+  --color-financial-positive: #3CE37D;
+  --color-financial-caution: #FFC857;
+  --color-financial-negative: #FF5C5C;
+
+  /* Color - Severity */
+  --color-severity-info: #47C2FF;
+  --color-severity-low: #8B8B8B;
+  --color-severity-medium: #FFC857;
+  --color-severity-high: #FF8C42;
+  --color-severity-critical: #FF5C5C;
+
+  /* Color - Chart */
+  --color-chart-cat-1: #47C2FF;
+  --color-chart-cat-2: #D6B25E;
+  --color-chart-cat-3: #3CE37D;
+  --color-chart-cat-4: #FF8C42;
+  --color-chart-cat-5: #A78BFA;
+  --color-chart-seq-1: rgba(71, 194, 255, 0.85);
+  --color-chart-seq-2: rgba(71, 194, 255, 0.65);
+  --color-chart-seq-3: rgba(71, 194, 255, 0.45);
+  --color-chart-seq-4: rgba(71, 194, 255, 0.25);
+  --color-chart-seq-5: rgba(71, 194, 255, 0.1);
+
+  /* Typography - Family */
+  --font-family-sans: var(--font-inter), system-ui, sans-serif;
+  --font-family-display: var(--font-display), Georgia, serif;
+  --font-family-mono: var(--font-mono), ui-monospace, monospace;
+
+  /* Typography - Size */
+  --font-size-display: clamp(2.75rem, 8.5vw, 7.5rem);
+  --font-size-h1: clamp(2rem, 5vw, 4.75rem);
+  --font-size-h2: clamp(1.85rem, 4.2vw, 3.75rem);
+  --font-size-h3: clamp(1.15rem, 2.4vw, 2rem);
+  --font-size-h4: 1.25rem;
+  --font-size-body: 0.9375rem;
+  --font-size-body-small: 0.8125rem;
+  --font-size-label: 0.75rem;
+  --font-size-caption: 0.6875rem;
+  --font-size-mono: 0.8125rem;
+
+  /* Typography - Weight */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Typography - Leading */
+  --font-leading-tight: 1.0;
+  --font-leading-normal: 1.4;
+  --font-leading-relaxed: 1.6;
+
+  /* Typography - Tracking */
+  --font-tracking-tight: -0.02em;
+  --font-tracking-normal: 0em;
+  --font-tracking-wide: 0.05em;
+  --font-tracking-uppercase: 0.2em;
+
+  /* Spacing - Inset */
+  --spacing-inset-xs: 0.25rem;
+  --spacing-inset-sm: 0.5rem;
+  --spacing-inset-md: 0.75rem;
+  --spacing-inset-lg: 1rem;
+
+  /* Spacing - Stack */
+  --spacing-stack-xs: 0.25rem;
+  --spacing-stack-sm: 0.5rem;
+  --spacing-stack-md: 1rem;
+  --spacing-stack-lg: 1.5rem;
+  --spacing-stack-xl: 2rem;
+
+  /* Spacing - Inline */
+  --spacing-inline-xs: 0.25rem;
+  --spacing-inline-sm: 0.5rem;
+  --spacing-inline-md: 0.75rem;
+  --spacing-inline-lg: 1rem;
+
+  /* Spacing - Gutter */
+  --spacing-gutter-sm: 0.75rem;
+  --spacing-gutter-md: 1rem;
+  --spacing-gutter-lg: 1.5rem;
+
+  /* Spacing - Section */
+  --spacing-section-sm: 1.5rem;
+  --spacing-section-md: 2.5rem;
+  --spacing-section-lg: 4rem;
+
+  /* Elevation */
+  --elevation-base: none;
+  --elevation-raised: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --elevation-floating: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --elevation-overlay: 0 12px 40px rgba(0, 0, 0, 0.45);
+  --elevation-modal: 0 24px 80px rgba(0, 0, 0, 0.6);
+  --elevation-emergency: 0 0 40px rgba(255, 92, 92, 0.2);
+
+  /* Motion - Duration */
+  --motion-duration-fast: 150ms;
+  --motion-duration-normal: 280ms;
+  --motion-duration-slow: 450ms;
+
+  /* Motion - Easing */
+  --motion-ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-emphasized: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-full: 9999px;
+
+  /* Z-index layers */
+  --z-base: 0;
+  --z-dropdown: 30;
+  --z-sticky: 40;
+  --z-overlay: 50;
+  --z-modal: 50;
+  --z-command: 60;
+  --z-toast: 70;
+  --z-emergency: 80;
+}
+
+[data-theme="light"] {
+  --color-surface-base: #F8F9FA;
+  --color-surface-secondary: #FFFFFF;
+  --color-surface-elevated: #FFFFFF;
+  --color-surface-modal: #FFFFFF;
+  --color-text-primary: #1A1D24;
+  --color-text-secondary: rgba(0, 0, 0, 0.65);
+  --color-text-muted: rgba(0, 0, 0, 0.35);
+  --color-text-inverse: #FFFFFF;
+  --color-text-link: #1E6BFF;
+  --color-border-default: rgba(0, 0, 0, 0.08);
+  --color-border-muted: rgba(0, 0, 0, 0.05);
+  --color-border-strong: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] body {
+  background: var(--color-surface-base);
+  color: var(--color-text-primary);
 }
 
 * {

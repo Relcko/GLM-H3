@@ -7,7 +7,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    include: ["packages/**/*.test.ts", "marketplace/**/*.test.ts"],
+    include: ["packages/**/*.test.ts", "marketplace/**/*.test.ts", "__tests__/**/*.test.ts", "__tests__/**/*.test.tsx"],
+    setupFiles: ["__tests__/f1/setup.ts"],
     coverage: {
       provider: "v8",
       include: ["packages/**/src/**/*.ts", "marketplace/**/*.ts"],

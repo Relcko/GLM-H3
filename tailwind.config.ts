@@ -20,6 +20,35 @@ const config: Config = {
         gold: "#D6B25E",
         success: "#3CE37D",
         warning: "#FFC857",
+        surface: {
+          base: "var(--color-surface-base)",
+          secondary: "var(--color-surface-secondary)",
+          elevated: "var(--color-surface-elevated)",
+          modal: "var(--color-surface-modal)",
+        },
+        text: {
+          primary: "var(--color-text-primary)",
+          secondary: "var(--color-text-secondary)",
+          muted: "var(--color-text-muted)",
+          link: "var(--color-text-link)",
+        },
+        border: {
+          DEFAULT: "var(--color-border-default)",
+          muted: "var(--color-border-muted)",
+          strong: "var(--color-border-strong)",
+        },
+        financial: {
+          positive: "var(--color-financial-positive)",
+          caution: "var(--color-financial-caution)",
+          negative: "var(--color-financial-negative)",
+        },
+        severity: {
+          info: "var(--color-severity-info)",
+          low: "var(--color-severity-low)",
+          medium: "var(--color-severity-medium)",
+          high: "var(--color-severity-high)",
+          critical: "var(--color-severity-critical)",
+        },
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],

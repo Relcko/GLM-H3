@@ -206,7 +206,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="font-sans antialiased bg-bg-base text-white grain vignette">
+      <body className="font-sans antialiased bg-surface-base text-text-primary grain vignette">
         <a href="#top" className="skip-link">Skip to content</a>
         <Providers>{children}</Providers>
       </body>
