@@ -17,6 +17,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+    "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
@@ -25,6 +26,90 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@relcko/types": [
+        "packages/types/src"
+      ],
+      "@relcko/utils": [
+        "packages/utils/src"
+      ],
+      "@relcko/error": [
+        "packages/error/src"
+      ],
+      "@relcko/identity": [
+        "packages/identity/src"
+      ],
+      "@relcko/marketplace": [
+        "packages/marketplace/src"
+      ],
+      "@relcko/domain-core": [
+        "packages/domain-core/src"
+      ],
+      "@relcko/events": [
+        "packages/events/src"
+      ],
+      "@relcko/validation": [
+        "packages/validation/src"
+      ],
+      "@relcko/feature-flags": [
+        "packages/feature-flags/src"
+      ],
+      "@relcko/env": [
+        "packages/env/src"
+      ],
+      "@relcko/config": [
+        "packages/config/src"
+      ],
+      "@relcko/logging": [
+        "packages/logging/src"
+      ],
+      "@relcko/observability": [
+        "packages/observability/src"
+      ],
+      "@relcko/permission": [
+        "packages/permission/src"
+      ],
+      "@relcko/security": [
+        "packages/security/src"
+      ],
+      "@relcko/audit-contracts": [
+        "packages/audit-contracts/src"
+      ],
+      "@relcko/notification-contracts": [
+        "packages/notification-contracts/src"
+      ],
+      "@relcko/testing": [
+        "packages/testing/src"
+      ],
+      "@relcko/investment-engine": [
+        "packages/investment-engine/src"
+      ],
+      "@relcko/nft-marketplace": [
+        "packages/nft-marketplace/src"
+      ],
+      "@relcko/network-engine": [
+        "packages/network-engine/src"
+      ],
+      "@relcko/portfolio": [
+        "packages/portfolio/src"
+      ],
+      "@relcko/governance": [
+        "packages/governance/src"
+      ],
+      "@relcko/treasury": [
+        "packages/treasury/src"
+      ],
+      "@relcko/ai-platform": [
+        "packages/ai-platform/src"
+      ],
+      "@relcko/operations": [
+        "packages/operations/src"
+      ],
+      "@relcko/administration": [
+        "packages/administration/src"
+      ],
+      "@relcko/performance": [
+        "packages/performance/src"
       ]
     }
   },
@@ -36,6 +121,7 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "legacy-marketplace"
   ]
 }

@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "noEmit": true
+  },
+  "include": ["packages/**/*.ts"],
+  "exclude": ["node_modules", "legacy-marketplace", "app", "components", "lib", "marketplace", "contracts", "next-env.d.ts"]
+}

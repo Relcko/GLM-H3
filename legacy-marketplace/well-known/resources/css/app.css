@@ -1,0 +1,1359 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.tsx';
+@source '../**/*.ts';
+
+@theme {
+    --font-sans: 'Inter', 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+    /* Dark blockchain color palette */
+    --color-dark-950: #030712;
+    --color-dark-900: #0a0f1a;
+    --color-dark-800: #111827;
+    --color-dark-700: #1f2937;
+    --color-dark-600: #374151;
+    --color-dark-500: #4b5563;
+
+    /* Primary blue palette */
+    --color-primary-50: #eff6ff;
+    --color-primary-100: #dbeafe;
+    --color-primary-200: #bfdbfe;
+    --color-primary-300: #93c5fd;
+    --color-primary-400: #60a5fa;
+    --color-primary-500: #3b82f6;
+    --color-primary-600: #2563eb;
+    --color-primary-700: #1d4ed8;
+    --color-primary-800: #1e40af;
+    --color-primary-900: #1e3a8a;
+
+    /* Blockchain accent colors - blue focused */
+    --color-neon-cyan: #00d4ff;
+    --color-neon-blue: #3b82f6;
+    --color-neon-light: #60a5fa;
+    --color-neon-green: #10b981;
+
+    /* Gradient stops - blue theme */
+    --color-gradient-start: #1d4ed8;
+    --color-gradient-mid: #2563eb;
+    --color-gradient-end: #3b82f6;
+
+    /* Glass colors */
+    --color-glass-white: rgba(255, 255, 255, 0.05);
+    --color-glass-border: rgba(255, 255, 255, 0.1);
+}
+
+/* Base styles */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Dark mode (default) */
+html.dark body,
+html:not(.light) body {
+    background: linear-gradient(135deg, #030712 0%, #0a0f1a 50%, #111827 100%);
+    min-height: 100vh;
+    color: white;
+}
+
+/* Light mode */
+html.light body {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+    min-height: 100vh;
+    color: #0f172a;
+}
+
+/* Custom scrollbar - blue theme */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0a0f1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #1d4ed8, #3b82f6);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #2563eb, #60a5fa);
+}
+
+/* Glassmorphism utilities - Dark Mode */
+html.dark .glass,
+html:not(.light) .glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+html.dark .glass-card,
+html:not(.light) .glass-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+html.dark .glass-card:hover,
+html:not(.light) .glass-card:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+}
+
+/* Glassmorphism utilities - Light Mode */
+html.light .glass {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+html.light .glass-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+html.light .glass-card:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 100%);
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.12);
+}
+
+.glass-button {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(29, 78, 216, 0.2) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.glass-button:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(29, 78, 216, 0.3) 100%);
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Gradient utilities - blue only */
+.gradient-text {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 50%, #00d4ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gradient-text-cyan {
+    background: linear-gradient(135deg, #00d4ff 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gradient-text-green {
+    background: linear-gradient(135deg, #10b981 0%, #00d4ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gradient-border {
+    position: relative;
+    background: linear-gradient(135deg, #030712, #111827);
+    border-radius: 1rem;
+}
+
+.gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6, #00d4ff);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+.gradient-bg {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
+}
+
+.gradient-bg-hover:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%);
+}
+
+/* Neon glow effects - blue only */
+.neon-glow {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3),
+                0 0 40px rgba(59, 130, 246, 0.2),
+                0 0 60px rgba(59, 130, 246, 0.1);
+}
+
+.neon-glow-cyan {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3),
+                0 0 40px rgba(0, 212, 255, 0.2),
+                0 0 60px rgba(0, 212, 255, 0.1);
+}
+
+.neon-glow-green {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3),
+                0 0 40px rgba(16, 185, 129, 0.2);
+}
+
+.text-glow {
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.5),
+                 0 0 40px rgba(59, 130, 246, 0.3);
+}
+
+.text-glow-cyan {
+    text-shadow: 0 0 20px rgba(0, 212, 255, 0.5),
+                 0 0 40px rgba(0, 212, 255, 0.3);
+}
+
+/* Animated background grid */
+.grid-bg {
+    background-image:
+        linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+}
+
+.grid-bg-animated {
+    background-image:
+        linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 50px 50px; }
+}
+
+/* Floating orbs for background - blue only */
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.3;
+    animation: float 20s ease-in-out infinite;
+}
+
+.orb-1 {
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, #1d4ed8 0%, transparent 70%);
+    top: -200px;
+    left: -200px;
+    animation-delay: 0s;
+}
+
+.orb-2 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+    top: 50%;
+    right: -150px;
+    animation-delay: -7s;
+}
+
+.orb-3 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, #00d4ff 0%, transparent 70%);
+    bottom: -100px;
+    left: 30%;
+    animation-delay: -14s;
+}
+
+@keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(30px, -30px) scale(1.05); }
+    50% { transform: translate(-20px, 20px) scale(0.95); }
+    75% { transform: translate(20px, 10px) scale(1.02); }
+}
+
+/* Card hover effects */
+.card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+}
+
+/* Blockchain-style animated border */
+.animated-border {
+    position: relative;
+    overflow: hidden;
+}
+
+.animated-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #1d4ed8, #3b82f6, #00d4ff, #1d4ed8);
+    background-size: 300% 100%;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: borderRotate 4s linear infinite;
+}
+
+@keyframes borderRotate {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+}
+
+/* Pulse animation for live indicators */
+.pulse-live {
+    animation: pulseLive 2s ease-in-out infinite;
+}
+
+@keyframes pulseLive {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Stats counter animation */
+.stat-value {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Input styles - Dark Mode */
+html.dark .input-dark,
+html:not(.light) .input-dark {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    transition: all 0.2s;
+}
+
+html.dark .input-dark:focus,
+html:not(.light) .input-dark:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+html.dark .input-dark::placeholder,
+html:not(.light) .input-dark::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Input styles - Light Mode */
+html.light .input-dark {
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #0f172a;
+    transition: all 0.2s;
+}
+
+html.light .input-dark:focus {
+    background: white;
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+html.light .input-dark::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+/* Select element styles for dark mode */
+html.dark select.input-dark,
+html:not(.light) select.input-dark {
+    background-color: rgba(15, 23, 42, 0.95);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25rem;
+    padding-right: 2.5rem;
+}
+
+html.dark select.input-dark option,
+html:not(.light) select.input-dark option {
+    background-color: #0f172a;
+    color: white;
+    padding: 0.75rem 1rem;
+}
+
+html.light select.input-dark {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25rem;
+    padding-right: 2.5rem;
+}
+
+html.light select.input-dark option {
+    background-color: white;
+    color: #0f172a;
+}
+
+/* Button styles */
+.btn-primary {
+    background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+    color: white;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+}
+
+.animate-slide-down {
+    animation: slideDown 0.4s ease-out;
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+}
+
+.animate-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+/* Stagger animations for lists */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+/* Floating particle animations */
+@keyframes floatSlow {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+    25% { transform: translate(20px, -30px) scale(1.1); opacity: 0.8; }
+    50% { transform: translate(-10px, -50px) scale(0.9); opacity: 0.5; }
+    75% { transform: translate(30px, -20px) scale(1.05); opacity: 0.7; }
+}
+
+@keyframes floatMedium {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+    33% { transform: translate(-25px, -40px) scale(1.15); opacity: 0.7; }
+    66% { transform: translate(15px, -60px) scale(0.85); opacity: 0.4; }
+}
+
+@keyframes floatFast {
+    0%, 100% { transform: translate(0, 0); opacity: 0.4; }
+    50% { transform: translate(10px, -30px); opacity: 0.6; }
+}
+
+@keyframes scrollIndicator {
+    0%, 100% { transform: translateY(0); opacity: 0.6; }
+    50% { transform: translateY(6px); opacity: 1; }
+}
+
+.animate-float-slow {
+    animation: floatSlow 8s ease-in-out infinite;
+}
+
+.animate-float-medium {
+    animation: floatMedium 6s ease-in-out infinite;
+}
+
+.animate-float-fast {
+    animation: floatFast 4s ease-in-out infinite;
+}
+
+.animate-scroll-indicator {
+    animation: scrollIndicator 2s ease-in-out infinite;
+}
+
+/* Progress bar */
+.progress-bar {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 0.5s ease-out;
+}
+
+/* Badge styles */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badge-success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.badge-warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.badge-error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badge-info {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* Blockchain-specific styles */
+.chain-eth {
+    background: linear-gradient(135deg, rgba(98, 126, 234, 0.1), rgba(98, 126, 234, 0.05));
+    border-color: rgba(98, 126, 234, 0.3);
+}
+
+.chain-bsc {
+    background: linear-gradient(135deg, rgba(243, 186, 47, 0.1), rgba(243, 186, 47, 0.05));
+    border-color: rgba(243, 186, 47, 0.3);
+}
+
+/* Token/crypto styling */
+.token-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.75rem;
+}
+
+/* Table styles */
+.table-dark {
+    width: 100%;
+}
+
+.table-dark th {
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.table-dark td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.table-dark tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Hide elements visually but keep for screen readers */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* shadcn/ui theme configuration - dark blue theme */
+@theme inline {
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
+    --radius-3xl: calc(var(--radius) + 12px);
+    --radius-4xl: calc(var(--radius) + 16px);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Dark mode by default - blue blockchain theme */
+:root {
+    --radius: 0.75rem;
+    --background: #030712;
+    --foreground: #f8fafc;
+    --card: #0f172a;
+    --card-foreground: #f8fafc;
+    --popover: #0f172a;
+    --popover-foreground: #f8fafc;
+    --primary: #3b82f6;
+    --primary-foreground: #ffffff;
+    --secondary: #1e293b;
+    --secondary-foreground: #f8fafc;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --accent: #1d4ed8;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --border: rgba(255, 255, 255, 0.1);
+    --input: rgba(255, 255, 255, 0.1);
+    --ring: #3b82f6;
+    --chart-1: #3b82f6;
+    --chart-2: #10b981;
+    --chart-3: #f59e0b;
+    --chart-4: #00d4ff;
+    --chart-5: #60a5fa;
+    --sidebar: #0f172a;
+    --sidebar-foreground: #f8fafc;
+    --sidebar-primary: #3b82f6;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #1e293b;
+    --sidebar-accent-foreground: #f8fafc;
+    --sidebar-border: rgba(255, 255, 255, 0.1);
+    --sidebar-ring: #3b82f6;
+}
+
+/* Light mode CSS variables */
+html.light {
+    --radius: 0.75rem;
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --popover: #ffffff;
+    --popover-foreground: #0f172a;
+    --primary: #3b82f6;
+    --primary-foreground: #ffffff;
+    --secondary: #f1f5f9;
+    --secondary-foreground: #0f172a;
+    --muted: #f1f5f9;
+    --muted-foreground: #64748b;
+    --accent: #1d4ed8;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --border: rgba(0, 0, 0, 0.1);
+    --input: rgba(0, 0, 0, 0.08);
+    --ring: #3b82f6;
+    --chart-1: #3b82f6;
+    --chart-2: #10b981;
+    --chart-3: #f59e0b;
+    --chart-4: #0ea5e9;
+    --chart-5: #2563eb;
+    --sidebar: #f8fafc;
+    --sidebar-foreground: #0f172a;
+    --sidebar-primary: #3b82f6;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #f1f5f9;
+    --sidebar-accent-foreground: #0f172a;
+    --sidebar-border: rgba(0, 0, 0, 0.1);
+    --sidebar-ring: #3b82f6;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-background text-foreground;
+    }
+}
+
+/* ============================================
+   PREMIUM LIGHT MODE STYLES
+   Multi-billion dollar company aesthetics
+   ============================================ */
+
+/* Light mode body - clean white with subtle gradient */
+html.light body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+}
+
+/* Light mode main layout container */
+html.light .min-h-screen.bg-dark-950 {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+}
+
+/* Light mode scrollbar */
+html.light ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #3b82f6, #60a5fa);
+}
+
+/* ============================================
+   TEXT COLOR OVERRIDES FOR LIGHT MODE
+   Note: We do NOT override .text-white globally
+   because buttons with bg-gray-900 need white text.
+   Use dark:text-white pattern for theme-aware text.
+   ============================================ */
+
+/* Keep blue/cyan accent text colors vibrant */
+html.light .text-blue-400,
+html.light .text-blue-300 {
+    color: #2563eb !important;
+}
+
+html.light .text-cyan-400,
+html.light .text-cyan-300 {
+    color: #0891b2 !important;
+}
+
+html.light .text-emerald-400,
+html.light .text-emerald-300 {
+    color: #059669 !important;
+}
+
+/* ============================================
+   GLASSMORPHISM FOR LIGHT MODE
+   Premium frosted glass effect
+   ============================================ */
+
+html.light .glass {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light .glass-card {
+    background: #ffffff !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light .glass-card:hover {
+    background: #ffffff !important;
+    border-color: rgba(59, 130, 246, 0.2) !important;
+    box-shadow: 0 8px 40px rgba(59, 130, 246, 0.12), 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   BACKGROUNDS FOR LIGHT MODE
+   ============================================ */
+
+/* Hide dark background orbs in light mode */
+html.light .orb,
+html.light .orb-1,
+html.light .orb-2,
+html.light .orb-3 {
+    opacity: 0 !important;
+}
+
+/* Replace with subtle light gradients */
+html.light .fixed.inset-0.pointer-events-none:first-child {
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.03) 0%, transparent 50%) !important;
+}
+
+/* Grid background - very subtle in light mode */
+html.light .grid-bg,
+html.light .grid-bg-animated {
+    background-image:
+        linear-gradient(rgba(59, 130, 246, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.04) 1px, transparent 1px) !important;
+    opacity: 0.5;
+}
+
+/* Background gradient sections */
+html.light .bg-gradient-to-b.from-blue-950\/50,
+html.light .bg-gradient-to-b.from-transparent.via-blue-950\/20,
+html.light .bg-gradient-to-br.from-blue-900\/50 {
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%) !important;
+}
+
+/* Dark background overrides */
+html.light .bg-dark-950,
+html.light .bg-dark-900,
+html.light .bg-dark-800 {
+    background: transparent !important;
+}
+
+/* Background color opacities */
+html.light .bg-white\/5 {
+    background: rgba(0, 0, 0, 0.02) !important;
+}
+
+html.light .bg-white\/10 {
+    background: rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light .bg-blue-500\/10 {
+    background: rgba(59, 130, 246, 0.08) !important;
+}
+
+html.light .bg-blue-500\/20 {
+    background: rgba(59, 130, 246, 0.1) !important;
+}
+
+html.light .bg-cyan-500\/10 {
+    background: rgba(6, 182, 212, 0.08) !important;
+}
+
+html.light .bg-cyan-500\/20 {
+    background: rgba(6, 182, 212, 0.1) !important;
+}
+
+html.light .bg-emerald-500\/10 {
+    background: rgba(16, 185, 129, 0.08) !important;
+}
+
+html.light .bg-emerald-500\/20 {
+    background: rgba(16, 185, 129, 0.1) !important;
+}
+
+/* Blur orbs - subtle version for light mode */
+html.light .blur-3xl {
+    display: none !important;
+}
+
+/* ============================================
+   BORDERS FOR LIGHT MODE
+   ============================================ */
+
+html.light .border-white\/5,
+html.light .border-white\/10 {
+    border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+html.light .border-blue-500\/20 {
+    border-color: rgba(59, 130, 246, 0.15) !important;
+}
+
+html.light .border-cyan-500\/20 {
+    border-color: rgba(6, 182, 212, 0.15) !important;
+}
+
+/* ============================================
+   GRADIENT TEXT FOR LIGHT MODE
+   ============================================ */
+
+html.light .gradient-text {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #0284c7 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+html.light .gradient-text-cyan {
+    background: linear-gradient(135deg, #0891b2 0%, #0284c7 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+html.light .gradient-text-green {
+    background: linear-gradient(135deg, #059669 0%, #0891b2 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+/* ============================================
+   INPUTS FOR LIGHT MODE
+   ============================================ */
+
+html.light .input-dark {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    color: #0f172a !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light .input-dark:focus {
+    background: #ffffff !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
+}
+
+html.light .input-dark::placeholder {
+    color: #94a3b8 !important;
+}
+
+/* ============================================
+   BUTTONS FOR LIGHT MODE
+   ============================================ */
+
+html.light .btn-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25) !important;
+}
+
+html.light .btn-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35) !important;
+}
+
+html.light .btn-secondary {
+    background: #f8fafc !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    color: #0f172a !important;
+}
+
+html.light .btn-secondary:hover {
+    background: #f1f5f9 !important;
+    border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+/* ============================================
+   CARD EFFECTS FOR LIGHT MODE
+   ============================================ */
+
+html.light .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(59, 130, 246, 0.08) !important;
+}
+
+/* Gradient background box */
+html.light .gradient-bg {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
+}
+
+/* Progress bar */
+html.light .progress-bar {
+    background: rgba(0, 0, 0, 0.06) !important;
+}
+
+html.light .progress-bar-fill {
+    background: linear-gradient(90deg, #2563eb, #3b82f6) !important;
+}
+
+/* ============================================
+   NAVIGATION FOR LIGHT MODE
+   ============================================ */
+
+/* Header glass effect */
+html.light header.glass {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Footer */
+html.light footer .glass {
+    background: #f8fafc !important;
+}
+
+/* Navigation link underline */
+html.light .bg-gradient-to-r.from-blue-500.to-cyan-500 {
+    background: linear-gradient(90deg, #2563eb, #0891b2) !important;
+}
+
+/* ============================================
+   BADGES & STATUS FOR LIGHT MODE
+   ============================================ */
+
+html.light .badge-success {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: #059669 !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+}
+
+html.light .badge-warning {
+    background: rgba(245, 158, 11, 0.1) !important;
+    color: #d97706 !important;
+    border: 1px solid rgba(245, 158, 11, 0.2) !important;
+}
+
+html.light .badge-info {
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: #2563eb !important;
+    border: 1px solid rgba(59, 130, 246, 0.2) !important;
+}
+
+/* ============================================
+   MISC LIGHT MODE FIXES
+   ============================================ */
+
+/* Mobile menu panel */
+html.light .glass-card.border-l {
+    background: #ffffff !important;
+    border-left: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Flash messages */
+html.light .glass-card.border-emerald-500\/20 {
+    background: rgba(16, 185, 129, 0.05) !important;
+    border: 1px solid rgba(16, 185, 129, 0.15) !important;
+}
+
+html.light .glass-card.border-red-500\/20 {
+    background: rgba(239, 68, 68, 0.05) !important;
+    border: 1px solid rgba(239, 68, 68, 0.15) !important;
+}
+
+/* Tables */
+html.light .table-dark th {
+    background: #f8fafc !important;
+    color: #64748b !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+html.light .table-dark td {
+    color: #0f172a !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light .table-dark tr:hover td {
+    background: rgba(59, 130, 246, 0.02) !important;
+}
+
+/* Animated border */
+html.light .animated-border::before {
+    background: linear-gradient(90deg, #2563eb, #3b82f6, #0891b2, #2563eb) !important;
+}
+
+/* Neon glow - subtle version for light mode */
+html.light .neon-glow {
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Text glow - disabled in light mode */
+html.light .text-glow,
+html.light .text-glow-cyan {
+    text-shadow: none !important;
+}
+
+/* ============================================
+   HERO SECTION LIGHT MODE - ENTERPRISE LEVEL
+   ============================================ */
+
+/* All hero sections with background images - light mode overlay */
+html.light section.relative.min-h-screen,
+html.light section.relative.min-h-\[90vh\],
+html.light section.relative.min-h-\[60vh\] {
+    position: relative;
+}
+
+/* Image overlay adjustments for light mode */
+html.light section.relative img + div.absolute.inset-0,
+html.light section.relative .absolute.inset-0:has(+ img) {
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0.85) 0%,
+        rgba(248, 250, 252, 0.75) 50%,
+        rgba(241, 245, 249, 0.95) 100%) !important;
+}
+
+/* Dark gradient overlays - make them light in light mode */
+html.light .bg-gradient-to-b.from-dark-950\/90,
+html.light .bg-gradient-to-b.from-dark-950\/80,
+html.light .bg-gradient-to-b.from-dark-950\/70 {
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0.9) 0%,
+        rgba(248, 250, 252, 0.8) 50%,
+        rgba(241, 245, 249, 0.95) 100%) !important;
+}
+
+html.light .via-dark-950\/75,
+html.light .via-dark-950\/70,
+html.light .to-dark-950\/95,
+html.light .to-dark-950 {
+    --tw-gradient-to: rgba(248, 250, 252, 0.95) !important;
+    --tw-gradient-via: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Blue/cyan gradient overlays in light mode */
+html.light .bg-gradient-to-r.from-blue-950\/40,
+html.light .bg-gradient-to-r.from-blue-950\/50,
+html.light .to-cyan-950\/40,
+html.light .to-cyan-950\/50 {
+    background: linear-gradient(to right,
+        rgba(59, 130, 246, 0.08) 0%,
+        transparent 50%,
+        rgba(6, 182, 212, 0.08) 100%) !important;
+}
+
+/* Stats bar in hero - light mode */
+html.light .bg-dark-950\/80.backdrop-blur-xl {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 -1px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Floating gradient orbs in hero - subtle in light mode */
+html.light section.relative .bg-blue-500\/20.rounded-full.blur-3xl,
+html.light section.relative .bg-cyan-500\/20.rounded-full.blur-3xl {
+    opacity: 0.3 !important;
+    filter: blur(60px) !important;
+}
+
+/* Hero content text for light mode */
+html.light section.relative .drop-shadow-2xl {
+    filter: none !important;
+    color: #0f172a !important;
+}
+
+/* Badge in hero - light mode */
+html.light .bg-white\/10.backdrop-blur-md.border.border-white\/20 {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light .bg-white\/10.backdrop-blur-md .text-white\/90 {
+    color: #1e293b !important;
+}
+
+/* Scroll indicator in light mode */
+html.light .border-white\/30 {
+    border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+html.light .bg-white\/60 {
+    background: rgba(59, 130, 246, 0.6) !important;
+}
+
+/* Floating particles in light mode */
+html.light .animate-float-slow,
+html.light .animate-float-medium,
+html.light .animate-float-fast {
+    background: rgba(59, 130, 246, 0.4) !important;
+}
+
+/* ============================================
+   STICKY FILTER BAR - LIGHT MODE
+   ============================================ */
+
+html.light .sticky.top-16.bg-dark-950\/80 {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Filter pills in light mode */
+html.light .bg-white\/5.text-gray-400.border.border-white\/10 {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light .bg-white\/5.text-gray-400.border.border-white\/10:hover {
+    background: #e2e8f0 !important;
+    color: #1e293b !important;
+}
+
+/* ============================================
+   CTA SECTIONS - LIGHT MODE
+   ============================================ */
+
+/* CTA with image background */
+html.light section.py-24.relative.overflow-hidden .bg-gradient-to-r.from-dark-950\/95,
+html.light section.py-20.relative.overflow-hidden .bg-gradient-to-r.from-dark-950\/95 {
+    background: linear-gradient(to right,
+        rgba(255, 255, 255, 0.97) 0%,
+        rgba(248, 250, 252, 0.95) 50%,
+        rgba(255, 255, 255, 0.97) 100%) !important;
+}
+
+html.light section.relative .via-dark-950\/90,
+html.light section.relative .to-dark-950\/95 {
+    --tw-gradient-via: rgba(255, 255, 255, 0.95) !important;
+    --tw-gradient-to: rgba(248, 250, 252, 0.97) !important;
+}
+
+/* CTA gradient backgrounds */
+html.light .bg-gradient-to-r.from-blue-950\/50.via-dark-950.to-cyan-950\/50 {
+    background: linear-gradient(to right,
+        rgba(59, 130, 246, 0.05) 0%,
+        rgba(248, 250, 252, 1) 50%,
+        rgba(6, 182, 212, 0.05) 100%) !important;
+}
+
+html.light .bg-gradient-to-t.from-blue-950\/50.via-transparent.to-blue-950\/50 {
+    background: linear-gradient(to top,
+        rgba(59, 130, 246, 0.05) 0%,
+        transparent 50%,
+        rgba(59, 130, 246, 0.05) 100%) !important;
+}
+
+/* ============================================
+   PROPERTY/SECTION CARDS WITH IMAGES - LIGHT MODE
+   ============================================ */
+
+/* Image overlay gradients */
+html.light .bg-gradient-to-t.from-dark-950\/60,
+html.light .bg-gradient-to-t.from-dark-950\/80 {
+    background: linear-gradient(to top,
+        rgba(15, 23, 42, 0.6) 0%,
+        transparent 100%) !important;
+}
+
+/* Glass cards on images */
+html.light section .glass-card.rounded-xl.p-4 {
+    background: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Feature cards with image backgrounds */
+html.light .relative.group .absolute.-inset-4.bg-gradient-to-r {
+    opacity: 0.1 !important;
+}
+
+/* ============================================
+   MISCELLANEOUS LIGHT MODE IMPROVEMENTS
+   ============================================ */
+
+/* View toggle buttons */
+html.light .bg-white\/5.rounded-lg.p-1.border.border-white\/10 {
+    background: #f1f5f9 !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Subtle background sections */
+html.light .bg-gradient-to-b.from-transparent.via-blue-950\/10.to-transparent {
+    background: linear-gradient(to bottom,
+        transparent 0%,
+        rgba(59, 130, 246, 0.03) 50%,
+        transparent 100%) !important;
+}
+
+/* Empty state icons */
+html.light .bg-gradient-to-br.from-blue-500\/20.to-cyan-500\/20 {
+    background: linear-gradient(to bottom right,
+        rgba(59, 130, 246, 0.1) 0%,
+        rgba(6, 182, 212, 0.1) 100%) !important;
+}
+
+/* Info boxes */
+html.light .bg-gradient-to-br.from-blue-500\/10.to-cyan-500\/10.border.border-blue-500\/20 {
+    background: linear-gradient(to bottom right,
+        rgba(59, 130, 246, 0.08) 0%,
+        rgba(6, 182, 212, 0.08) 100%) !important;
+    border-color: rgba(59, 130, 246, 0.15) !important;
+}

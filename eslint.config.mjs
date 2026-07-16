@@ -8,6 +8,14 @@ import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
  * re-exports the flat config array that `eslint-config-next` ships, so
  * `eslint .` works again.
  */
-const config = [...nextCoreWebVitals];
+const config = [
+  ...nextCoreWebVitals,
+  {
+    // The legacy Laravel/Inertia marketplace under legacy-marketplace/ is a
+    // READ-ONLY reference specification and is not part of the Next.js app.
+    // Keep it out of the app's lint + typecheck scope.
+    ignores: ["legacy-marketplace/**"],
+  },
+];
 
 export default config;

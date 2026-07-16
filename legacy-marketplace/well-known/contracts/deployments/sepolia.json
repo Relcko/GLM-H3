@@ -1,0 +1,7 @@
+{
+  "network": "sepolia",
+  "paymentToken": "0xfb4f3c7aA9fef2393EdF7a22C6E80376B711044a",
+  "rwaProperty": "0x3C771c8D3CA51b1BE00702b45841Ea48B7dbD9f1",
+  "treasury": "0x9CB09b6333DC1853664E88F0BE3FeE12257F0D00",
+  "deployedAt": "2026-01-01T11:36:01.957Z"
+}
