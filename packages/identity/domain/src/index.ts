@@ -8,3 +8,4 @@ export * from './queries';
 export * from './repositories';
 export * from './services';
 export * from './specifications';
+export * from './aggregates';

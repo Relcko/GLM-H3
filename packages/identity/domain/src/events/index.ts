@@ -3,12 +3,37 @@ export type { EventCatalogValue } from './event-catalog';
 
 export type {
   UserRegisteredPayload,
+  UserActivatedPayload,
   UserProfileUpdatedPayload,
   UserSuspendedPayload,
   UserReactivatedPayload,
+  UserLockedPayload,
+  UserUnlockedPayload,
   UserDeletedPayload,
+  UserRestoredPayload,
+  UserEmailVerifiedPayload,
+  UserPasswordAuthEnabledPayload,
+  UserPasswordAuthDisabledPayload,
+  UserMfaEnabledPayload,
+  UserMfaDisabledPayload,
 } from './user-events';
-export { UserEventTypeMap } from './user-events';
+export {
+  UserRegistered,
+  UserActivated,
+  UserProfileUpdated,
+  UserSuspended,
+  UserReactivated,
+  UserLocked,
+  UserUnlocked,
+  UserDeleted,
+  UserRestored,
+  UserEmailVerified,
+  UserPasswordAuthEnabled,
+  UserPasswordAuthDisabled,
+  UserMfaEnabled,
+  UserMfaDisabled,
+  UserEventTypeMap,
+} from './user-events';
 
 export type {
   WalletLinkedPayload,

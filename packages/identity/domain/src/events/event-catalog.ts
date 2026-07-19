@@ -7,10 +7,19 @@
 export const EventCatalog = {
   /** User lifecycle */
   USER_REGISTERED: 'identity.user.registered',
+  USER_ACTIVATED: 'identity.user.activated',
   USER_PROFILE_UPDATED: 'identity.user.profile.updated',
   USER_SUSPENDED: 'identity.user.suspended',
   USER_REACTIVATED: 'identity.user.reactivated',
+  USER_LOCKED: 'identity.user.locked',
+  USER_UNLOCKED: 'identity.user.unlocked',
   USER_DELETED: 'identity.user.deleted',
+  USER_RESTORED: 'identity.user.restored',
+  USER_EMAIL_VERIFIED: 'identity.user.email.verified',
+  USER_PASSWORD_AUTH_ENABLED: 'identity.user.password_auth.enabled',
+  USER_PASSWORD_AUTH_DISABLED: 'identity.user.password_auth.disabled',
+  USER_MFA_ENABLED: 'identity.user.mfa.enabled',
+  USER_MFA_DISABLED: 'identity.user.mfa.disabled',
 
   /** Wallet lifecycle */
   WALLET_LINKED: 'identity.wallet.linked',
