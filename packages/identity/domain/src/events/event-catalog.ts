@@ -24,8 +24,12 @@ export const EventCatalog = {
   /** Wallet lifecycle */
   WALLET_LINKED: 'identity.wallet.linked',
   WALLET_VERIFIED: 'identity.wallet.verified',
+  WALLET_VERIFICATION_REVOKED: 'identity.wallet.verification.revoked',
   WALLET_UNLINKED: 'identity.wallet.unlinked',
   WALLET_PRIMARY_SET: 'identity.wallet.primary.set',
+  WALLET_PRIMARY_UNSET: 'identity.wallet.primary.unset',
+  WALLET_CHAIN_ADDED: 'identity.wallet.chain.added',
+  WALLET_METADATA_UPDATED: 'identity.wallet.metadata.updated',
 
   /** Session lifecycle */
   SESSION_CREATED: 'identity.session.created',

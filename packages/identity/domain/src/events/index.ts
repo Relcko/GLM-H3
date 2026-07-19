@@ -38,10 +38,24 @@ export {
 export type {
   WalletLinkedPayload,
   WalletVerifiedPayload,
+  WalletVerificationRevokedPayload,
   WalletUnlinkedPayload,
   WalletPrimarySetPayload,
+  WalletPrimaryUnsetPayload,
+  WalletChainAddedPayload,
+  WalletMetadataUpdatedPayload,
 } from './wallet-events';
-export { WalletEventTypeMap } from './wallet-events';
+export {
+  WalletLinked,
+  WalletVerified,
+  WalletVerificationRevoked,
+  WalletUnlinked,
+  WalletPrimarySet,
+  WalletPrimaryUnset,
+  WalletChainAdded,
+  WalletMetadataUpdated,
+  WalletEventTypeMap,
+} from './wallet-events';
 
 export type {
   SessionCreatedPayload,
