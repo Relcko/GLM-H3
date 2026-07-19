@@ -116,5 +116,28 @@ export { RecoveryEventTypeMap } from './recovery-events';
 export type { PolicyEvaluatedPayload } from './policy-events';
 export { PolicyEventTypeMap } from './policy-events';
 
-export type { PasskeyRegisteredPayload, PasskeyRemovedPayload } from './passkey-events';
-export { PasskeyEventTypeMap } from './passkey-events';
+export type {
+  PasskeyRegisteredPayload,
+  PasskeyVerifiedPayload,
+  PasskeyActivatedPayload,
+  PasskeyDeactivatedPayload,
+  PasskeyRevokedPayload,
+  PasskeyNameUpdatedPayload,
+  PasskeyTransportsUpdatedPayload,
+  PasskeyCredentialRotatedPayload,
+  PasskeyUsageRecordedPayload,
+  PasskeyRemovedPayload,
+} from './passkey-events';
+export {
+  PasskeyRegistered,
+  PasskeyVerified,
+  PasskeyActivated,
+  PasskeyDeactivated,
+  PasskeyRevoked,
+  PasskeyNameUpdated,
+  PasskeyTransportsUpdated,
+  PasskeyCredentialRotated,
+  PasskeyUsageRecorded,
+  PasskeyRemoved,
+  PasskeyEventTypeMap,
+} from './passkey-events';

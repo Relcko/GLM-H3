@@ -85,6 +85,14 @@ export const EventCatalog = {
   /** Passkey lifecycle */
   PASSKEY_REGISTERED: 'identity.passkey.registered',
   PASSKEY_REMOVED: 'identity.passkey.removed',
+  PASSKEY_VERIFIED: 'identity.passkey.verified',
+  PASSKEY_ACTIVATED: 'identity.passkey.activated',
+  PASSKEY_DEACTIVATED: 'identity.passkey.deactivated',
+  PASSKEY_REVOKED: 'identity.passkey.revoked',
+  PASSKEY_NAME_UPDATED: 'identity.passkey.name.updated',
+  PASSKEY_TRANSPORTS_UPDATED: 'identity.passkey.transports.updated',
+  PASSKEY_CREDENTIAL_ROTATED: 'identity.passkey.credential.rotated',
+  PASSKEY_USAGE_RECORDED: 'identity.passkey.usage.recorded',
 
   /** Authentication attempt */
   AUTHENTICATION_ATTEMPT_RECORDED: 'identity.authentication_attempt.recorded',

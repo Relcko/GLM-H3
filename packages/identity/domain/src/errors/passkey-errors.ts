@@ -14,3 +14,22 @@ export class PasskeyRegistrationFailedError extends IdentityDomainError {
     });
   }
 }
+
+export class PasskeyRevokedError extends IdentityDomainError {
+  constructor(passkeyId: string, reason?: string, context?: Record<string, unknown>) {
+    super('PASSKEY_REVOKED', `Passkey ${passkeyId} is revoked${reason ? `: ${reason}` : ''}`, {
+      passkeyId,
+      reason,
+      ...context,
+    });
+  }
+}
+
+export class PasskeyNotVerifiedError extends IdentityDomainError {
+  constructor(passkeyId: string, context?: Record<string, unknown>) {
+    super('PASSKEY_NOT_VERIFIED', `Passkey ${passkeyId} is not verified`, {
+      passkeyId,
+      ...context,
+    });
+  }
+}

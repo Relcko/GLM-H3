@@ -20,7 +20,12 @@ export {
   EmailAlreadyLinkedError,
   EmailVerificationFailedError,
 } from './auth-errors';
-export { PasskeyNotFoundError, PasskeyRegistrationFailedError } from './passkey-errors';
+export {
+  PasskeyNotFoundError,
+  PasskeyRegistrationFailedError,
+  PasskeyRevokedError,
+  PasskeyNotVerifiedError,
+} from './passkey-errors';
 export {
   RecoveryNotFoundError,
   RecoveryExpiredError,
