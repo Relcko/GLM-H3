@@ -5,3 +5,6 @@ export * from './errors';
 export * from './events';
 export * from './commands';
 export * from './queries';
+export * from './repositories';
+export * from './services';
+export * from './specifications';
