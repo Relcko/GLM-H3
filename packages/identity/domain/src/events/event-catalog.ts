@@ -66,6 +66,20 @@ export const EventCatalog = {
   AUTHENTICATION_SUCCEEDED: 'identity.authentication.succeeded',
   AUTHENTICATION_FAILED: 'identity.authentication.failed',
 
+  /** Authentication attempt lifecycle */
+  AUTHENTICATION_ATTEMPT_RECORDED: 'identity.authentication_attempt.recorded',
+  AUTHENTICATION_ATTEMPT_METHOD_RECORDED: 'identity.authentication_attempt.method.recorded',
+  AUTHENTICATION_ATTEMPT_MFA_REQUIRED: 'identity.authentication_attempt.mfa.required',
+  AUTHENTICATION_ATTEMPT_MFA_CHALLENGE_BEGUN: 'identity.authentication_attempt.mfa.challenge.begun',
+  AUTHENTICATION_ATTEMPT_MFA_CHALLENGE_COMPLETED:
+    'identity.authentication_attempt.mfa.challenge.completed',
+  AUTHENTICATION_ATTEMPT_MFA_FAILED: 'identity.authentication_attempt.mfa.failed',
+  AUTHENTICATION_ATTEMPT_LOCKOUT_TRIGGERED: 'identity.authentication_attempt.lockout.triggered',
+  AUTHENTICATION_ATTEMPT_THROTTLE_TRIGGERED: 'identity.authentication_attempt.throttle.triggered',
+  AUTHENTICATION_ATTEMPT_RISK_SCORE_RECORDED: 'identity.authentication_attempt.risk_score.recorded',
+  AUTHENTICATION_ATTEMPT_EXPIRED: 'identity.authentication_attempt.expired',
+  AUTHENTICATION_ATTEMPT_CANCELLED: 'identity.authentication_attempt.cancelled',
+
   /** Email verification */
   EMAIL_VERIFICATION_INITIATED: 'identity.email.verification.initiated',
   EMAIL_VERIFICATION_COMPLETED: 'identity.email.verification.completed',
@@ -97,9 +111,6 @@ export const EventCatalog = {
   PASSKEY_TRANSPORTS_UPDATED: 'identity.passkey.transports.updated',
   PASSKEY_CREDENTIAL_ROTATED: 'identity.passkey.credential.rotated',
   PASSKEY_USAGE_RECORDED: 'identity.passkey.usage.recorded',
-
-  /** Authentication attempt */
-  AUTHENTICATION_ATTEMPT_RECORDED: 'identity.authentication_attempt.recorded',
 } as const;
 
 export type EventCatalogValue = (typeof EventCatalog)[keyof typeof EventCatalog];

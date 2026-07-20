@@ -107,8 +107,6 @@ export type {
 export { ServiceAccountEventTypeMap } from './service-account-events';
 
 export type {
-  AuthenticationSucceededPayload,
-  AuthenticationFailedPayload,
   EmailVerificationInitiatedPayload,
   EmailVerificationCompletedPayload,
   EmailVerificationFailedPayload,
@@ -155,3 +153,35 @@ export {
   PasskeyRemoved,
   PasskeyEventTypeMap,
 } from './passkey-events';
+
+export type {
+  AuthenticationAttemptRecordedPayload,
+  AuthenticationAttemptMethodRecordedPayload,
+  AuthenticationAttemptMfaRequiredPayload,
+  AuthenticationAttemptMfaChallengeBegunPayload,
+  AuthenticationAttemptMfaChallengeCompletedPayload,
+  AuthenticationAttemptMfaFailedPayload,
+  AuthenticationSucceededPayload,
+  AuthenticationFailedPayload,
+  AuthenticationAttemptLockoutTriggeredPayload,
+  AuthenticationAttemptThrottleTriggeredPayload,
+  AuthenticationAttemptRiskScoreRecordedPayload,
+  AuthenticationAttemptExpiredPayload,
+  AuthenticationAttemptCancelledPayload,
+} from './authentication-attempt-events';
+export {
+  AuthenticationAttemptRecorded,
+  AuthenticationAttemptMethodRecorded,
+  AuthenticationAttemptMfaRequired,
+  AuthenticationAttemptMfaChallengeBegun,
+  AuthenticationAttemptMfaChallengeCompleted,
+  AuthenticationAttemptMfaFailed,
+  AuthenticationSucceeded,
+  AuthenticationFailed,
+  AuthenticationAttemptLockoutTriggered,
+  AuthenticationAttemptThrottleTriggered,
+  AuthenticationAttemptRiskScoreRecorded,
+  AuthenticationAttemptExpired,
+  AuthenticationAttemptCancelled,
+  AuthenticationAttemptEventTypeMap,
+} from './authentication-attempt-events';
