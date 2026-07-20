@@ -89,6 +89,7 @@ export const EventCatalog = {
   PASSWORD_RESET_INITIATED: 'identity.password.reset.initiated',
   PASSWORD_RESET_COMPLETED: 'identity.password.reset.completed',
   PASSWORD_RESET_EXPIRED: 'identity.password.reset.expired',
+  PASSWORD_RESET_CANCELLED: 'identity.password.reset.cancelled',
 
   /** Guardian recovery */
   RECOVERY_INITIATED: 'identity.recovery.initiated',

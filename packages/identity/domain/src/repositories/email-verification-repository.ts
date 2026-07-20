@@ -1,10 +1,11 @@
-import type { TokenId, UserId } from '../value-objects';
+import type { EmailVerification } from '../aggregates';
+import type { EmailVerificationId, UserId } from '../value-objects';
+import type { IRepository } from '@relcko/kernel';
 
-export interface IEmailVerificationRepository {
-  findById(id: TokenId): Promise<unknown>;
-  getById(id: TokenId): Promise<unknown>;
-  save(aggregate: unknown): Promise<void>;
-  delete(id: TokenId): Promise<void>;
-  findByUserId(userId: UserId): Promise<unknown>;
-  findByEmail(email: string): Promise<unknown>;
+export interface IEmailVerificationRepository extends IRepository<
+  EmailVerification,
+  EmailVerificationId
+> {
+  findByUserId(userId: UserId): Promise<readonly EmailVerification[]>;
+  findPendingByUserId(userId: UserId): Promise<readonly EmailVerification[]>;
 }

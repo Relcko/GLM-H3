@@ -1,9 +1,8 @@
-import type { TokenId, UserId } from '../value-objects';
+import type { PasswordReset } from '../aggregates';
+import type { PasswordResetId, UserId } from '../value-objects';
+import type { IRepository } from '@relcko/kernel';
 
-export interface IPasswordResetRepository {
-  findById(id: TokenId): Promise<unknown>;
-  getById(id: TokenId): Promise<unknown>;
-  save(aggregate: unknown): Promise<void>;
-  delete(id: TokenId): Promise<void>;
-  findByUserId(userId: UserId): Promise<unknown>;
+export interface IPasswordResetRepository extends IRepository<PasswordReset, PasswordResetId> {
+  findByUserId(userId: UserId): Promise<readonly PasswordReset[]>;
+  findPendingByUserId(userId: UserId): Promise<readonly PasswordReset[]>;
 }

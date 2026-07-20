@@ -106,14 +106,6 @@ export type {
 } from './service-account-events';
 export { ServiceAccountEventTypeMap } from './service-account-events';
 
-export type {
-  EmailVerificationInitiatedPayload,
-  EmailVerificationCompletedPayload,
-  EmailVerificationFailedPayload,
-  PasswordResetInitiatedPayload,
-  PasswordResetCompletedPayload,
-  PasswordResetExpiredPayload,
-} from './auth-events';
 export { AuthEventTypeMap } from './auth-events';
 
 export type {
@@ -151,6 +143,32 @@ export {
   PasskeyUsageRecorded,
   PasskeyEventTypeMap,
 } from './passkey-events';
+
+export type {
+  EmailVerificationInitiatedPayload,
+  EmailVerificationCompletedPayload,
+  EmailVerificationFailedPayload,
+} from './email-verification-events';
+export {
+  EmailVerificationInitiated,
+  EmailVerificationCompleted,
+  EmailVerificationFailed,
+  EmailVerificationEventTypeMap,
+} from './email-verification-events';
+
+export type {
+  PasswordResetInitiatedPayload,
+  PasswordResetCompletedPayload,
+  PasswordResetExpiredPayload,
+  PasswordResetCancelledPayload,
+} from './password-reset-events';
+export {
+  PasswordResetInitiated,
+  PasswordResetCompleted,
+  PasswordResetExpired,
+  PasswordResetCancelled,
+  PasswordResetEventTypeMap,
+} from './password-reset-events';
 
 export type {
   AuthenticationAttemptRecordedPayload,
