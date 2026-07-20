@@ -24,6 +24,8 @@ import { RecoveryEngine } from "./recovery/engine";
 import { InvestmentHistoryService } from "./history/service";
 import { PortfolioAdapter } from "./portfolio/adapter";
 import { SecurityGuard } from "./security/guard";
+import { CommissionAdapter } from "./commission/adapter";
+import type { CommissionAdapterOptions } from "./commission/adapter";
 import type { BlockchainAdapter } from "./blockchain/adapter";
 
 export interface InvestmentOrchestratorDeps {
@@ -32,6 +34,7 @@ export interface InvestmentOrchestratorDeps {
   blockchain: BlockchainAdapter;
   logger?: Logger;
   performance?: PerformanceModuleContext;
+  commissionOptions?: CommissionAdapterOptions;
 }
 
 export class InvestmentOrchestrator {
@@ -46,6 +49,7 @@ export class InvestmentOrchestrator {
   readonly history: InvestmentHistoryService;
   readonly security: SecurityGuard;
   readonly portfolio: PortfolioAdapter;
+  readonly commission: CommissionAdapter;
   readonly performance?: PerformanceModuleContext;
   private readonly eventBus: EventBus;
 
@@ -81,6 +85,7 @@ export class InvestmentOrchestrator {
     this.recovery = new RecoveryEngine(deps.repository, deps.eventBus, deps.blockchain, deps.logger);
     this.history = new InvestmentHistoryService(deps.repository);
     this.portfolio = new PortfolioAdapter(deps.repository, deps.eventBus, deps.logger);
+    this.commission = new CommissionAdapter(deps.commissionOptions ?? { events: deps.eventBus, logger: deps.logger });
   }
 
   async requestInvestment(
@@ -140,6 +145,17 @@ export class InvestmentOrchestrator {
     tx: TransactionRecord,
   ): Promise<SettlementRecord> {
     const settlement = await this.settlement.settle(actorId, investment, property, tx);
+
+    await publishInvestmentEvent(this.eventBus, InvestmentEventType.InvestmentConfirmed, investment.id, actorId, {
+      settlementId: settlement.id,
+      propertyId: investment.propertyId,
+      tokens: investment.tokens.toString(),
+      amount: investment.amount.amount.toString(),
+      currency: investment.amount.currency,
+      investorId: investment.investorId as string,
+    });
+
+    await this.commission.calculateAndPublish(actorId, investment);
 
     await publishInvestmentEvent(this.eventBus, InvestmentEventType.InvestmentCompleted, investment.id, actorId, {
       settlementId: settlement.id,

@@ -15,7 +15,7 @@ describe("PortfolioModule (composition root)", () => {
     portModule = createPortfolioModule({ events });
   });
 
-  it("exposes all 16 services", () => {
+  it("exposes all 17 services", () => {
     expect(portModule.portfolioService).toBeDefined();
     expect(portModule.snapshotEngine).toBeDefined();
     expect(portModule.assetAggregator).toBeDefined();
@@ -31,6 +31,7 @@ describe("PortfolioModule (composition root)", () => {
     expect(portModule.search).toBeDefined();
     expect(portModule.exportService).toBeDefined();
     expect(portModule.healthEngine).toBeDefined();
+    expect(portModule.projectionService).toBeDefined();
     expect(portModule.eventsAdapter).toBeDefined();
   });
 

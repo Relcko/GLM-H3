@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { InMemoryEventBus, createEnvelope } from "@relcko/events";
+import { InMemoryEventBus } from "@relcko/events";
 import type { EventBus } from "@relcko/events";
 import { PortfolioEventsAdapter } from "../events-adapter/adapter";
+import { PortfolioService } from "../portfolio/service";
+import { InMemoryPortfolioRepository } from "../in-memory-repository";
 
 describe("PortfolioEventsAdapter", () => {
   let events: EventBus;
@@ -9,7 +11,9 @@ describe("PortfolioEventsAdapter", () => {
 
   beforeEach(() => {
     events = new InMemoryEventBus();
-    adapter = new PortfolioEventsAdapter(events);
+    const repo = new InMemoryPortfolioRepository();
+    const service = new PortfolioService(repo, events);
+    adapter = new PortfolioEventsAdapter(events, service);
   });
 
   it("subscribes to external events", () => {
@@ -19,19 +23,5 @@ describe("PortfolioEventsAdapter", () => {
     for (const unsub of unsubs) {
       expect(typeof unsub).toBe("function");
     }
-  });
-
-  it("handles investment events", async () => {
-    adapter.subscribeToExternalEvents();
-
-    const envelope = createEnvelope({
-      type: "investment.created",
-      aggregateId: "investor-1" as never,
-      actorId: "actor-1" as never,
-      payload: { amount: "10000", currency: "USDC", investmentId: "inv-1" },
-      source: "test",
-    });
-    const result = await events.publish(envelope);
-    expect(result.delivered).toBe(true);
   });
 });

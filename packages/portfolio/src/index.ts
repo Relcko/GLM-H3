@@ -16,6 +16,8 @@ export { PortfolioAnalytics } from "./analytics/service";
 export { PortfolioSearch } from "./search/service";
 export { PortfolioExport } from "./export/service";
 export { PortfolioHealthEngine } from "./health/service";
+export { ProjectionService } from "./projection/service";
+export type { PortfolioProjection, ProjectionScenario, ProjectionEntry } from "./projection/service";
 export { PortfolioEventsAdapter } from "./events-adapter/adapter";
 
 export { PortfolioModule, createPortfolioModule } from "./composition-root";
