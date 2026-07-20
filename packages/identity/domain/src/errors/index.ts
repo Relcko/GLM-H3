@@ -12,7 +12,12 @@ export {
   WalletVerificationFailedError,
   WalletNotVerifiedError,
 } from './wallet-errors';
-export { SessionNotFoundError, SessionExpiredError, SessionRevokedError } from './session-errors';
+export {
+  SessionNotFoundError,
+  SessionExpiredError,
+  SessionRevokedError,
+  SessionActiveError,
+} from './session-errors';
 export {
   InvalidCredentialsError,
   MfaRequiredError,

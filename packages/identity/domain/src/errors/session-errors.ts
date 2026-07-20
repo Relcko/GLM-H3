@@ -17,3 +17,9 @@ export class SessionRevokedError extends IdentityDomainError {
     super('SESSION_REVOKED', `Session ${sessionId} has been revoked`, { sessionId, ...context });
   }
 }
+
+export class SessionActiveError extends IdentityDomainError {
+  constructor(sessionId: string, context?: Record<string, unknown>) {
+    super('SESSION_ACTIVE', `Session ${sessionId} is already active`, { sessionId, ...context });
+  }
+}

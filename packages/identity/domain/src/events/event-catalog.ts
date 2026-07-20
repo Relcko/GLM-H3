@@ -33,9 +33,13 @@ export const EventCatalog = {
 
   /** Session lifecycle */
   SESSION_CREATED: 'identity.session.created',
+  SESSION_ACTIVATED: 'identity.session.activated',
   SESSION_EXPIRED: 'identity.session.expired',
   SESSION_REVOKED: 'identity.session.revoked',
   SESSION_REFRESHED: 'identity.session.refreshed',
+  SESSION_LAST_ACTIVITY_UPDATED: 'identity.session.last_activity.updated',
+  SESSION_CLIENT_UPDATED: 'identity.session.client.updated',
+  SESSION_REFRESH_TOKEN_ROTATED: 'identity.session.refresh_token.rotated',
 
   /** Organization lifecycle */
   ORGANIZATION_CREATED: 'identity.organization.created',

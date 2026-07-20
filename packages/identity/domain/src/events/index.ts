@@ -59,11 +59,25 @@ export {
 
 export type {
   SessionCreatedPayload,
+  SessionActivatedPayload,
   SessionExpiredPayload,
   SessionRevokedPayload,
   SessionRefreshedPayload,
+  SessionLastActivityUpdatedPayload,
+  SessionClientUpdatedPayload,
+  SessionRefreshTokenRotatedPayload,
 } from './session-events';
-export { SessionEventTypeMap } from './session-events';
+export {
+  SessionCreated,
+  SessionActivated,
+  SessionExpired,
+  SessionRevoked,
+  SessionRefreshed,
+  SessionLastActivityUpdated,
+  SessionClientUpdated,
+  SessionRefreshTokenRotated,
+  SessionEventTypeMap,
+} from './session-events';
 
 export type {
   OrganizationCreatedPayload,
