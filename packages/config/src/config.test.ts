@@ -1,39 +1,53 @@
-import { describe, expect, it } from "vitest";
-import { Currency } from "@relcko/types";
-import { EnvLoader, memoryEnvSource } from "@relcko/env";
-import { buildRuntimeConfig, InMemorySecretsProvider } from "@relcko/config";
+import { describe, expect, it } from 'vitest';
 
-describe("runtime config", () => {
-  it("builds a validated config from env", () => {
-    const env = new EnvLoader(
-      memoryEnvSource({
-        NODE_ENV: "production",
-        APP_NAME: "relcko",
-        CHAIN_IDS: "1,137",
-        CHAIN_1_NAME: "ethereum",
-        CHAIN_1_RPC: "https://eth",
-        CHAIN_1_CONFIRMATIONS: "12",
-        CHAIN_137_NAME: "polygon",
-        CHAIN_137_RPC: "https://poly",
-        CHAIN_137_CONFIRMATIONS: "64",
-      } as never),
-    );
-    const cfg = buildRuntimeConfig({ env, secrets: new InMemorySecretsProvider() });
-    expect(cfg.env).toBe("production");
-    expect(cfg.chains.size).toBe(2);
-    expect(cfg.chains.get(1)?.name).toBe("ethereum");
-    expect(cfg.defaultChainId).toBe(1);
+import { ConfigLoader, appConfigSchema } from './index';
+
+describe('ConfigLoader', () => {
+  it('loads string values from env', () => {
+    const loader = new ConfigLoader({ APP_NAME: 'test-app' });
+    const config = loader.load({ APP_NAME: { type: 'string', required: true } });
+    expect(config.APP_NAME).toBe('test-app');
   });
 
-  it("rejects empty chain config", () => {
-    const env = new EnvLoader(memoryEnvSource({ NODE_ENV: "production", APP_NAME: "relcko", CHAIN_IDS: "1", CHAIN_1_RPC: "" } as never));
-    expect(() => buildRuntimeConfig({ env })).toThrow();
+  it('loads number values from env', () => {
+    const loader = new ConfigLoader({ APP_PORT: '4000' });
+    const config = loader.load({ APP_PORT: { type: 'number', required: true } });
+    expect(config.APP_PORT).toBe(4000);
   });
 
-  it("secrets provider stores and reads", async () => {
-    const secrets = new InMemorySecretsProvider();
-    await secrets.set("API_KEY", "xyz");
-    expect(await secrets.get("API_KEY")).toBe("xyz");
-    expect(await secrets.has("API_KEY")).toBe(true);
+  it('loads boolean values from env', () => {
+    const loader = new ConfigLoader({ FEATURE_FLAG: 'true' });
+    const config = loader.load({ FEATURE_FLAG: { type: 'boolean', required: true } });
+    expect(config.FEATURE_FLAG).toBe(true);
+  });
+
+  it('uses defaults for missing optional values', () => {
+    const loader = new ConfigLoader({});
+    const config = loader.load({
+      OPTIONAL_KEY: { type: 'string', required: false, default: 'default-val' },
+    });
+    expect(config.OPTIONAL_KEY).toBe('default-val');
+  });
+
+  it('throws on missing required values', () => {
+    const loader = new ConfigLoader({});
+    expect(() =>
+      loader.load({ REQUIRED_KEY: { type: 'string', required: true } }),
+    ).toThrow();
+  });
+
+  it('throws on invalid number', () => {
+    const loader = new ConfigLoader({ APP_PORT: 'not-a-number' });
+    expect(() =>
+      loader.load({ APP_PORT: { type: 'number', required: true } }),
+    ).toThrow();
+  });
+
+  it('loads app config schema', () => {
+    const loader = new ConfigLoader({ NODE_ENV: 'production' });
+    const config = loader.load(appConfigSchema);
+    expect(config.NODE_ENV).toBe('production');
+    expect(config.APP_NAME).toBe('relcko');
+    expect(config.APP_PORT).toBe(3000);
   });
 });

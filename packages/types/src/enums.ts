@@ -1,50 +1,83 @@
-/**
- * Canonical enumerations shared across the platform.
- * Sourced from PERMISSION_MODEL.md (roles, scopes) and DOMAIN_MODEL.md.
- */
+export const AgentStatus = {
+  PENDING: 'PENDING',
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  SUSPENDED: 'SUSPENDED',
+  TERMINATED: 'TERMINATED',
+} as const;
 
-/** The 10 platform roles (PERMISSION_MODEL.md §2). Additive hierarchy. */
-export enum Role {
-  Anonymous = "anonymous",
-  Investor = "investor",
-  Agent = "agent",
-  SeniorAgent = "senior_agent",
-  ComplianceOfficer = "compliance_officer",
-  PropertyManager = "property_manager",
-  TreasuryManager = "treasury_manager",
-  GovernanceManager = "governance_manager",
-  Administrator = "administrator",
-  SuperAdministrator = "super_administrator",
-}
+export type AgentStatus = (typeof AgentStatus)[keyof typeof AgentStatus];
 
-/** Authorization scopes (PERMISSION_MODEL.md §4). */
-export enum ScopeType {
-  Own = "own",
-  Team = "team",
-  Discipline = "discipline",
-  Global = "global",
-  Grant = "grant",
-}
+export const CommissionStatus = {
+  CALCULATED: 'CALCULATED',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  PAID: 'PAID',
+  HELD: 'HELD',
+  REVERSED: 'REVERSED',
+} as const;
 
-/** Standard currencies accepted by the platform. */
-export enum Currency {
-  USDT = "USDT",
-  USDC = "USDC",
-  Native = "NATIVE",
-}
+export type CommissionStatus = (typeof CommissionStatus)[keyof typeof CommissionStatus];
 
-/** Allowed payment methods (DOMAIN_MODEL.md §18). */
-export enum PaymentMethod {
-  OnchainStablecoin = "onchain_stablecoin",
-  Fiat = "fiat",
-  Native = "native",
-}
+export const EventCategory = {
+  CORE: 'CORE',
+  BUSINESS: 'BUSINESS',
+  SECURITY: 'SECURITY',
+  SYSTEM: 'SYSTEM',
+} as const;
 
-/** Severity levels for alerts / observability (OBSERVABILITY_ARCHITECTURE.md §3). */
-export enum Severity {
-  Info = "info",
-  Low = "low",
-  Medium = "medium",
-  High = "high",
-  Critical = "critical",
-}
+export type EventCategory = (typeof EventCategory)[keyof typeof EventCategory];
+
+export const BoundedContext = {
+  S1_AGENT: 'S1_AGENT',
+  S2_NETWORK: 'S2_NETWORK',
+  S3_COMMISSION: 'S3_COMMISSION',
+  S4_QUALIFICATION: 'S4_QUALIFICATION',
+  S5_CAMPAIGN: 'S5_CAMPAIGN',
+  S6_PROPERTY: 'S6_PROPERTY',
+  S7_INVESTMENT: 'S7_INVESTMENT',
+  S8_SECONDARY: 'S8_SECONDARY',
+  S9_PAYMENT: 'S9_PAYMENT',
+  S10_OWNERSHIP: 'S10_OWNERSHIP',
+  S11_PORTFOLIO: 'S11_PORTFOLIO',
+  S12_NFT: 'S12_NFT',
+  S13_DIVIDEND: 'S13_DIVIDEND',
+  S14_REWARD: 'S14_REWARD',
+  S15_TREASURY: 'S15_TREASURY',
+  S16_RESERVE: 'S16_RESERVE',
+  S17_BUYBACK: 'S17_BUYBACK',
+  S18_GOVERNANCE: 'S18_GOVERNANCE',
+  S19_IDENTITY: 'S19_IDENTITY',
+  S20_COMPLIANCE: 'S20_COMPLIANCE',
+  S21_SECURITY: 'S21_SECURITY',
+  S22_RISK: 'S22_RISK',
+  S23_AI: 'S23_AI',
+  S24_DOCUMENT: 'S24_DOCUMENT',
+  S25_ADMIN: 'S25_ADMIN',
+  S26_AUDIT: 'S26_AUDIT',
+  S27_MAP: 'S27_MAP',
+  S28_VALUATION: 'S28_VALUATION',
+  S29_NOTIFICATION: 'S29_NOTIFICATION',
+  S30_SYSTEM: 'S30_SYSTEM',
+} as const;
+
+export type BoundedContext = (typeof BoundedContext)[keyof typeof BoundedContext];
+
+export const RetentionClassification = {
+  PERMANENT: 'PERMANENT',
+  STANDARD: 'STANDARD',
+  EPHEMERAL: 'EPHEMERAL',
+} as const;
+
+export type RetentionClassification =
+  (typeof RetentionClassification)[keyof typeof RetentionClassification];
+
+export const SecurityClassification = {
+  PUBLIC: 'PUBLIC',
+  INTERNAL: 'INTERNAL',
+  CONFIDENTIAL: 'CONFIDENTIAL',
+  RESTRICTED: 'RESTRICTED',
+} as const;
+
+export type SecurityClassification =
+  (typeof SecurityClassification)[keyof typeof SecurityClassification];

@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "composite": true
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../types" },
+    { "path": "../errors" },
+    { "path": "../events" },
+    { "path": "../event-bus" },
+    { "path": "../event-store" },
+    { "path": "../cqrs" },
+    { "path": "../kernel" },
+    { "path": "../logger" },
+    { "path": "../outbox" },
+    { "path": "../scheduler" },
+    { "path": "../telemetry" }
+  ]
+}

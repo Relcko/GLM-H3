@@ -3,6 +3,9 @@ import { Inter, Cormorant_Garamond, JetBrains_Mono } from "next/font/google";
 import "@rainbow-me/rainbowkit/styles.css";
 import "./globals.css";
 import Providers from "./providers";
+import { assertStartupConfiguration } from "@/lib/server/startup";
+
+assertStartupConfiguration();
 
 const inter = Inter({
   subsets: ["latin"],

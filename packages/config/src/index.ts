@@ -1,129 +1,80 @@
-import { InfrastructureError } from "@relcko/error";
-import { Currency, type ChainId } from "@relcko/types";
-import { asChainId } from "@relcko/types";
-import { EnvLoader } from "@relcko/env";
-import type { FlagProvider } from "@relcko/feature-flags";
-import { createDefaultFlagProvider } from "@relcko/feature-flags";
+import { ConfigurationError } from '@relcko/errors';
 
-export type AppEnvironment = "development" | "test" | "staging" | "production";
+export type ConfigValue = string | number | boolean;
 
-export interface ChainConfig {
-  readonly chainId: ChainId;
-  readonly name: string;
-  readonly rpcUrl: string;
-  readonly explorerUrl?: string;
-  readonly confirmations: number;
-  readonly isTestnet: boolean;
-}
+export type ConfigSchema = Record<string, { type: 'string' | 'number' | 'boolean'; required?: boolean; default?: ConfigValue }>;
 
-export interface RegionalConfig {
-  readonly region: string;
-  readonly dataResidency: string;
-  readonly defaultCurrency: Currency;
-  readonly locale: string;
-}
+export type InferredConfig<T extends ConfigSchema> = {
+  [K in keyof T]: T[K]['type'] extends 'number'
+    ? number
+    : T[K]['type'] extends 'boolean'
+      ? boolean
+      : string;
+};
 
-export interface SecretsProvider {
-  get(name: string): Promise<string | undefined>;
-  set(name: string, value: string): Promise<void>;
-  has(name: string): Promise<boolean>;
-}
+export class ConfigLoader {
+  private readonly env: Record<string, string | undefined>;
 
-/** In-memory secrets store (framework only). Production uses HSM/vault behind this interface. */
-export class InMemorySecretsProvider implements SecretsProvider {
-  private readonly store = new Map<string, string>();
-  async get(name: string): Promise<string | undefined> {
-    return this.store.get(name);
+  constructor(env?: Record<string, string | undefined>) {
+    this.env = env ?? process.env;
   }
-  async set(name: string, value: string): Promise<void> {
-    this.store.set(name, value);
-  }
-  async has(name: string): Promise<boolean> {
-    return this.store.has(name);
-  }
-}
 
-export interface RuntimeConfig {
-  readonly env: AppEnvironment;
-  readonly appName: string;
-  readonly chains: ReadonlyMap<number, ChainConfig>;
-  readonly defaultChainId: ChainId;
-  readonly regions: ReadonlyArray<RegionalConfig>;
-  readonly defaultRegion: string;
-  readonly flags: FlagProvider;
-  readonly secrets: SecretsProvider;
-}
+  load<T extends ConfigSchema>(schema: T): InferredConfig<T> {
+    const config = {} as Record<string, ConfigValue>;
 
-export interface BuildConfigInput {
-  readonly env: EnvLoader;
-  readonly flags?: FlagProvider;
-  readonly regions?: ReadonlyArray<RegionalConfig>;
-  readonly secrets?: SecretsProvider;
-  readonly chains?: ReadonlyArray<ChainConfig>;
-}
+    for (const [key, definition] of Object.entries(schema)) {
+      const rawValue = this.env[key];
 
-const REQUIRED_CHAIN_FIELDS: ReadonlyArray<keyof ChainConfig> = ["name", "rpcUrl", "confirmations"];
+      if (rawValue === undefined || rawValue === '') {
+        if (definition.required && definition.default === undefined) {
+          throw new ConfigurationError(`Missing required environment variable: ${key}`);
+        }
+        if (definition.default !== undefined) {
+          config[key] = definition.default;
+        }
+        continue;
+      }
 
-/** Build & validate the runtime configuration from the environment loader. */
-export function buildRuntimeConfig(input: BuildConfigInput): RuntimeConfig {
-  const { env } = input;
-  const appEnv = env.requireEnum<AppEnvironment>("NODE_ENV", ["development", "test", "staging", "production"]);
-  const appName = env.require("APP_NAME");
-
-  const chains = input.chains ?? defaultChains(env);
-  validateChains(chains);
-  const chainMap = new Map<number, ChainConfig>();
-  for (const c of chains) chainMap.set(Number(c.chainId), c);
-
-  const defaultChainId = asChainId(env.optionalNumber("DEFAULT_CHAIN_ID", chains[0] ? Number(chains[0].chainId) : 1));
-
-  const regions = input.regions ?? defaultRegions();
-  const defaultRegion = env.optional("DEFAULT_REGION", regions[0]?.region ?? "us");
-
-  return {
-    env: appEnv,
-    appName,
-    chains: chainMap,
-    defaultChainId,
-    regions,
-    defaultRegion,
-    flags: input.flags ?? createDefaultFlagProvider(),
-    secrets: input.secrets ?? new InMemorySecretsProvider(),
-  };
-}
-
-function validateChains(chains: ReadonlyArray<ChainConfig>): void {
-  if (chains.length === 0) throw new InfrastructureError("At least one chain must be configured", "CONFIG_NO_CHAINS");
-  for (const c of chains) {
-    for (const field of REQUIRED_CHAIN_FIELDS) {
-      const value = c[field];
-      if (value === undefined || value === null || value === "")
-        throw new InfrastructureError(`Chain ${c.chainId} missing ${String(field)}`, "CONFIG_CHAIN_INVALID", {
-          chainId: c.chainId,
-          field: String(field),
-        });
+      switch (definition.type) {
+        case 'number': {
+          const parsed = Number(rawValue);
+          if (Number.isNaN(parsed)) {
+            throw new ConfigurationError(
+              `Environment variable ${key} must be a number, got: ${rawValue}`,
+            );
+          }
+          config[key] = parsed;
+          break;
+        }
+        case 'boolean': {
+          const normalized = rawValue.toLowerCase();
+          if (!['true', 'false', '1', '0'].includes(normalized)) {
+            throw new ConfigurationError(
+              `Environment variable ${key} must be a boolean, got: ${rawValue}`,
+            );
+          }
+          config[key] = normalized === 'true' || normalized === '1';
+          break;
+        }
+        case 'string': {
+          config[key] = rawValue;
+          break;
+        }
+      }
     }
+
+    return config as InferredConfig<T>;
   }
 }
 
-function defaultChains(env: EnvLoader): ChainConfig[] {
-  const ids = env.optional("CHAIN_IDS", "1").split(",").map((s) => Number(s.trim())).filter(Boolean);
-  return ids.map((id) => {
-    const chainId = asChainId(id);
-    return {
-      chainId,
-      name: env.optional(`CHAIN_${id}_NAME`, `chain-${id}`),
-      rpcUrl: env.optional(`CHAIN_${id}_RPC`, ""),
-      explorerUrl: env.optional(`CHAIN_${id}_EXPLORER`, undefined),
-      confirmations: env.optionalNumber(`CHAIN_${id}_CONFIRMATIONS`, 1),
-      isTestnet: env.optionalBoolean(`CHAIN_${id}_TESTNET`, false),
-    };
-  });
-}
+export const appConfigSchema = {
+  NODE_ENV: { type: 'string' as const, required: true, default: 'development' },
+  LOG_LEVEL: { type: 'string' as const, required: true, default: 'info' },
+  LOG_FORMAT: { type: 'string' as const, required: true, default: 'json' },
+  APP_NAME: { type: 'string' as const, required: true, default: 'relcko' },
+  APP_VERSION: { type: 'string' as const, required: true, default: '0.1.0' },
+  APP_PORT: { type: 'number' as const, required: true, default: 3000 },
+  EVENT_STORE_URL: { type: 'string' as const, required: true, default: 'postgresql://localhost:5432/relcko' },
+} as const satisfies ConfigSchema;
 
-function defaultRegions(): RegionalConfig[] {
-  return [
-    { region: "us", dataResidency: "us", defaultCurrency: Currency.USDT, locale: "en-US" },
-    { region: "eu", dataResidency: "eu", defaultCurrency: Currency.USDT, locale: "en-IE" },
-  ];
-}
+export type AppConfig = InferredConfig<typeof appConfigSchema>;

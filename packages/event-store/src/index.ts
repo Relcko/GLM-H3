@@ -1,0 +1,12 @@
+export { asStreamId, streamIdFor } from './stream-id';
+export type { StreamId } from './stream-id';
+export type { StoredEvent } from './stored-event';
+export { EMPTY_STREAM_VERSION } from './event-stream';
+export type { EventStream } from './event-stream';
+export { EXPECTED_VERSION_ANY, EXPECTED_VERSION_EMPTY } from './expected-version';
+export type { ExpectedVersion } from './expected-version';
+export type { Snapshot } from './snapshot';
+export type { SnapshotStore } from './snapshot-store';
+export type { EventDeserializer, EventSerializer, SerializedEvent } from './serializer';
+export type { AppendOptions, AppendResult, EventStore, StreamOptions } from './event-store';
+export { EventSerializationError, OptimisticConcurrencyError } from './errors';
