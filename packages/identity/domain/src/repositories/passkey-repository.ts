@@ -1,10 +1,8 @@
+import type { Passkey } from '../aggregates';
 import type { PasskeyId, UserId } from '../value-objects';
+import type { IRepository } from '@relcko/kernel';
 
-export interface IPasskeyRepository {
-  findById(id: PasskeyId): Promise<unknown>;
-  getById(id: PasskeyId): Promise<unknown>;
-  save(aggregate: unknown): Promise<void>;
-  delete(id: PasskeyId): Promise<void>;
-  findByUserId(userId: UserId): Promise<readonly unknown[]>;
-  findByCredentialId(credentialId: string): Promise<unknown>;
+export interface IPasskeyRepository extends IRepository<Passkey, PasskeyId> {
+  findByUserId(userId: UserId): Promise<readonly Passkey[]>;
+  findByCredentialId(credentialId: string): Promise<Passkey | null>;
 }

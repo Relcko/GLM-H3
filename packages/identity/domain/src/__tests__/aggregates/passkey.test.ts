@@ -75,9 +75,15 @@ function createVerifiedPasskey(): Passkey {
   return pk;
 }
 
-function createDeactivatedPasskey(): Passkey {
+function createUsablePasskey(): Passkey {
   const pk = createVerifiedPasskey();
-  pk.deactivate(nextEventId(), at(T2));
+  pk.activate(nextEventId(), at(T2));
+  return pk;
+}
+
+function createDeactivatedPasskey(): Passkey {
+  const pk = createUsablePasskey();
+  pk.deactivate(nextEventId(), at(T3));
   return pk;
 }
 
@@ -111,9 +117,9 @@ describe('Passkey Aggregate — Factory: register()', () => {
     expect(pk.aaguid?.toString()).toBe(validAaguid().toString());
   });
 
-  it('initializes with active, unverified, non-revoked state', () => {
+  it('initializes with inactive, unverified, non-revoked state', () => {
     const pk = createPasskey();
-    expect(pk.active).toBe(true);
+    expect(pk.active).toBe(false);
     expect(pk.verified).toBe(false);
     expect(pk.revoked).toBe(false);
   });
@@ -229,24 +235,31 @@ describe('Passkey Aggregate — verifyRegistration()', () => {
 
 describe('Passkey Aggregate — activate()', () => {
   it('marks passkey as active', () => {
-    const pk = createDeactivatedPasskey();
-    pk.activate(nextEventId(), at(T3));
+    const pk = createVerifiedPasskey();
+    pk.activate(nextEventId(), at(T2));
     expect(pk.active).toBe(true);
   });
 
   it('emits PasskeyActivated event', () => {
-    const pk = createDeactivatedPasskey();
+    const pk = createVerifiedPasskey();
     const eventId = nextEventId();
-    pk.activate(eventId, at(T3));
+    pk.activate(eventId, at(T2));
 
     const events = pk.getUncommittedEvents();
-    const event = events[3] as PasskeyActivated;
+    const event = events[2] as PasskeyActivated;
     expect(event).toBeInstanceOf(PasskeyActivated);
     expect(event.eventType).toBe('identity.passkey.activated');
-    expect(event.aggregateVersion).toBe(4);
+    expect(event.aggregateVersion).toBe(3);
   });
 
   it('throws when already active', () => {
+    const pk = createUsablePasskey();
+    expect(() => {
+      pk.activate(nextEventId(), at(T3));
+    }).toThrow(InvariantViolationError);
+  });
+
+  it('throws when unverified', () => {
     const pk = createPasskey();
     expect(() => {
       pk.activate(nextEventId(), at(T1));
@@ -263,22 +276,22 @@ describe('Passkey Aggregate — activate()', () => {
 
 describe('Passkey Aggregate — deactivate()', () => {
   it('marks passkey as not active', () => {
-    const pk = createVerifiedPasskey();
-    pk.deactivate(nextEventId(), at(T2));
+    const pk = createUsablePasskey();
+    pk.deactivate(nextEventId(), at(T3));
     expect(pk.active).toBe(false);
   });
 
   it('emits PasskeyDeactivated event', () => {
-    const pk = createVerifiedPasskey();
+    const pk = createUsablePasskey();
     const eventId = nextEventId();
-    pk.deactivate(eventId, at(T2));
+    pk.deactivate(eventId, at(T3));
 
     const events = pk.getUncommittedEvents();
-    const event = events[2] as PasskeyDeactivated;
+    const event = events[3] as PasskeyDeactivated;
     expect(event).toBeInstanceOf(PasskeyDeactivated);
     expect(event.eventType).toBe('identity.passkey.deactivated');
-    expect(event.aggregateVersion).toBe(3);
-    expect(event.deactivatedAt).toEqual(at(T2));
+    expect(event.aggregateVersion).toBe(4);
+    expect(event.deactivatedAt).toEqual(at(T3));
   });
 
   it('throws when not active', () => {
@@ -436,23 +449,23 @@ describe('Passkey Aggregate — updateTransports()', () => {
 
 describe('Passkey Aggregate — rotateCredential()', () => {
   it('rotates credential ID and public key', () => {
-    const pk = createPasskey();
+    const pk = createUsablePasskey();
     const newCredentialId = crypto.randomUUID();
     const newPublicKey = new PasskeyPublicKey('AAAA');
-    pk.rotateCredential(newCredentialId, newPublicKey, nextEventId(), at(T1));
+    pk.rotateCredential(newCredentialId, newPublicKey, nextEventId(), at(T3));
     expect(pk.credentialId).toBe(newCredentialId);
     expect(pk.publicKey.toString()).toBe('AAAA');
   });
 
   it('emits PasskeyCredentialRotated event', () => {
-    const pk = createPasskey();
+    const pk = createUsablePasskey();
     const newCredentialId = crypto.randomUUID();
     const newPublicKey = new PasskeyPublicKey('AAAA');
     const eventId = nextEventId();
-    pk.rotateCredential(newCredentialId, newPublicKey, eventId, at(T1));
+    pk.rotateCredential(newCredentialId, newPublicKey, eventId, at(T3));
 
     const events = pk.getUncommittedEvents();
-    const event = events[1] as PasskeyCredentialRotated;
+    const event = events[3] as PasskeyCredentialRotated;
     expect(event).toBeInstanceOf(PasskeyCredentialRotated);
     expect(event.eventType).toBe('identity.passkey.credential.rotated');
     expect(event.credentialId).toBe(newCredentialId);
@@ -460,9 +473,23 @@ describe('Passkey Aggregate — rotateCredential()', () => {
   });
 
   it('throws when credential ID is empty', () => {
+    const pk = createUsablePasskey();
+    expect(() => {
+      pk.rotateCredential('  ', validPublicKey(), nextEventId(), at(T3));
+    }).toThrow(InvariantViolationError);
+  });
+
+  it('throws when unverified', () => {
     const pk = createPasskey();
     expect(() => {
-      pk.rotateCredential('  ', validPublicKey(), nextEventId(), at(T1));
+      pk.rotateCredential(validCredentialId(), validPublicKey(), nextEventId(), at(T1));
+    }).toThrow(InvariantViolationError);
+  });
+
+  it('throws when inactive', () => {
+    const pk = createVerifiedPasskey();
+    expect(() => {
+      pk.rotateCredential(validCredentialId(), validPublicKey(), nextEventId(), at(T2));
     }).toThrow(InvariantViolationError);
   });
 
@@ -476,29 +503,43 @@ describe('Passkey Aggregate — rotateCredential()', () => {
 
 describe('Passkey Aggregate — recordUsage()', () => {
   it('updates lastUsedAt timestamp', () => {
-    const pk = createPasskey();
-    pk.recordUsage(nextEventId(), at(T1));
-    expect(pk.lastUsedAt).toEqual(at(T1));
+    const pk = createUsablePasskey();
+    pk.recordUsage(nextEventId(), at(T3));
+    expect(pk.lastUsedAt).toEqual(at(T3));
   });
 
   it('emits PasskeyUsageRecorded event', () => {
-    const pk = createPasskey();
+    const pk = createUsablePasskey();
     const eventId = nextEventId();
-    pk.recordUsage(eventId, at(T1));
+    pk.recordUsage(eventId, at(T3));
 
     const events = pk.getUncommittedEvents();
-    const event = events[1] as PasskeyUsageRecorded;
+    const event = events[3] as PasskeyUsageRecorded;
     expect(event).toBeInstanceOf(PasskeyUsageRecorded);
     expect(event.eventType).toBe('identity.passkey.usage.recorded');
-    expect(event.usedAt).toEqual(at(T1));
+    expect(event.usedAt).toEqual(at(T3));
   });
 
   it('updates lastUsedAt on each call', () => {
+    const pk = createUsablePasskey();
+    pk.recordUsage(nextEventId(), at(T3));
+    expect(pk.lastUsedAt).toEqual(at(T3));
+    pk.recordUsage(nextEventId(), at(T4));
+    expect(pk.lastUsedAt).toEqual(at(T4));
+  });
+
+  it('throws when unverified', () => {
     const pk = createPasskey();
-    pk.recordUsage(nextEventId(), at(T1));
-    expect(pk.lastUsedAt).toEqual(at(T1));
-    pk.recordUsage(nextEventId(), at(T2));
-    expect(pk.lastUsedAt).toEqual(at(T2));
+    expect(() => {
+      pk.recordUsage(nextEventId(), at(T1));
+    }).toThrow(InvariantViolationError);
+  });
+
+  it('throws when inactive', () => {
+    const pk = createVerifiedPasskey();
+    expect(() => {
+      pk.recordUsage(nextEventId(), at(T2));
+    }).toThrow(InvariantViolationError);
   });
 
   it('throws when revoked', () => {
@@ -523,13 +564,13 @@ describe('Passkey Aggregate — Event replay from history', () => {
     expect(rebuilt.userId.toString()).toBe(original.userId.toString());
     expect(rebuilt.name).toBe('Renamed');
     expect(rebuilt.verified).toBe(true);
-    expect(rebuilt.active).toBe(true);
+    expect(rebuilt.active).toBe(original.active);
     expect(rebuilt.revoked).toBe(false);
   });
 
   it('rebuilds deactivated state from history', () => {
-    const original = createVerifiedPasskey();
-    original.deactivate(nextEventId(), at(T2));
+    const original = createUsablePasskey();
+    original.deactivate(nextEventId(), at(T3));
 
     const history = original.getUncommittedEvents();
     const rebuilt = Passkey.reconstitute(original.id);
@@ -553,10 +594,10 @@ describe('Passkey Aggregate — Event replay from history', () => {
   });
 
   it('rebuilds credential rotation state from history', () => {
-    const original = createPasskey();
+    const original = createUsablePasskey();
     const newCredId = crypto.randomUUID();
     const newPubKey = new PasskeyPublicKey('BBBB');
-    original.rotateCredential(newCredId, newPubKey, nextEventId(), at(T1));
+    original.rotateCredential(newCredId, newPubKey, nextEventId(), at(T3));
 
     const history = original.getUncommittedEvents();
     const rebuilt = Passkey.reconstitute(original.id);
@@ -567,14 +608,14 @@ describe('Passkey Aggregate — Event replay from history', () => {
   });
 
   it('rebuilds usage-recorded state from history', () => {
-    const original = createPasskey();
-    original.recordUsage(nextEventId(), at(T1));
+    const original = createUsablePasskey();
+    original.recordUsage(nextEventId(), at(T3));
 
     const history = original.getUncommittedEvents();
     const rebuilt = Passkey.reconstitute(original.id);
     rebuilt.loadFromHistory(history);
 
-    expect(rebuilt.lastUsedAt).toEqual(at(T1));
+    expect(rebuilt.lastUsedAt).toEqual(at(T3));
   });
 
   it('produces identical state across multiple replays', () => {
@@ -596,8 +637,7 @@ describe('Passkey Aggregate — Event replay from history', () => {
 
 describe('Passkey Aggregate — Snapshot serialization', () => {
   it('serializes to snapshot and restores identical state', () => {
-    const original = createPasskey();
-    original.verifyRegistration(nextEventId(), at(T1));
+    const original = createUsablePasskey();
     original.updateName('Renamed Key', nextEventId(), at(T2));
     original.recordUsage(nextEventId(), at(T3));
 
@@ -717,16 +757,19 @@ describe('Passkey Aggregate — Uncommitted events lifecycle', () => {
 });
 
 describe('Passkey Aggregate — Full lifecycle integration', () => {
-  it('supports full lifecycle: register → verify → deactivate → reactivate → updateName → updateTransports → rotateCredential → recordUsage', () => {
+  it('supports full lifecycle: register → verify → activate → deactivate → reactivate → updateName → updateTransports → rotateCredential → recordUsage', () => {
     const pk = createPasskey({ name: 'Initial' });
 
     pk.verifyRegistration(nextEventId(), at(T1));
     expect(pk.verified).toBe(true);
 
-    pk.deactivate(nextEventId(), at(T2));
+    pk.activate(nextEventId(), at(T2));
+    expect(pk.active).toBe(true);
+
+    pk.deactivate(nextEventId(), at(T3));
     expect(pk.active).toBe(false);
 
-    pk.activate(nextEventId(), at(T3));
+    pk.activate(nextEventId(), at(T4));
     expect(pk.active).toBe(true);
 
     pk.updateName('Updated Key', nextEventId(), at(T4));
@@ -744,12 +787,12 @@ describe('Passkey Aggregate — Full lifecycle integration', () => {
     pk.recordUsage(nextEventId(), at(T6));
     expect(pk.lastUsedAt).toEqual(at(T6));
 
-    expect(pk.version).toBe(8);
-    expect(pk.getUncommittedEvents()).toHaveLength(8);
+    expect(pk.version).toBe(9);
+    expect(pk.getUncommittedEvents()).toHaveLength(9);
   });
 
   it('supports revoke after full setup', () => {
-    const pk = createVerifiedPasskey();
+    const pk = createUsablePasskey();
     pk.updateName('Key', nextEventId(), at(T2));
     pk.revoke('compromised', nextEventId(), at(T3));
 

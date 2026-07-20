@@ -462,10 +462,18 @@ describe('User Aggregate — softDelete()', () => {
 });
 
 describe('User Aggregate — restore()', () => {
-  it('transitions from deleted to active', () => {
+  it('transitions from deleted to inactive', () => {
     const user = createActiveUser();
     user.softDelete(nextEventId(), at(T2));
     user.restore(nextEventId(), at(T3));
+    expect(user.status.isInactive).toBe(true);
+  });
+
+  it('requires explicit activation after restore', () => {
+    const user = createActiveUser();
+    user.softDelete(nextEventId(), at(T2));
+    user.restore(nextEventId(), at(T3));
+    user.activate(nextEventId(), at(T4));
     expect(user.status.isActive).toBe(true);
   });
 
@@ -858,6 +866,19 @@ describe('User Aggregate — Event replay from history', () => {
     expect(rebuilt.deletedAt).toEqual(at(T2));
   });
 
+  it('rebuilds restored state as inactive from history', () => {
+    const original = createActiveUser();
+    original.softDelete(nextEventId(), at(T2));
+    original.restore(nextEventId(), at(T3));
+
+    const history = original.getUncommittedEvents();
+    const rebuilt = User.reconstitute(original.id);
+    rebuilt.loadFromHistory(history);
+
+    expect(rebuilt.status.isInactive).toBe(true);
+    expect(rebuilt.deletedAt).toBeNull();
+  });
+
   it('rebuilds locked-then-unlocked state from history', () => {
     const original = createActiveUser();
     original.lock(nextEventId(), at(T2));
@@ -928,6 +949,18 @@ describe('User Aggregate — Snapshot serialization', () => {
 
     expect(restored.status.isDeleted).toBe(true);
     expect(restored.deletedAt?.toISOString()).toBe(at(T2).toISOString());
+  });
+
+  it('serializes restored state as inactive', () => {
+    const original = createActiveUser();
+    original.softDelete(nextEventId(), at(T2));
+    original.restore(nextEventId(), at(T3));
+
+    const snapshot = original.toSnapshot();
+    const restored = User.fromSnapshot(snapshot);
+
+    expect(restored.status.isInactive).toBe(true);
+    expect(restored.deletedAt).toBeNull();
   });
 
   it('serializes suspended state correctly', () => {
@@ -1017,10 +1050,13 @@ describe('User Aggregate — Full lifecycle integration', () => {
     expect(user.status.isDeleted).toBe(true);
 
     user.restore(nextEventId(), at(T4));
+    expect(user.status.isInactive).toBe(true);
+
+    user.activate(nextEventId(), at(T4));
     expect(user.status.isActive).toBe(true);
 
-    expect(user.version).toBe(8);
-    expect(user.getUncommittedEvents()).toHaveLength(8);
+    expect(user.version).toBe(9);
+    expect(user.getUncommittedEvents()).toHaveLength(9);
   });
 
   it('supports profile + settings changes in sequence', () => {

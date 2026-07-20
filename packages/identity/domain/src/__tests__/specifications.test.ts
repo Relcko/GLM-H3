@@ -316,16 +316,20 @@ describe('ServiceAccountActiveSpecification', () => {
 describe('PasskeyUsableSpecification', () => {
   const spec = new PasskeyUsableSpecification();
 
-  it('returns true for existing non-removed passkey', () => {
-    expect(spec.isSatisfiedBy({ exists: true, removed: false })).toBe(true);
+  it('returns true for verified active non-revoked passkey', () => {
+    expect(spec.isSatisfiedBy({ verified: true, active: true, revoked: false })).toBe(true);
   });
 
-  it('returns false when passkey does not exist', () => {
-    expect(spec.isSatisfiedBy({ exists: false, removed: false })).toBe(false);
+  it('returns false when passkey is unverified', () => {
+    expect(spec.isSatisfiedBy({ verified: false, active: true, revoked: false })).toBe(false);
   });
 
-  it('returns false when passkey removed', () => {
-    expect(spec.isSatisfiedBy({ exists: true, removed: true })).toBe(false);
+  it('returns false when passkey is inactive', () => {
+    expect(spec.isSatisfiedBy({ verified: true, active: false, revoked: false })).toBe(false);
+  });
+
+  it('returns false when passkey revoked', () => {
+    expect(spec.isSatisfiedBy({ verified: true, active: true, revoked: true })).toBe(false);
   });
 });
 

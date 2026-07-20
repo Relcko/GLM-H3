@@ -209,7 +209,7 @@ export class Passkey extends AggregateRoot<PasskeyId> {
   }
 
   activate(eventId: EventId, occurredAt: Date): void {
-    this.requireNotRevoked();
+    this.requireVerifiedNotRevoked();
     if (this._active) {
       throw new InvariantViolationError(
         this.aggregateType,
@@ -367,7 +367,7 @@ export class Passkey extends AggregateRoot<PasskeyId> {
     eventId: EventId,
     occurredAt: Date,
   ): void {
-    this.requireNotRevoked();
+    this.requireUsable();
     if (!credentialId.trim()) {
       throw new InvariantViolationError(
         this.aggregateType,
@@ -394,7 +394,7 @@ export class Passkey extends AggregateRoot<PasskeyId> {
   }
 
   recordUsage(eventId: EventId, occurredAt: Date): void {
-    this.requireNotRevoked();
+    this.requireUsable();
     this.apply(
       new PasskeyUsageRecorded(
         {
@@ -440,7 +440,6 @@ export class Passkey extends AggregateRoot<PasskeyId> {
       this._publicKey = event.publicKey;
       this._aaguid = event.aaguid;
       this._transports = [...event.transports];
-      this._active = true;
       this._registeredAt = event.registeredAt;
     } else if (event instanceof PasskeyVerified) {
       this._verified = true;
@@ -469,6 +468,30 @@ export class Passkey extends AggregateRoot<PasskeyId> {
   private requireNotRevoked(): void {
     if (this._revoked) {
       throw new PasskeyRevokedError(this.id.toString(), this._revokeReason ?? undefined);
+    }
+  }
+
+  private requireUsable(): void {
+    this.requireVerifiedNotRevoked();
+    if (!this._active) {
+      throw new InvariantViolationError(
+        this.aggregateType,
+        this.id.toString(),
+        'passkey-not-active',
+        {},
+      );
+    }
+  }
+
+  private requireVerifiedNotRevoked(): void {
+    this.requireNotRevoked();
+    if (!this._verified) {
+      throw new InvariantViolationError(
+        this.aggregateType,
+        this.id.toString(),
+        'passkey-not-verified',
+        {},
+      );
     }
   }
 }

@@ -667,7 +667,7 @@ export class User extends AggregateRoot<UserId> {
       this._status = new UserStatusVO('deleted');
       this._deletedAt = event.deletedAt;
     } else if (event instanceof UserRestored) {
-      this._status = new UserStatusVO('active');
+      this._status = new UserStatusVO('inactive');
       this._deletedAt = null;
     } else if (event instanceof UserEmailVerified) {
       this._emailVerified = true;

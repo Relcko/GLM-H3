@@ -126,6 +126,6 @@ describe('Aggregate event type maps', () => {
 
   it('PasskeyEventTypeMap has passkey events', () => {
     expect(PasskeyEventTypeMap.registered).toBe('identity.passkey.registered');
-    expect(PasskeyEventTypeMap.removed).toBe('identity.passkey.removed');
+    expect(PasskeyEventTypeMap.revoked).toBe('identity.passkey.revoked');
   });
 });

@@ -138,7 +138,6 @@ export type {
   PasskeyTransportsUpdatedPayload,
   PasskeyCredentialRotatedPayload,
   PasskeyUsageRecordedPayload,
-  PasskeyRemovedPayload,
 } from './passkey-events';
 export {
   PasskeyRegistered,
@@ -150,7 +149,6 @@ export {
   PasskeyTransportsUpdated,
   PasskeyCredentialRotated,
   PasskeyUsageRecorded,
-  PasskeyRemoved,
   PasskeyEventTypeMap,
 } from './passkey-events';
 

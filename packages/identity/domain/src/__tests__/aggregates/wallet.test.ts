@@ -217,6 +217,17 @@ describe('Wallet Aggregate — revokeVerification()', () => {
     expect(wallet.primarySetAt).toBeNull();
   });
 
+  it('emits WalletPrimaryUnset before revoking primary wallet verification', () => {
+    const wallet = createPrimaryWallet();
+    wallet.revokeVerification('reason', nextEventId(), at(T3));
+
+    const events = wallet.getUncommittedEvents();
+    expect(events[3]).toBeInstanceOf(WalletPrimaryUnset);
+    expect(events[3]?.eventType).toBe('identity.wallet.primary.unset');
+    expect(events[4]).toBeInstanceOf(WalletVerificationRevoked);
+    expect(events[4]?.eventType).toBe('identity.wallet.verification.revoked');
+  });
+
   it('throws when not verified', () => {
     const wallet = createWallet();
     expect(() => {
@@ -270,6 +281,17 @@ describe('Wallet Aggregate — disconnect()', () => {
     wallet.disconnect(nextEventId(), at(T3));
     expect(wallet.primary).toBe(false);
     expect(wallet.primarySetAt).toBeNull();
+  });
+
+  it('emits WalletPrimaryUnset before unlinking primary wallet', () => {
+    const wallet = createPrimaryWallet();
+    wallet.disconnect(nextEventId(), at(T3));
+
+    const events = wallet.getUncommittedEvents();
+    expect(events[3]).toBeInstanceOf(WalletPrimaryUnset);
+    expect(events[3]?.eventType).toBe('identity.wallet.primary.unset');
+    expect(events[4]).toBeInstanceOf(WalletUnlinked);
+    expect(events[4]?.eventType).toBe('identity.wallet.unlinked');
   });
 
   it('throws when already unlinked', () => {

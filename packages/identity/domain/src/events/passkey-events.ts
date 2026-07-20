@@ -67,12 +67,6 @@ export interface PasskeyUsageRecordedPayload {
   readonly usedAt: Date;
 }
 
-export interface PasskeyRemovedPayload {
-  readonly passkeyId: PasskeyId;
-  readonly userId: UserId;
-  readonly removedAt: Date;
-}
-
 export class PasskeyRegistered extends DomainEvent {
   readonly eventType = EventCatalog.PASSKEY_REGISTERED;
 
@@ -197,19 +191,6 @@ export class PasskeyUsageRecorded extends DomainEvent {
   }
 }
 
-export class PasskeyRemoved extends DomainEvent {
-  readonly eventType = EventCatalog.PASSKEY_REMOVED;
-
-  constructor(
-    props: DomainEventProps,
-    readonly passkeyId: PasskeyId,
-    readonly userId: UserId,
-    readonly removedAt: Date,
-  ) {
-    super(props);
-  }
-}
-
 export const PasskeyEventTypeMap = {
   registered: EventCatalog.PASSKEY_REGISTERED,
   verified: EventCatalog.PASSKEY_VERIFIED,
@@ -220,5 +201,4 @@ export const PasskeyEventTypeMap = {
   transportsUpdated: EventCatalog.PASSKEY_TRANSPORTS_UPDATED,
   credentialRotated: EventCatalog.PASSKEY_CREDENTIAL_ROTATED,
   usageRecorded: EventCatalog.PASSKEY_USAGE_RECORDED,
-  removed: EventCatalog.PASSKEY_REMOVED,
 } as const;

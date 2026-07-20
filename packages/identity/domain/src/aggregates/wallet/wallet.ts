@@ -193,6 +193,9 @@ export class Wallet extends AggregateRoot<WalletId> {
         {},
       );
     }
+    if (this._primary) {
+      this.unsetPrimary(eventId, occurredAt);
+    }
     this.apply(
       new WalletVerificationRevoked(
         {
@@ -218,6 +221,9 @@ export class Wallet extends AggregateRoot<WalletId> {
         'wallet-already-unlinked',
         {},
       );
+    }
+    if (this._primary) {
+      this.unsetPrimary(eventId, occurredAt);
     }
     this.apply(
       new WalletUnlinked(
@@ -379,17 +385,9 @@ export class Wallet extends AggregateRoot<WalletId> {
     } else if (event instanceof WalletVerificationRevoked) {
       this._verified = false;
       this._verifiedAt = null;
-      if (this._primary) {
-        this._primary = false;
-        this._primarySetAt = null;
-      }
     } else if (event instanceof WalletUnlinked) {
       this._unlinked = true;
       this._unlinkedAt = event.unlinkedAt;
-      if (this._primary) {
-        this._primary = false;
-        this._primarySetAt = null;
-      }
     } else if (event instanceof WalletPrimarySet) {
       this._primary = true;
       this._primarySetAt = event.setAt;

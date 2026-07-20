@@ -1,10 +1,8 @@
+import type { User } from '../aggregates';
 import type { EmailAddress, UserId } from '../value-objects';
+import type { IRepository } from '@relcko/kernel';
 
-export interface IUserRepository {
-  findById(id: UserId): Promise<unknown>;
-  getById(id: UserId): Promise<unknown>;
-  save(aggregate: unknown): Promise<void>;
-  delete(id: UserId): Promise<void>;
-  findByEmail(email: EmailAddress): Promise<unknown>;
+export interface IUserRepository extends IRepository<User, UserId> {
+  findByEmail(email: EmailAddress): Promise<User | null>;
   existsByEmail(email: EmailAddress): Promise<boolean>;
 }
