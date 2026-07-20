@@ -72,6 +72,7 @@ export const EventCatalog = {
   /** Service account lifecycle */
   SERVICE_ACCOUNT_CREATED: 'identity.service_account.created',
   SERVICE_ACCOUNT_UPDATED: 'identity.service_account.updated',
+  SERVICE_ACCOUNT_RENAMED: 'identity.service_account.renamed',
   SERVICE_ACCOUNT_ACTIVATED: 'identity.service_account.activated',
   SERVICE_ACCOUNT_DEACTIVATED: 'identity.service_account.deactivated',
 

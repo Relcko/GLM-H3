@@ -1,10 +1,7 @@
-import type { ServiceAccountId, UserId } from '../value-objects';
+import type { ServiceAccount } from '../aggregates';
+import type { ServiceAccountId } from '../value-objects';
+import type { IRepository } from '@relcko/kernel';
 
-export interface IServiceAccountRepository {
-  findById(id: ServiceAccountId): Promise<unknown>;
-  getById(id: ServiceAccountId): Promise<unknown>;
-  save(aggregate: unknown): Promise<void>;
-  delete(id: ServiceAccountId): Promise<void>;
-  findByName(name: string): Promise<unknown>;
-  findByCreatedBy(createdBy: UserId): Promise<readonly unknown[]>;
+export interface IServiceAccountRepository extends IRepository<ServiceAccount, ServiceAccountId> {
+  findByName(name: string): Promise<ServiceAccount | null>;
 }

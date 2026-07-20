@@ -106,11 +106,17 @@ export { RoleEventTypeMap } from './role-events';
 
 export type {
   ServiceAccountCreatedPayload,
-  ServiceAccountUpdatedPayload,
+  ServiceAccountRenamedPayload,
   ServiceAccountActivatedPayload,
   ServiceAccountDeactivatedPayload,
 } from './service-account-events';
-export { ServiceAccountEventTypeMap } from './service-account-events';
+export {
+  ServiceAccountCreated,
+  ServiceAccountRenamed,
+  ServiceAccountActivated,
+  ServiceAccountDeactivated,
+  ServiceAccountEventTypeMap,
+} from './service-account-events';
 
 export { AuthEventTypeMap } from './auth-events';
 
