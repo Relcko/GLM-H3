@@ -1,11 +1,8 @@
-import type { RoleId, UserId } from '../value-objects';
+import type { RoleDefinition } from '../aggregates';
+import type { RoleId } from '../value-objects';
+import type { IRepository } from '@relcko/kernel';
 
-export interface IRoleDefinitionRepository {
-  findById(id: RoleId): Promise<unknown>;
-  getById(id: RoleId): Promise<unknown>;
-  save(aggregate: unknown): Promise<void>;
-  delete(id: RoleId): Promise<void>;
-  findByName(name: string): Promise<unknown>;
-  findByAssigneeId(assigneeId: UserId): Promise<readonly unknown[]>;
-  existsByName(name: string): Promise<boolean>;
+export interface IRoleDefinitionRepository extends IRepository<RoleDefinition, RoleId> {
+  findByName(name: string): Promise<RoleDefinition | null>;
+  findActive(): Promise<readonly RoleDefinition[]>;
 }

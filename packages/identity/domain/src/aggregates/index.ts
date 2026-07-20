@@ -5,3 +5,4 @@ export * from './session';
 export * from './authentication-attempt';
 export * from './email-verification';
 export * from './password-reset';
+export * from './role-definition';

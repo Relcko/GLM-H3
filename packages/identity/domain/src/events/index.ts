@@ -89,13 +89,7 @@ export type {
 } from './organization-events';
 export { OrganizationEventTypeMap } from './organization-events';
 
-export type {
-  RoleCreatedPayload,
-  RoleUpdatedPayload,
-  RoleDeletedPayload,
-  RoleAssignedPayload,
-  RoleUnassignedPayload,
-} from './role-events';
+export type { RoleUpdatedPayload, RoleAssignedPayload, RoleUnassignedPayload } from './role-events';
 export { RoleEventTypeMap } from './role-events';
 
 export type {
@@ -107,6 +101,28 @@ export type {
 export { ServiceAccountEventTypeMap } from './service-account-events';
 
 export { AuthEventTypeMap } from './auth-events';
+
+export type {
+  RoleCreatedPayload,
+  RoleRenamedPayload,
+  RoleDescriptionChangedPayload,
+  RolePermissionAssignedPayload,
+  RolePermissionRevokedPayload,
+  RoleActivatedPayload,
+  RoleDeactivatedPayload,
+  RoleDeletedPayload,
+} from './role-definition-events';
+export {
+  RoleCreated,
+  RoleRenamed,
+  RoleDescriptionChanged,
+  RolePermissionAssigned,
+  RolePermissionRevoked,
+  RoleActivated,
+  RoleDeactivated,
+  RoleDeleted,
+  RoleDefinitionEventTypeMap,
+} from './role-definition-events';
 
 export type {
   RecoveryInitiatedPayload,

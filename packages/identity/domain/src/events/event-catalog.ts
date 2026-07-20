@@ -52,6 +52,12 @@ export const EventCatalog = {
   /** Role definition lifecycle */
   ROLE_CREATED: 'identity.role.created',
   ROLE_UPDATED: 'identity.role.updated',
+  ROLE_RENAMED: 'identity.role.renamed',
+  ROLE_DESCRIPTION_CHANGED: 'identity.role.description.changed',
+  ROLE_PERMISSION_ASSIGNED: 'identity.role.permission.assigned',
+  ROLE_PERMISSION_REVOKED: 'identity.role.permission.revoked',
+  ROLE_ACTIVATED: 'identity.role.activated',
+  ROLE_DEACTIVATED: 'identity.role.deactivated',
   ROLE_DELETED: 'identity.role.deleted',
   ROLE_ASSIGNED: 'identity.role.assigned',
   ROLE_UNASSIGNED: 'identity.role.unassigned',
