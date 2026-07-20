@@ -8,3 +8,4 @@ export * from './password-reset';
 export * from './role-definition';
 export * from './organization';
 export * from './service-account';
+export * from './recovery';

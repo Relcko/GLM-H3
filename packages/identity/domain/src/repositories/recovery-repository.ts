@@ -1,10 +1,8 @@
-import type { RecoveryId, UserId } from '../value-objects';
+import type { Recovery } from '../aggregates';
+import type { RecoveryId } from '../value-objects';
+import type { IRepository } from '@relcko/kernel';
 
-export interface IRecoveryRepository {
-  findById(id: RecoveryId): Promise<unknown>;
-  getById(id: RecoveryId): Promise<unknown>;
-  save(aggregate: unknown): Promise<void>;
-  delete(id: RecoveryId): Promise<void>;
-  findByUserId(userId: UserId): Promise<readonly unknown[]>;
-  findPendingByUserId(userId: UserId): Promise<unknown>;
+export interface IRecoveryRepository extends IRepository<Recovery, RecoveryId> {
+  findByUserId(userId: string): Promise<readonly Recovery[]>;
+  findPendingByUserId(userId: string): Promise<Recovery | null>;
 }

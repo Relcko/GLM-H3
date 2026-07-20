@@ -116,7 +116,7 @@ describe('Aggregate event type maps', () => {
   });
 
   it('RecoveryEventTypeMap has recovery events', () => {
-    expect(RecoveryEventTypeMap.initiated).toBe('identity.recovery.initiated');
+    expect(RecoveryEventTypeMap.requested).toBe('identity.recovery.initiated');
     expect(RecoveryEventTypeMap.cancelled).toBe('identity.recovery.cancelled');
   });
 

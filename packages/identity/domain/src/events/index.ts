@@ -143,13 +143,22 @@ export {
 } from './role-definition-events';
 
 export type {
-  RecoveryInitiatedPayload,
-  RecoveryApprovedPayload,
+  RecoveryRequestedPayload,
+  RecoveryResentPayload,
+  RecoveryVerifiedPayload,
   RecoveryCompletedPayload,
   RecoveryExpiredPayload,
   RecoveryCancelledPayload,
 } from './recovery-events';
-export { RecoveryEventTypeMap } from './recovery-events';
+export {
+  RecoveryRequested,
+  RecoveryResent,
+  RecoveryVerified,
+  RecoveryCompleted,
+  RecoveryExpired,
+  RecoveryCancelled,
+  RecoveryEventTypeMap,
+} from './recovery-events';
 
 export type { PolicyEvaluatedPayload } from './policy-events';
 export { PolicyEventTypeMap } from './policy-events';

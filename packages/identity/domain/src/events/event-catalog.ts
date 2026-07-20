@@ -108,6 +108,8 @@ export const EventCatalog = {
   /** Guardian recovery */
   RECOVERY_INITIATED: 'identity.recovery.initiated',
   RECOVERY_APPROVED: 'identity.recovery.approved',
+  RECOVERY_RESENT: 'identity.recovery.resent',
+  RECOVERY_VERIFIED: 'identity.recovery.verified',
   RECOVERY_COMPLETED: 'identity.recovery.completed',
   RECOVERY_EXPIRED: 'identity.recovery.expired',
   RECOVERY_CANCELLED: 'identity.recovery.cancelled',
