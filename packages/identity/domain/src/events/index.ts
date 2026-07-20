@@ -81,13 +81,25 @@ export {
 
 export type {
   OrganizationCreatedPayload,
-  OrganizationUpdatedPayload,
-  OrganizationDeletedPayload,
-  MemberAddedPayload,
-  MemberRemovedPayload,
-  MemberRoleChangedPayload,
+  OrganizationRenamedPayload,
+  OrganizationDescriptionUpdatedPayload,
+  OrganizationDisplayNameUpdatedPayload,
+  OrganizationActivatedPayload,
+  OrganizationDeactivatedPayload,
+  OrganizationArchivedPayload,
+  OrganizationRestoredPayload,
 } from './organization-events';
-export { OrganizationEventTypeMap } from './organization-events';
+export {
+  OrganizationCreated,
+  OrganizationRenamed,
+  OrganizationDescriptionUpdated,
+  OrganizationDisplayNameUpdated,
+  OrganizationActivated,
+  OrganizationDeactivated,
+  OrganizationArchived,
+  OrganizationRestored,
+  OrganizationEventTypeMap,
+} from './organization-events';
 
 export type { RoleUpdatedPayload, RoleAssignedPayload, RoleUnassignedPayload } from './role-events';
 export { RoleEventTypeMap } from './role-events';

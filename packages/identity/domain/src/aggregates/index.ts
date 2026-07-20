@@ -6,3 +6,4 @@ export * from './authentication-attempt';
 export * from './email-verification';
 export * from './password-reset';
 export * from './role-definition';
+export * from './organization';

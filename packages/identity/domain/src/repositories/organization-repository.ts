@@ -1,10 +1,7 @@
-import type { OrganizationId, UserId } from '../value-objects';
+import type { Organization } from '../aggregates';
+import type { OrganizationId } from '../value-objects';
+import type { IRepository } from '@relcko/kernel';
 
-export interface IOrganizationRepository {
-  findById(id: OrganizationId): Promise<unknown>;
-  getById(id: OrganizationId): Promise<unknown>;
-  save(aggregate: unknown): Promise<void>;
-  delete(id: OrganizationId): Promise<void>;
-  findByUserId(userId: UserId): Promise<readonly unknown[]>;
-  existsByName(name: string): Promise<boolean>;
+export interface IOrganizationRepository extends IRepository<Organization, OrganizationId> {
+  findByName(name: string): Promise<Organization | null>;
 }

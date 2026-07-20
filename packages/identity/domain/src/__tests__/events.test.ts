@@ -97,7 +97,7 @@ describe('Aggregate event type maps', () => {
 
   it('OrganizationEventTypeMap has organization events', () => {
     expect(OrganizationEventTypeMap.created).toBe('identity.organization.created');
-    expect(OrganizationEventTypeMap.memberAdded).toBe('identity.organization.member.added');
+    expect(OrganizationEventTypeMap.renamed).toBe('identity.organization.renamed');
   });
 
   it('RoleEventTypeMap has role events', () => {
