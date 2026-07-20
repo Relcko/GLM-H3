@@ -10,12 +10,12 @@ const config: Config = {
     extend: {
       colors: {
         bg: {
-          base: "#050505",
-          secondary: "#090909",
+          base: "#0E0F13",
+          secondary: "#12141A",
         },
         accent: {
-          DEFAULT: "#00D4FF",
-          blue: "#0057FF",
+          DEFAULT: "#47C2FF",
+          blue: "#1E6BFF",
         },
         gold: "#D6B25E",
         success: "#3CE37D",

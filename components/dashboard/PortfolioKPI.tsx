@@ -40,14 +40,13 @@ const KPIValue = memo(function KPIValue({
       transition={{ duration: 0.6, ease: EASE_LUX, delay }}
       className="dashboard-card group overflow-hidden px-5 py-4 sm:px-6 sm:py-5"
     >
-      <div className="pointer-events-none absolute -inset-x-4 -top-4 h-24 bg-gradient-to-b from-accent/[0.02] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
       {icon && (
         <div
           className={`mb-3 flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-300 ${
             highlight
               ? "bg-success/15 text-success shadow-[0_0_12px_rgba(60,227,125,0.1)]"
               : accent
-                ? "bg-accent/10 text-accent shadow-[0_0_12px_rgba(0,212,255,0.08)]"
+                ? "bg-accent/10 text-accent shadow-[0_0_12px_rgba(71,194,255,0.08)]"
                 : "bg-white/[0.04] text-white/40"
           }`}
         >

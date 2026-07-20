@@ -1,0 +1,1 @@
+import{b as o,c as e}from"./XMarkIcon-C3YVG49h.js";import{cH as u}from"./app-A5SVLKDt.js";function a(n){return{mutationFn(s){return u(n,s)},mutationKey:["signMessage"]}}function m(n={}){const s=o(n),i=a(s),t=e({...n.mutation,...i});return{...t,signMessage:t.mutate,signMessageAsync:t.mutateAsync}}export{m as u};

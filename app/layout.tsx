@@ -94,7 +94,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23050505'/%3E%3Crect x='28' y='22' width='44' height='56' rx='4' fill='none' stroke='%2300D4FF' stroke-width='3'/%3E%3Crect x='40' y='40' width='20' height='38' rx='2' fill='%230057FF'/%3E%3C/svg%3E" },
+      { url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230E0F13'/%3E%3Crect x='28' y='22' width='44' height='56' rx='4' fill='none' stroke='%2347C2FF' stroke-width='3'/%3E%3Crect x='40' y='40' width='20' height='38' rx='2' fill='%231E6BFF'/%3E%3C/svg%3E" },
     ],
   },
   formatDetection: {
@@ -105,7 +105,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#050505",
+  themeColor: "#0E0F13",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,

@@ -60,7 +60,7 @@ const InvestorStats = memo(function InvestorStats() {
 
   if (isLoading) {
     return (
-      <div className="dashboard-glass rounded-xl p-5">
+      <div className="dashboard-glass p-5">
         <div className="space-y-3">
           <SkeletonMetric />
           <SkeletonMetric />
@@ -77,7 +77,7 @@ const InvestorStats = memo(function InvestorStats() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, ease: EASE_LUX }}
-      className="dashboard-glass rounded-xl"
+      className="dashboard-glass"
     >
       <div className="p-5">
         <div className="mb-4 flex items-center justify-between">
@@ -89,7 +89,7 @@ const InvestorStats = memo(function InvestorStats() {
             <motion.span
               className="h-1.5 w-1.5 rounded-full bg-accent"
               animate={{ opacity: [0.4, 1, 0.4] }}
-              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: EASE_LUX }}
             />
             Live
           </span>
@@ -102,7 +102,7 @@ const InvestorStats = memo(function InvestorStats() {
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-accent to-accent-blue shadow-[0_0_6px_rgba(0,212,255,0.2)]"
+              className="h-full rounded-full bg-gradient-to-r from-accent to-accent-blue shadow-[0_0_4px_rgba(71,194,255,0.15)]"
               initial={{ width: "0%" }}
               whileInView={{ width: `${Math.min(progress * 100, 100)}%` }}
               viewport={{ once: true }}
@@ -128,3 +128,4 @@ const InvestorStats = memo(function InvestorStats() {
 });
 
 export default InvestorStats;
+

@@ -1,0 +1,12 @@
+export type { IAuthenticationAttemptRepository } from './authentication-attempt-repository';
+export type { IEmailVerificationRepository } from './email-verification-repository';
+export type { IOrganizationRepository } from './organization-repository';
+export type { IPasskeyRepository } from './passkey-repository';
+export type { IPasswordResetRepository } from './password-reset-repository';
+export type { IPolicyDecisionRepository } from './policy-decision-repository';
+export type { IRecoveryRepository } from './recovery-repository';
+export type { IRoleDefinitionRepository } from './role-definition-repository';
+export type { IServiceAccountRepository } from './service-account-repository';
+export type { ISessionRepository } from './session-repository';
+export type { IUserRepository } from './user-repository';
+export type { IWalletRepository } from './wallet-repository';

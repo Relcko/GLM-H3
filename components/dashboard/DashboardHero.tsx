@@ -32,7 +32,7 @@ function MetricTile({
       initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: EASE_LUX, delay }}
-      className={`dashboard-glass rounded-xl px-4 py-3 sm:px-5 sm:py-4 ${className}`}
+      className={`dashboard-glass px-4 py-3 sm:px-5 sm:py-4 ${className}`}
     >
       <div className="dashboard-label">{label}</div>
       <div className={`mt-1 font-display text-lg font-light tracking-tight dashboard-number sm:text-xl ${
@@ -66,8 +66,8 @@ export default function DashboardHero() {
 
   return (
     <section id="dashboard" className="relative scroll-mt-24">
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.03] via-transparent to-transparent backdrop-blur-sm">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent/[0.03] via-transparent to-accent-blue/[0.02]" />
+      <div className="dashboard-glass relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent/[0.02] via-transparent to-accent-blue/[0.01]" />
 
         <div className="relative z-10 px-5 py-6 sm:px-8 sm:py-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -79,7 +79,7 @@ export default function DashboardHero() {
                 className="flex items-center gap-2"
               >
                 <span className={`flex h-2 w-2 rounded-full ${isLive ? "bg-success shadow-[0_0_10px_rgba(60,227,125,0.6)] status-dot" : "bg-warning"}`} />
-                <span className={`font-mono text-[0.6rem] uppercase tracking-[0.15em] ${isLive ? "text-success" : "text-warning/80"}`}>
+                <span className={`font-mono text-[0.6rem] uppercase tracking-[0.2em] ${isLive ? "text-success" : "text-warning/80"}`}>
                   {isLive ? "Presale Live" : "Coming Soon"}
                 </span>
               </motion.div>
@@ -139,7 +139,7 @@ export default function DashboardHero() {
               className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]"
             >
               <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-accent to-accent-blue shadow-[0_0_8px_rgba(0,212,255,0.3)]"
+                className="h-full rounded-full bg-gradient-to-r from-accent to-accent-blue shadow-[0_0_4px_rgba(71,194,255,0.18)]"
                 initial={{ width: "0%" }}
                 animate={{ width: `${Math.min(progress * 100, 100)}%` }}
                 transition={{ duration: 1.5, ease: EASE_LUX }}
@@ -151,3 +151,4 @@ export default function DashboardHero() {
     </section>
   );
 }
+

@@ -5,13 +5,11 @@ import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import CinematicShell from "@/components/CinematicShell";
 import DashboardShell from "@/components/dashboard/DashboardShell";
-import DashboardHero from "@/components/dashboard/DashboardHero";
 import InvestorPortalScreen from "@/components/dashboard/InvestorPortalScreen";
 import PortfolioKPI from "@/components/dashboard/PortfolioKPI";
 import RewardsCard from "@/components/dashboard/RewardsCard";
 import InvestorActivity from "@/components/dashboard/InvestorActivity";
 import TransactionTimeline from "@/components/dashboard/TransactionTimeline";
-import StickyBuyConsole from "@/components/dashboard/StickyBuyConsole";
 import WalletHealth from "@/components/dashboard/WalletHealth";
 import InvestorStats from "@/components/dashboard/InvestorStats";
 import PresaleStats from "@/components/presale/PresaleStats";
@@ -20,12 +18,15 @@ import PresaleTokenomics from "@/components/presale/PresaleTokenomics";
 import TransactionHistory from "@/components/dashboard/TransactionHistory";
 import AdminDashboard from "@/components/dashboard/AdminDashboard";
 import DocsFAQ from "@/components/dashboard/DocsFAQ";
-import { GridSection, GridMain, GridSidebar, GridFull, GridHalf } from "@/components/dashboard/GridLayout";
+import { GridSection, GridFull } from "@/components/dashboard/GridLayout";
+import TrustBar from "@/components/presale/TrustBar";
+import InvestmentSummary from "@/components/presale/InvestmentSummary";
 import { EASE_LUX, fadeUp } from "@/lib/motion";
 
 const StakePanel = dynamic(() => import("@/components/staking/StakePanel"), { ssr: false });
 const RewardsCalculator = dynamic(() => import("@/components/staking/RewardsCalculator"));
 const Portfolio = dynamic(() => import("@/components/staking/Portfolio"));
+const PresalePurchasePanel = dynamic(() => import("@/components/presale/PresalePurchasePanel"), { ssr: false });
 
 const sectionVariant = {
   hidden: { opacity: 0, y: 20 },
@@ -85,11 +86,11 @@ export default function PresalePage() {
   const [portalDone, setPortalDone] = useState(false);
 
   return (
-    <CinematicShell className="bg-gradient-to-b from-[#050505] via-[#050505] to-[#060b12]">
+    <CinematicShell className="bg-gradient-to-b from-[#0E0F13] via-[#0E0F13] to-[#0A0D14]">
       <InvestorPortalScreen onDone={() => setPortalDone(true)}>
         <DashboardShell portalDone={portalDone}>
           <motion.div
-            className="space-y-10 lg:space-y-14"
+            className="space-y-8 lg:space-y-10"
             initial="hidden"
             animate={portalDone ? "visible" : "hidden"}
             variants={{
@@ -102,25 +103,44 @@ export default function PresalePage() {
               },
             }}
           >
+            {/* ── SECTION 1 — Slim Trust Bar ─────────────────────────── */}
             <motion.div variants={sidebarFirstVariant}>
-              <DashboardHero />
+              <TrustBar />
             </motion.div>
 
+            {/* ── SECTION 2 — Investment Summary band ─────────────────── */}
+            <motion.div variants={sectionVariant}>
+              <InvestmentSummary />
+            </motion.div>
+
+            {/* ── SECTION 3 + 4 — Reserve heading + Investment Console ── */}
+            <motion.div variants={sectionVariant} className="flex flex-col gap-4">
+              <div className="px-1">
+                <h2 className="font-display text-2xl font-light tracking-[-0.02em] text-white/90 sm:text-3xl">
+                  Reserve Your RLKO Allocation
+                </h2>
+                <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/45">
+                  Invest in premium tokenized real estate through blockchain-powered fractional ownership.
+                </p>
+              </div>
+              <PresalePurchasePanel />
+            </motion.div>
+
+            {/* ── Supporting investor portal sections (unchanged) ─────── */}
             <motion.div variants={sectionVariant}>
               <GridSection>
-                <GridMain>
-                  <PortfolioKPI />
-                  <RewardsCard />
-                  <InvestorActivity />
-                  <TransactionTimeline />
-                  <div className="grid gap-6 xl:grid-cols-2">
-                    <WalletHealth />
-                    <InvestorStats />
+                <GridFull>
+                  <div className="flex flex-col gap-6">
+                    <PortfolioKPI />
+                    <RewardsCard />
+                    <InvestorActivity />
+                    <TransactionTimeline />
+                    <div className="grid gap-6 xl:grid-cols-2">
+                      <WalletHealth />
+                      <InvestorStats />
+                    </div>
                   </div>
-                </GridMain>
-                <GridSidebar>
-                  <StickyBuyConsole />
-                </GridSidebar>
+                </GridFull>
               </GridSection>
             </motion.div>
 

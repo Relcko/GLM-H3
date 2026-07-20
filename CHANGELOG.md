@@ -1,90 +1,57 @@
 # Changelog
 
-## v1.0.0-beta.1 (2026-07-12)
+All notable changes to the Relcko web application are documented in this file.
 
-**Release:** Closed Testnet Beta — RC10
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to Semantic Versioning.
 
-### Added
+## [1.0.1] - 2026-07-14
 
-- **Dashboard**: Full presale dashboard with buy panel, portfolio, staking center, investor stats, transaction history, and admin monitor
-- **Staking**: 7 lock periods (30d to 4yr), approve-and-stake flow, claim rewards, emergency withdrawal with penalty warning
-- **Analytics**: Anonymous operational event tracking (purchases, stakes, claims, withdrawals, network switches, RPC errors) — no PII collected
-- **Admin Monitor**: Read-only operational dashboard with on-chain metrics (stage progress, remaining RLKO, total raised) and local analytics (investors, volume, failure rate, avg confirmation time)
-- **Bug Reporting**: In-app markdown report dialog with auto-detected browser/wallet/chain — opens pre-filled GitHub issue
-- **Beta Configuration**: Testnet banner with dismiss, network status indicator (live block number), faucet links, explorer links, version badge
-- **Wallet Health**: Connection status, balances, network/gas checks
-- **Transaction History**: SessionStorage-based recent transaction log with chain explorer links
-- **Portfolio KPIs**: Wallet balance, staked amount, claimable rewards, portfolio value
-- **Rewards Calculator**: Projection tool for all staking plans
-- **Investor Activity Feed**: Recent on-chain purchase events
-- **Investor Statistics**: Per-investor KPI cards
-
-### Cinematic Landing Page
-
-- 8-chapter scroll-driven brand experience with canvas-rendered cityscape
-- Phase-aware Director orchestrating Hero intro sequence (curtain → canvas → particles → lighting → headline → CTA)
-- CinematicCanvas, CinematicAtmosphere, DynamicGradient, VolumetricLight, Particles layers
-- Lenis smooth-scroll, custom cursor with magnetic glow, chapter navigation rail
-- ScrollStore rAF-driven scroll/motion publishing
-- Animated Counter, SplitWords, Reveal scroll-triggered entry animations
-
-### Smart Contracts
-
-- `PaymentManager.sol` — Multi-stage presale with USDT and native BNB purchase paths
-- Chainlink BNB/USD oracle integration with 2-hour staleness threshold
-- OpenZeppelin Ownable2Step, ReentrancyGuard, Pausable, SafeERC20
-- CEI (Checks-Effects-Interactions) pattern on all purchase functions
-- Comprehensive NatSpec documentation
-- Stage-based bonding curve pricing with per-user min/max limits
-
-### Deployment & Tooling
-
-- Foundry deployment scripts: DeployAll, DeployRLKO, DeployPaymentManager, ConfigureStage1, VerifyContracts
-- Node.js post-deployment env sync tool (`tools/update-testnet-env.mjs`)
-- Automated address propagation to frontend configs (presale + staking)
-- BSC Testnet artifact (`deployments/testnet.json`)
-
-### Documentation
-
-- ARCHITECTURE.md — Contract architecture and design decisions
-- DEPLOYMENT.md — Deployment guide for testnet and mainnet
-- SECURITY.md — Threat model and security checklist
-- OPERATIONS.md — Owner functions and monitoring guide
-- AUDIT_SCOPE.md — Smart contract audit scope
-- BETA_TESTING_GUIDE.md — Step-by-step tester onboarding
-- BETA_OPERATIONS.md — Daily operations and incident response
-- TESTER_WELCOME.md — Welcome package for beta testers
-- BUG_TRIAGE.md — Bug priority classification system
-- MAINNET_PREPARATION.md — Production readiness checklist
-- STAKING_TESTNET_REPORT.md — Staking deployment and test results
-- RC8_BETA_REPORT.md — RC8 beta completion report
-- RC9_CLOSED_BETA_REPORT.md — RC9 closed beta readiness report
-- RC10_FINAL_REPORT.md — Final architecture and readiness summary
-
-### Changed
-
-- `docs/CHANGELOG.md` moved to root `CHANGELOG.md` (replaces v1.0.0 audit-preparation changelog)
-- Staking config now supports both BSC Testnet and Mainnet
-- Analytics tracker covers wallet disconnections and RPC errors
-- Admin dashboard displays formatted USDT values (was raw BigInt)
-- Network sidebar replaced static indicator with live block number status
+Stable baseline release. Builds on `v1.0.0-rc20` (includes the native quick-amount chips hotfix).
 
 ### Fixed
+- Quick amount chips (25%, 50%, 75%, MAX) now render for native BNB/tBNB purchases.
+- Quick amount calculations use the balance of the currently selected payment asset.
 
-- Directory hydration mismatch in Director initialization
-- BNB test precision in PaymentManager test suite
-- Test cleanup for `testWithdrawSaleTokens_AfterSale` and `testStageCompletion_OversellingPrevention`
+### Unchanged
+- No UI changes. No smart contract changes. No blockchain logic changes. No breaking changes.
 
-### Security
+> **New baseline:** `v1.0.1` is the version we build on. Do not develop new features from `v1.0.0-rc20`.
 
-- Contracts audited (see `docs/AUDIT_SCOPE.md`)
-- ReentrancyGuard on all purchase functions with CEI pattern enforced
-- Oracle staleness threshold (7200s) with emergency owner override
-- Zero address validation on all constructor parameters
-- Stage supply caps prevent overselling per stage
+## [1.0.0-rc20] - 2026-07-14
 
----
+### Added
+- **RC18 — Presale polish (0.1 / 0.2 / 0.3):** finalized presale purchase flow, connected-state grid, error/loading states, and typography/whitespace pass.
+- **RC19.0 — Dashboard alignment:** Investor Portal dashboard aligned to Presale token model (RLKO, stages, raised/remaining).
+- **RC19.1 — Dashboard density:** reduced visual noise and density in the dashboard.
+- **RC20.0 — Production Readiness Audit:** full audit; removed 18 stray debug `console.*` calls from the purchase (`PresalePurchasePanel.tsx`) and staking (`StakePanel/index.tsx`) flows.
+- **RC20.1 — Global error boundaries:** added `app/error.tsx` (segment boundary) and `app/global-error.tsx` (root boundary) with calm, on-brand dark glass UI, `reset()` recovery, and `Return to Dashboard` (`/presale`) / `Return to Home` (`/`) navigation.
+- **Accessibility:** `role="alert"` error surfaces, semantic headings/buttons/links, visible focus outlines, reduced-motion handling (CSS `@media` + `matchMedia` guards across motion components).
+- **Performance:** static prerendering of all routes; no new runtime dependencies added for error handling.
 
-## v1.0.0 (Audit Preparation)
+### Changed
+- **Motion system:** locked and verified (frozen for release — no further motion changes).
+- **Typography system:** locked and verified (frozen for release).
+- **Responsive QA:** verified across breakpoints; reveal-on-scroll and density patterns retained.
 
-*See `docs/CHANGELOG.md` for earlier changelog.*
+### Fixed
+- Eliminated debug-instrumentation `console.log` leakage from the two core money flows (presale purchase + staking), including an entire debug block (`_debug`/`_renderCount` refs and `useRef` import) in `StakePanel`.
+
+### Removed
+- 18 stray debug `console.*` calls (10 in `PresalePurchasePanel.tsx`, 8 in `StakePanel/index.tsx`).
+
+### Known Limitations / Non-Blocking
+- 14 ESLint issues remain in source (`react-hooks/set-state-in-effect` ×11, `react-hooks/exhaustive-deps` ×2, `react-hooks/refs` ×1). All are benign React-hook hygiene warnings with no functional or release impact.
+- `bscTestnet` is intentionally supported (beta/testnet path) — its default public RPC and testnet contract addresses are deliberate, not accidental leftovers.
+- `AdminDashboard` displays a `MockUSDT` token label (internal/admin view) — cosmetic, not a production data mock.
+
+## [1.0.0-rc19] - 2026-07 (prior)
+- Dashboard alignment to Presale tokens (RC19.0) and density/noise reduction (RC19.1).
+
+## [1.0.0-rc18] - 2026-07 (prior)
+- Presale polish across RC18.0–RC18.3 (flow, states, typography, motion micro-interactions).
+
+[1.0.1]: https://github.com/Relcko/GLM-H3/releases/tag/v1.0.1
+[1.0.0-rc20]: https://github.com/relcko/relcko/releases/tag/v1.0.0-rc20
+[1.0.0-rc19]: https://github.com/relcko/relcko/releases/tag/v1.0.0-rc19
+[1.0.0-rc18]: https://github.com/relcko/relcko/releases/tag/v1.0.0-rc18
