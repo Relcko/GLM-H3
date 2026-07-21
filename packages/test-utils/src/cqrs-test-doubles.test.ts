@@ -17,7 +17,7 @@ describe('CQRS test doubles', () => {
   it('createTestCommand_should_use_the_fixed_correlation_id', () => {
     const command = createTestCommand('ApproveOrder', { orderId: 'o-1' });
 
-    expect(command.commandType).toBe('ApproveOrder');
+    expect(command.type).toBe('ApproveOrder');
     expect(command.metadata.correlationId).toBe(TEST_CORRELATION_ID);
     expect(command.metadata.timestamp).toBe(0);
   });
@@ -25,7 +25,7 @@ describe('CQRS test doubles', () => {
   it('createTestQuery_should_use_the_fixed_correlation_id', () => {
     const query = createTestQuery('GetOrder', { orderId: 'o-1' });
 
-    expect(query.queryType).toBe('GetOrder');
+    expect(query.type).toBe('GetOrder');
     expect(query.metadata.correlationId).toBe(TEST_CORRELATION_ID);
   });
 
