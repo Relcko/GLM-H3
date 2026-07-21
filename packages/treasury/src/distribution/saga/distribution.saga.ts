@@ -194,6 +194,18 @@ export class DistributionSaga {
     this._state.completeRecipient(recipientId, "recovered");
   }
 
+  scheduleRetry(recipientId: string, attemptNumber: number, nextRetryAt: number): void {
+    this._state.scheduleRetry(recipientId, attemptNumber, nextRetryAt);
+  }
+
+  dueRetries(now: number = Date.now()): string[] {
+    return this._state.getDueRetries(now);
+  }
+
+  getRetryAttempt(recipientId: string): number {
+    return this._state.getRetryAttempt(recipientId);
+  }
+
   suspend(reason: string): void {
     assertSagaTransition(this._state.state, SagaState.Suspended, String(this._state.sagaId));
     this._state.setState(SagaState.Suspended);

@@ -1,6 +1,13 @@
 import type { DistributionId, SagaId } from "../domain/value-objects";
 import { SagaState } from "../domain/value-objects";
 
+export interface RetryStateEntry {
+  readonly attemptNumber: number;
+  readonly nextRetryAt: number;
+}
+
+export type RetryStateMap = Record<string, RetryStateEntry>;
+
 export interface SagaStateData {
   readonly sagaId: SagaId;
   readonly distributionId: DistributionId;
@@ -15,6 +22,7 @@ export interface SagaStateData {
   readonly startedAt: number;
   readonly updatedAt: number;
   readonly version: number;
+  readonly retryState: RetryStateMap;
 }
 
 export class SagaStateModel {
@@ -31,6 +39,7 @@ export class SagaStateModel {
   private _startedAt: number;
   private _updatedAt: number;
   private _version: number;
+  private _retryState: Map<string, RetryStateEntry>;
 
   constructor(data: SagaStateData) {
     this._sagaId = data.sagaId;
@@ -46,6 +55,7 @@ export class SagaStateModel {
     this._startedAt = data.startedAt;
     this._updatedAt = data.updatedAt;
     this._version = data.version;
+    this._retryState = new Map(Object.entries(data.retryState ?? {}));
   }
 
   get sagaId(): SagaId { return this._sagaId; }
@@ -91,7 +101,37 @@ export class SagaStateModel {
     if (status === "paid") this._paidCount += 1;
     else if (status === "failed") this._failedCount += 1;
     else if (status === "recovered") this._recoveredCount += 1;
+    this._retryState.delete(recipientId);
     this._updatedAt = Date.now();
+  }
+
+  scheduleRetry(recipientId: string, attemptNumber: number, nextRetryAt: number): void {
+    this._retryState.set(recipientId, { attemptNumber, nextRetryAt });
+    this._updatedAt = Date.now();
+  }
+
+  getDueRetries(now: number): string[] {
+    const due: string[] = [];
+    for (const [recipientId, entry] of this._retryState) {
+      if (now >= entry.nextRetryAt) {
+        const idx = this._inFlightRecipients.indexOf(recipientId);
+        if (idx !== -1) {
+          this._inFlightRecipients.splice(idx, 1);
+          this._pendingRecipients.push(recipientId);
+        }
+        this._retryState.delete(recipientId);
+        due.push(recipientId);
+      }
+    }
+    return due;
+  }
+
+  getRetryAttempt(recipientId: string): number {
+    return this._retryState.get(recipientId)?.attemptNumber ?? 0;
+  }
+
+  hasRetryScheduled(recipientId: string): boolean {
+    return this._retryState.has(recipientId);
   }
 
   setState(state: SagaState): void {
@@ -109,6 +149,10 @@ export class SagaStateModel {
   }
 
   snapshot(): SagaStateData {
+    const retryState: RetryStateMap = {};
+    for (const [key, value] of this._retryState) {
+      retryState[key] = value;
+    }
     return {
       sagaId: this._sagaId,
       distributionId: this._distributionId,
@@ -123,6 +167,7 @@ export class SagaStateModel {
       startedAt: this._startedAt,
       updatedAt: this._updatedAt,
       version: this._version,
+      retryState,
     };
   }
 
@@ -147,6 +192,7 @@ export class SagaStateModel {
       startedAt: now,
       updatedAt: now,
       version: 1,
+      retryState: {},
     });
   }
 }

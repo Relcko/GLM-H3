@@ -218,8 +218,9 @@ describe("PaymentOrchestrator", () => {
 
       const batch = saga.nextBatch(2);
 
+      const claimRef = settlementRefService.computeSettlementRef(String(saga.distributionId), "rec-1", "manifest-1");
       await idempotencyLedger.record(
-        `saga:${saga.sagaId}:payment:${settlementRefService.computeSettlementRef(String(saga.distributionId), "rec-1", "manifest-1")}`,
+        `saga:${saga.sagaId}:payment:${claimRef}:attempt:1`,
         "payment.process", String(saga.sagaId), "other-worker", "ref", {}, "claimed", [],
       );
 
@@ -251,7 +252,7 @@ describe("PaymentOrchestrator", () => {
       await orchestrator.processBatch(saga, batch, "manifest-1");
 
       const settlementRef = settlementRefService.computeSettlementRef(String(saga.distributionId), "rec-1", "manifest-1");
-      const claimKey = `saga:${saga.sagaId}:payment:${settlementRef}`;
+      const claimKey = `saga:${saga.sagaId}:payment:${settlementRef}:attempt:1`;
       const record = await idempotencyLedger.get(claimKey);
       expect(record).not.toBeNull();
       expect(record!.commandType).toBe("payment.process");

@@ -69,7 +69,8 @@ export class PaymentOrchestrator {
         manifestHash,
       );
 
-      const paymentClaimKey = `saga:${saga.sagaId}:payment:${settlementRef}`;
+      const attemptNum = saga.getRetryAttempt(recipientId) + 1;
+      const paymentClaimKey = `saga:${saga.sagaId}:payment:${settlementRef}:attempt:${attemptNum}`;
       const claimed = await this.deps.idempotencyLedger.tryRecord(
         paymentClaimKey,
         "payment.process",
@@ -288,13 +289,18 @@ export class PaymentOrchestrator {
     result: ClassifiedResult,
   ): RetrySchedule {
     const recoveryPolicy = this.deps.recoveryPolicyProvider(saga.recoveryPolicyId);
+    const attemptNumber = saga.getRetryAttempt(recipientId) + 1;
     const failureInfo: FailureInfo = {
       errorCode: result.errorCode ?? "UNKNOWN",
       reason: result.errorMessage ?? "Gateway error",
-      attemptNumber: recipient.recoveryAttempts + 1,
+      attemptNumber,
     };
 
     const schedule = this.deps.retryEngine.computeRetrySchedule(recoveryPolicy, failureInfo);
+
+    if (schedule.canRetry && schedule.nextRetryAt !== null) {
+      saga.scheduleRetry(recipientId, attemptNumber, schedule.nextRetryAt);
+    }
 
     return schedule;
   }

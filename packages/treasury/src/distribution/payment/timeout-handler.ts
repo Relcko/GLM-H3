@@ -21,6 +21,9 @@ export class TimeoutHandler {
 
     const baseTime = saga.checkpointAt > 0 ? saga.checkpointAt : saga.startedAt;
     for (const recipientId of saga.inFlightRecipients) {
+      const retryAttempt = saga.getRetryAttempt(recipientId);
+      if (retryAttempt > 0) continue;
+
       const elapsedMs = now - baseTime;
       if (elapsedMs >= saga.perRecipientTimeoutMs) {
         timedOut.push({

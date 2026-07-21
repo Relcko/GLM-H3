@@ -28,6 +28,7 @@ export interface WorkerRunResult {
   readonly sagasProcessed: number;
   readonly recipientsProcessed: number;
   readonly timeoutsDetected: number;
+  readonly retriesProcessed: number;
   readonly checkpointsCreated: number;
   readonly sagaCompleted: boolean;
   readonly sagaFailed: boolean;
@@ -49,6 +50,7 @@ export class DurableSagaWorker {
       sagasProcessed: 0,
       recipientsProcessed: 0,
       timeoutsDetected: 0,
+      retriesProcessed: 0,
       checkpointsCreated: 0,
       sagaCompleted: false,
       sagaFailed: false,
@@ -83,6 +85,9 @@ export class DurableSagaWorker {
         await this.saveAndCheckpoint(saga, result);
         return result;
       }
+
+      const dueRetries = saga.dueRetries();
+      result.retriesProcessed = dueRetries.length;
 
       const batch = saga.nextBatch(this.options.maxParallelism);
       if (batch.length === 0) {
