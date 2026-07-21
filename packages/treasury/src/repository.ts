@@ -3,9 +3,12 @@ import type {
   TreasuryAccount, LedgerEntry, JournalEntry, AllocationRule, TreasuryAllocation,
   ReserveConfig, MovementRequest, ReconciliationRecord, TreasuryReport,
   DividendProposal, DividendEligibilityEntry, DividendDistributionEntry, DividendRecoveryEntry,
+  DividendSchedule, OwnershipSnapshot, SnapshotPosition,
   BuybackRequest, BurnRequest, CashflowProjection, FinancialStatement, TreasuryAnalyticsEntry,
   TreasuryHealthResult, TreasuryAccountType, MovementStatus, DividendStatus,
-  BuybackStatus, BurnStatus, TreasuryReportType,
+  ScheduleStatus, BuybackStatus, BurnStatus, TreasuryReportType,
+  MultiSigConfig, MultiSigSignature,
+  YieldRecord,
 } from "./types";
 
 export interface TreasuryRepository {
@@ -60,6 +63,19 @@ export interface TreasuryRepository {
 
   saveDividendRecovery(r: DividendRecoveryEntry): void;
   listRecoveriesByDividend(dividendId: EntityId): DividendRecoveryEntry[];
+
+  saveSchedule(d: DividendSchedule): void;
+  getSchedule(id: EntityId): DividendSchedule | undefined;
+  listSchedulesByProperty(propertyId: EntityId): DividendSchedule[];
+  listSchedulesByStatus(status: ScheduleStatus): DividendSchedule[];
+  listAllSchedules(): DividendSchedule[];
+
+  saveSnapshot(s: OwnershipSnapshot): void;
+  getSnapshot(id: EntityId): OwnershipSnapshot | undefined;
+  getSnapshotBySchedule(scheduleId: EntityId): OwnershipSnapshot | undefined;
+
+  saveSnapshotPositions(snapshotId: EntityId, positions: readonly SnapshotPosition[]): void;
+  listSnapshotPositions(snapshotId: EntityId): SnapshotPosition[];
 
   saveBuybackRequest(b: BuybackRequest): void;
   getBuybackRequest(id: EntityId): BuybackRequest | undefined;

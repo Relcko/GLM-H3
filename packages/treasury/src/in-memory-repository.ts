@@ -4,9 +4,12 @@ import type {
   TreasuryAccount, LedgerEntry, JournalEntry, AllocationRule, TreasuryAllocation,
   ReserveConfig, MovementRequest, ReconciliationRecord, TreasuryReport,
   DividendProposal, DividendEligibilityEntry, DividendDistributionEntry, DividendRecoveryEntry,
+  DividendSchedule, OwnershipSnapshot, SnapshotPosition,
   BuybackRequest, BurnRequest, CashflowProjection, FinancialStatement, TreasuryAnalyticsEntry,
   TreasuryHealthResult, TreasuryAccountType, MovementStatus, DividendStatus,
-  BuybackStatus, BurnStatus, TreasuryReportType,
+  ScheduleStatus, BuybackStatus, BurnStatus, TreasuryReportType,
+  MultiSigConfig, MultiSigSignature,
+  YieldRecord,
 } from "./types";
 
 export class InMemoryTreasuryRepository implements TreasuryRepository {
@@ -23,6 +26,9 @@ export class InMemoryTreasuryRepository implements TreasuryRepository {
   private readonly eligibility: DividendEligibilityEntry[] = [];
   private readonly distributions: DividendDistributionEntry[] = [];
   private readonly recoveries: DividendRecoveryEntry[] = [];
+  private readonly schedules = new Map<EntityId, DividendSchedule>();
+  private readonly snapshots = new Map<EntityId, OwnershipSnapshot>();
+  private readonly snapshotPositions = new Map<EntityId, SnapshotPosition[]>();
   private readonly buybacks = new Map<EntityId, BuybackRequest>();
   private readonly burns = new Map<EntityId, BurnRequest>();
   private readonly cashflows = new Map<string, CashflowProjection>();
@@ -125,6 +131,31 @@ export class InMemoryTreasuryRepository implements TreasuryRepository {
   saveDividendRecovery(r: DividendRecoveryEntry): void { this.recoveries.push(r); }
   listRecoveriesByDividend(dividendId: EntityId): DividendRecoveryEntry[] {
     return this.recoveries.filter(r => r.dividendId === dividendId);
+  }
+
+  saveSchedule(d: DividendSchedule): void { this.schedules.set(d.id, d); }
+  getSchedule(id: EntityId): DividendSchedule | undefined { return this.schedules.get(id); }
+  listSchedulesByProperty(propertyId: EntityId): DividendSchedule[] {
+    return Array.from(this.schedules.values()).filter(s => s.propertyId === propertyId);
+  }
+  listSchedulesByStatus(status: ScheduleStatus): DividendSchedule[] {
+    return Array.from(this.schedules.values()).filter(s => s.status === status);
+  }
+  listAllSchedules(): DividendSchedule[] {
+    return Array.from(this.schedules.values());
+  }
+
+  saveSnapshot(s: OwnershipSnapshot): void { this.snapshots.set(s.id, s); }
+  getSnapshot(id: EntityId): OwnershipSnapshot | undefined { return this.snapshots.get(id); }
+  getSnapshotBySchedule(scheduleId: EntityId): OwnershipSnapshot | undefined {
+    return Array.from(this.snapshots.values()).find(s => s.scheduleId === scheduleId);
+  }
+
+  saveSnapshotPositions(snapshotId: EntityId, positions: readonly SnapshotPosition[]): void {
+    this.snapshotPositions.set(snapshotId, [...positions]);
+  }
+  listSnapshotPositions(snapshotId: EntityId): SnapshotPosition[] {
+    return this.snapshotPositions.get(snapshotId) ?? [];
   }
 
   saveBuybackRequest(b: BuybackRequest): void { this.buybacks.set(b.id, b); }

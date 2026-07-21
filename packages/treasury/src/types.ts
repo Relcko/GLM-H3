@@ -45,6 +45,14 @@ export enum DividendStatus {
   Recovered = "recovered",
 }
 
+export enum ScheduleStatus {
+  Draft = "draft",
+  Scheduled = "scheduled",
+  Snapshotted = "snapshotted",
+  Closed = "closed",
+  Cancelled = "cancelled",
+}
+
 export enum BuybackType {
   Scheduled = "scheduled",
   Governance = "governance",
@@ -258,6 +266,34 @@ export interface DividendRecoveryEntry {
   readonly amount: Money;
   readonly reason: string;
   readonly recoveredAt: Timestamp;
+}
+
+export interface DividendSchedule {
+  readonly id: EntityId;
+  readonly propertyId: EntityId;
+  readonly period: string;
+  readonly totalAmount: Money;
+  readonly perTokenAmount: Money;
+  readonly currency: Currency;
+  readonly status: ScheduleStatus;
+  readonly createdAt: Timestamp;
+  readonly updatedAt?: Timestamp;
+}
+
+export interface SnapshotPosition {
+  readonly investorId: EntityId;
+  readonly quantity: bigint;
+  readonly ownershipPercentage: number;
+}
+
+export interface OwnershipSnapshot {
+  readonly id: EntityId;
+  readonly scheduleId: EntityId;
+  readonly propertyId: EntityId;
+  readonly version: number;
+  readonly totalSupply: bigint;
+  readonly positions: readonly SnapshotPosition[];
+  readonly snapshotAt: Timestamp;
 }
 
 export interface BuybackRequest {
