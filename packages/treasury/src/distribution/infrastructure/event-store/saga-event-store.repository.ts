@@ -66,19 +66,8 @@ export class SagaEventStoreRepository implements ISagaRepository {
     }
 
     this.sagaStates.set(sagaId, {
-      sagaId: saga.sagaId,
-      distributionId: saga.distributionId,
-      state: saga.state,
-      pendingRecipients: [...saga.pendingRecipients],
-      inFlightRecipients: [...saga.inFlightRecipients],
-      paidCount: saga.paidCount,
-      failedCount: saga.failedCount,
-      recoveredCount: saga.recoveredCount,
-      checkpointAt: saga.checkpointAt,
-      recoveryPolicyId: saga.recoveryPolicyId,
-      startedAt: 0,
+      ...((saga as unknown as { _state: SagaStateModel })._state.snapshot()),
       updatedAt: Date.now(),
-      version: saga.version,
     });
     saga.markEventsAsCommitted();
   }
