@@ -48,6 +48,18 @@ export class MovementError extends TreasuryError {
   }
 }
 
+export class MultiSigError extends TreasuryError {
+  constructor(message: string, metadata?: RelckoError["metadata"]) {
+    super(message, "MULTISIG_ERROR", metadata);
+  }
+}
+
+export class YieldError extends TreasuryError {
+  constructor(message: string, metadata?: RelckoError["metadata"]) {
+    super(message, "YIELD_ERROR", metadata);
+  }
+}
+
 export class ReconciliationError extends TreasuryError {
   constructor(message: string, metadata?: RelckoError["metadata"]) {
     super(message, "RECONCILIATION_ERROR", metadata);
@@ -93,5 +105,23 @@ export class AnalyticsError extends TreasuryError {
 export class HealthError extends TreasuryError {
   constructor(message: string, metadata?: RelckoError["metadata"]) {
     super(message, "HEALTH_ERROR", metadata);
+  }
+}
+
+export class ConcurrencyError extends TreasuryError {
+  constructor(id: string, expected: number, actual: number) {
+    super(`Concurrency conflict on ${id}: expected version ${expected}, actual ${actual}`, "CONCURRENCY_CONFLICT", { id, expected, actual });
+  }
+}
+
+export class ClaimNotFoundError extends TreasuryError {
+  constructor(id: string) {
+    super(`Claim ${id} not found`, "CLAIM_NOT_FOUND", { id });
+  }
+}
+
+export class DividendClaimError extends TreasuryError {
+  constructor(message: string, metadata?: RelckoError["metadata"]) {
+    super(message, "DIVIDEND_CLAIM_ERROR", metadata);
   }
 }

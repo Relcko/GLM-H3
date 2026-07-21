@@ -20,6 +20,7 @@ export {
   BurnService,
 };
 
+export { default as DividendClaimService } from "./services/dividend-claim-service";
 export { ReconciliationService } from "./services/reconciliation-service";
 export { ReportingService } from "./services/reporting-service";
 export { AnalyticsService } from "./services/analytics-service";

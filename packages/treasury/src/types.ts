@@ -190,6 +190,69 @@ export enum MovementStatus {
   Rejected = "rejected",
 }
 
+export enum ClaimStatus {
+  Initiated = "initiated",
+  Claimed = "claimed",
+  Paid = "paid",
+  Completed = "completed",
+  Expired = "expired",
+  Disputed = "disputed",
+  Reversed = "reversed",
+}
+
+export interface MultiSigConfig {
+  readonly id: EntityId;
+  readonly accountId: EntityId;
+  readonly signerIds: readonly EntityId[];
+  readonly threshold: number;
+  readonly createdAt: Timestamp;
+}
+
+export interface MultiSigSignature {
+  readonly id: EntityId;
+  readonly movementId: EntityId;
+  readonly signerId: EntityId;
+  readonly signedAt: Timestamp;
+}
+
+export interface DepositRequest {
+  readonly accountId: EntityId;
+  readonly amount: Money;
+  readonly source: string;
+  readonly txHash?: string;
+}
+
+export interface WithdrawalRequest {
+  readonly accountId: EntityId;
+  readonly amount: Money;
+  readonly destination: string;
+  readonly reason: string;
+}
+
+export interface RebalancePlan {
+  readonly reason: string;
+  readonly transfers: readonly RebalanceTransfer[];
+}
+
+export interface RebalanceTransfer {
+  readonly fromAccountId: EntityId;
+  readonly toAccountId: EntityId;
+  readonly amount: Money;
+}
+
+export interface YieldRecord {
+  readonly id: EntityId;
+  readonly treasuryAccountId: EntityId;
+  readonly source: string;
+  readonly asset: string;
+  readonly principalAmount: Money;
+  readonly yieldAmount: Money;
+  readonly currency: Currency;
+  readonly realizedAt: Timestamp;
+  readonly reference: string;
+  readonly metadata?: Record<string, unknown>;
+}
+
 export interface ReconciliationRecord {
   readonly id: EntityId;
   readonly accountId: EntityId;
@@ -268,6 +331,35 @@ export interface DividendRecoveryEntry {
   readonly recoveredAt: Timestamp;
 }
 
+export interface DividendClaim {
+  readonly id: EntityId;
+  readonly scheduleId: EntityId;
+  readonly investorId: EntityId;
+  readonly quantity: bigint;
+  readonly amount: Money;
+  readonly status: ClaimStatus;
+  readonly version: number;
+  readonly initiatedAt: Timestamp;
+  readonly claimedAt?: Timestamp;
+  readonly paidAt?: Timestamp;
+  readonly completedAt?: Timestamp;
+  readonly expiresAt?: Timestamp;
+  readonly disputedAt?: Timestamp;
+  readonly reversedAt?: Timestamp;
+  readonly reference?: string;
+  readonly createdAt: Timestamp;
+  readonly updatedAt?: Timestamp;
+}
+
+export interface ClaimReceipt {
+  readonly id: EntityId;
+  readonly claimId: EntityId;
+  readonly investorId: EntityId;
+  readonly scheduleId: EntityId;
+  readonly amount: Money;
+  readonly acknowledgedAt: Timestamp;
+}
+
 export interface DividendSchedule {
   readonly id: EntityId;
   readonly propertyId: EntityId;
@@ -281,6 +373,7 @@ export interface DividendSchedule {
 }
 
 export interface SnapshotPosition {
+  readonly id?: EntityId;
   readonly investorId: EntityId;
   readonly quantity: bigint;
   readonly ownershipPercentage: number;

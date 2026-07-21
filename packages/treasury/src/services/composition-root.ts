@@ -17,6 +17,7 @@ import { ReportingService } from "./reporting-service";
 import ReserveService from "./reserve-service";
 import { StatementService } from "./statement-service";
 import DividendService from "./dividend-service";
+import DividendClaimService from "./dividend-claim-service";
 import BuybackService from "./buyback-service";
 import BurnService from "./burn-service";
 
@@ -38,6 +39,7 @@ export interface TreasuryContext {
   readonly analyticsService: AnalyticsService;
   readonly healthService: HealthService;
   readonly dividendService: DividendService;
+  readonly dividendClaimService: DividendClaimService;
   readonly buybackService: BuybackService;
   readonly burnService: BurnService;
   readonly statementService: StatementService;
@@ -74,6 +76,7 @@ export function createTreasuryContext(config?: TreasuryContextConfig): TreasuryC
   const healthService = new HealthService(repo, events, logger);
   const portfolioAdapter = new DefaultPortfolioAdapter();
   const dividendService = new DividendService(repo, events, portfolioAdapter);
+  const dividendClaimService = new DividendClaimService(repo, events);
   const buybackService = new BuybackService(repo, events);
   const burnService = new BurnService(repo, events);
   const statementService = new StatementService(repo, events, logger);
@@ -93,7 +96,7 @@ export function createTreasuryContext(config?: TreasuryContextConfig): TreasuryC
     repo,
     ledgerService, accountService, allocationService, reserveService,
     movementService, reconciliationService, reportingService, analyticsService,
-    healthService, dividendService, buybackService, burnService,
+    healthService, dividendService, dividendClaimService, buybackService, burnService,
     statementService, cashflowProjectionService,
     timelineService, searchService,
     eventsAdapter, portfolioAdapter, governanceAdapter, performance,

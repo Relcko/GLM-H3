@@ -1,5 +1,6 @@
 import type { EntityId } from "@relcko/types";
 import type { TreasuryRepository } from "./repository";
+import { ConcurrencyError } from "./errors";
 import type {
   TreasuryAccount, LedgerEntry, JournalEntry, AllocationRule, TreasuryAllocation,
   ReserveConfig, MovementRequest, ReconciliationRecord, TreasuryReport,
@@ -9,7 +10,7 @@ import type {
   TreasuryHealthResult, TreasuryAccountType, MovementStatus, DividendStatus,
   ScheduleStatus, BuybackStatus, BurnStatus, TreasuryReportType,
   MultiSigConfig, MultiSigSignature,
-  YieldRecord,
+  YieldRecord, DividendClaim, ClaimReceipt, ClaimStatus,
 } from "./types";
 
 export class InMemoryTreasuryRepository implements TreasuryRepository {
@@ -20,6 +21,8 @@ export class InMemoryTreasuryRepository implements TreasuryRepository {
   private readonly allocations: TreasuryAllocation[] = [];
   private readonly reserveConfigs = new Map<EntityId, ReserveConfig>();
   private readonly movements = new Map<EntityId, MovementRequest>();
+  private readonly multiSigConfigs = new Map<EntityId, MultiSigConfig>();
+  private readonly signatures: MultiSigSignature[] = [];
   private readonly reconciliations: ReconciliationRecord[] = [];
   private readonly reports: TreasuryReport[] = [];
   private readonly dividendProposals = new Map<EntityId, DividendProposal>();
@@ -35,7 +38,12 @@ export class InMemoryTreasuryRepository implements TreasuryRepository {
   private readonly statements: FinancialStatement[] = [];
   private readonly analytics = new Map<string, TreasuryAnalyticsEntry>();
   private healthResult?: TreasuryHealthResult;
+  private readonly yieldRecords: YieldRecord[] = [];
+  private readonly yieldReferences = new Set<string>();
   private readonly processedEvents = new Set<string>();
+  private readonly claims = new Map<EntityId, DividendClaim>();
+  private readonly claimVersions = new Map<EntityId, number>();
+  private readonly claimReceipts = new Map<EntityId, ClaimReceipt>();
 
   saveAccount(a: TreasuryAccount): void { this.accounts.set(a.id, a); }
   getAccount(id: EntityId): TreasuryAccount | undefined { return this.accounts.get(id); }
@@ -85,6 +93,16 @@ export class InMemoryTreasuryRepository implements TreasuryRepository {
   getMovement(id: EntityId): MovementRequest | undefined { return this.movements.get(id); }
   listMovementsByStatus(status: MovementStatus): MovementRequest[] {
     return Array.from(this.movements.values()).filter(m => m.status === status);
+  }
+
+  saveMultiSigConfig(c: MultiSigConfig): void { this.multiSigConfigs.set(c.accountId, c); }
+  getMultiSigConfig(accountId: EntityId): MultiSigConfig | undefined { return this.multiSigConfigs.get(accountId); }
+  saveSignature(s: MultiSigSignature): void { this.signatures.push(s); }
+  getSignaturesByMovement(movementId: EntityId): MultiSigSignature[] {
+    return this.signatures.filter(s => s.movementId === movementId);
+  }
+  hasSignerSigned(movementId: EntityId, signerId: EntityId): boolean {
+    return this.signatures.some(s => s.movementId === movementId && s.signerId === signerId);
   }
 
   saveReconciliation(r: ReconciliationRecord): void {
@@ -188,6 +206,59 @@ export class InMemoryTreasuryRepository implements TreasuryRepository {
   saveHealthResult(h: TreasuryHealthResult): void { this.healthResult = h; }
   getLatestHealthResult(): TreasuryHealthResult | undefined { return this.healthResult; }
 
+  saveYieldRecord(r: YieldRecord): void { this.yieldRecords.push(r); }
+  getYieldRecord(id: EntityId): YieldRecord | undefined { return this.yieldRecords.find(r => r.id === id); }
+  listYieldRecords(accountId: EntityId): YieldRecord[] {
+    return this.yieldRecords.filter(r => r.treasuryAccountId === accountId);
+  }
+  listYieldRecordsByAccount(accountId: EntityId): YieldRecord[] {
+    return this.yieldRecords.filter(r => r.treasuryAccountId === accountId);
+  }
+  isYieldReferenceProcessed(reference: string): boolean { return this.yieldReferences.has(reference); }
+  markYieldReference(reference: string): void { this.yieldReferences.add(reference); }
+
   isEventProcessed(eventId: string): boolean { return this.processedEvents.has(eventId); }
   markEventProcessed(eventId: string): void { this.processedEvents.add(eventId); }
+
+  saveClaim(claim: DividendClaim, expectedVersion?: number): void {
+    if (expectedVersion !== undefined) {
+      const currentVersion = this.claimVersions.get(claim.id) ?? 0;
+      if (currentVersion !== expectedVersion) {
+        throw new ConcurrencyError(claim.id as string, expectedVersion, currentVersion);
+      }
+    }
+    const nextVersion = (this.claimVersions.get(claim.id) ?? 0) + 1;
+    this.claims.set(claim.id, { ...claim, version: nextVersion });
+    this.claimVersions.set(claim.id, nextVersion);
+  }
+
+  getClaim(id: EntityId): DividendClaim | undefined {
+    const claim = this.claims.get(id);
+    return claim ? { ...claim } : undefined;
+  }
+
+  listClaimsBySchedule(scheduleId: EntityId): DividendClaim[] {
+    return Array.from(this.claims.values()).filter(c => c.scheduleId === scheduleId).map(c => ({ ...c }));
+  }
+
+  listClaimsByInvestor(investorId: EntityId): DividendClaim[] {
+    return Array.from(this.claims.values()).filter(c => c.investorId === investorId).map(c => ({ ...c }));
+  }
+
+  listClaimsByStatus(status: ClaimStatus): DividendClaim[] {
+    return Array.from(this.claims.values()).filter(c => c.status === status).map(c => ({ ...c }));
+  }
+
+  saveClaimReceipt(receipt: ClaimReceipt): void {
+    this.claimReceipts.set(receipt.id, { ...receipt });
+  }
+
+  getClaimReceipt(id: EntityId): ClaimReceipt | undefined {
+    const receipt = this.claimReceipts.get(id);
+    return receipt ? { ...receipt } : undefined;
+  }
+
+  listClaimReceiptsByInvestor(investorId: EntityId): ClaimReceipt[] {
+    return Array.from(this.claimReceipts.values()).filter(r => r.investorId === investorId).map(r => ({ ...r }));
+  }
 }

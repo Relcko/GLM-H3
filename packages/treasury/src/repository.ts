@@ -8,7 +8,7 @@ import type {
   TreasuryHealthResult, TreasuryAccountType, MovementStatus, DividendStatus,
   ScheduleStatus, BuybackStatus, BurnStatus, TreasuryReportType,
   MultiSigConfig, MultiSigSignature,
-  YieldRecord,
+  YieldRecord, DividendClaim, ClaimReceipt, ClaimStatus,
 } from "./types";
 
 export interface TreasuryRepository {
@@ -40,6 +40,12 @@ export interface TreasuryRepository {
   saveMovement(m: MovementRequest): void;
   getMovement(id: EntityId): MovementRequest | undefined;
   listMovementsByStatus(status: MovementStatus): MovementRequest[];
+
+  saveMultiSigConfig(c: MultiSigConfig): void;
+  getMultiSigConfig(accountId: EntityId): MultiSigConfig | undefined;
+  saveSignature(s: MultiSigSignature): void;
+  getSignaturesByMovement(movementId: EntityId): MultiSigSignature[];
+  hasSignerSigned(movementId: EntityId, signerId: EntityId): boolean;
 
   saveReconciliation(r: ReconciliationRecord): void;
   listReconciliationsByAccount(accountId: EntityId): ReconciliationRecord[];
@@ -98,6 +104,23 @@ export interface TreasuryRepository {
   saveHealthResult(h: TreasuryHealthResult): void;
   getLatestHealthResult(): TreasuryHealthResult | undefined;
 
+  saveYieldRecord(r: YieldRecord): void;
+  getYieldRecord(id: EntityId): YieldRecord | undefined;
+  listYieldRecords(accountId: EntityId): YieldRecord[];
+  listYieldRecordsByAccount(accountId: EntityId): YieldRecord[];
+  isYieldReferenceProcessed(reference: string): boolean;
+  markYieldReference(reference: string): void;
+
   isEventProcessed(eventId: string): boolean;
   markEventProcessed(eventId: string): void;
+
+  saveClaim(claim: DividendClaim, expectedVersion?: number): void;
+  getClaim(id: EntityId): DividendClaim | undefined;
+  listClaimsBySchedule(scheduleId: EntityId): DividendClaim[];
+  listClaimsByInvestor(investorId: EntityId): DividendClaim[];
+  listClaimsByStatus(status: ClaimStatus): DividendClaim[];
+
+  saveClaimReceipt(receipt: ClaimReceipt): void;
+  getClaimReceipt(id: EntityId): ClaimReceipt | undefined;
+  listClaimReceiptsByInvestor(investorId: EntityId): ClaimReceipt[];
 }
