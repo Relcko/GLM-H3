@@ -4,8 +4,6 @@
   "private": true,
   "description": "Identity v2.0 — application layer (command handlers, query handlers, event handlers, projections, CQRS orchestration)",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -13,21 +11,23 @@
       "default": "./dist/index.js"
     }
   },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "clean": "rm -rf dist .turbo",
     "dev": "tsc --watch",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "clean": "rm -rf dist .turbo"
+    "test:run": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@relcko/cqrs": "workspace:*",
-    "@relcko/event-bus": "workspace:*",
     "@relcko/errors": "workspace:*",
+    "@relcko/event-bus": "workspace:*",
     "@relcko/events": "workspace:*",
     "@relcko/identity-domain": "workspace:*",
     "@relcko/kernel": "workspace:*",

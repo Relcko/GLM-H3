@@ -4,8 +4,6 @@
   "private": true,
   "description": "Identity v2.0 — test utilities (fixtures, builders, in-memory repositories, spies)",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -13,16 +11,18 @@
       "default": "./dist/index.js"
     }
   },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "clean": "rm -rf dist .turbo",
     "dev": "tsc --watch",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "clean": "rm -rf dist .turbo"
+    "test:run": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@relcko/event-bus": "workspace:*",
