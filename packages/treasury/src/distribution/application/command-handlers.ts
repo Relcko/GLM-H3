@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import type { CommandHandler, Command } from "@relcko/application";
+import type { DomainEvent } from "@relcko/kernel";
 
 import { DistributionAggregate } from "../domain/distribution.aggregate";
 import { DistributionRecipientAggregate } from "../domain/distribution-recipient.aggregate";
@@ -36,6 +37,7 @@ import type {
   IDistributionScheduleRepository,
   ISagaRepository,
 } from "./repositories";
+import type { UnitOfWorkFactory } from "../infrastructure/persistence/unit-of-work";
 
 export interface DistributionCommandDeps {
   distributionRepo: IDistributionRepository;
@@ -44,6 +46,7 @@ export interface DistributionCommandDeps {
   sagaRepo: ISagaRepository;
   idempotencyLedger: IIdempotencyLedger;
   outbox: IOutbox;
+  unitOfWorkFactory?: UnitOfWorkFactory;
 }
 
 function getActorId(command: Command): string {
@@ -103,6 +106,100 @@ async function publishEvents(
   }
 }
 
+interface AggWithEvents {
+  readonly aggregateType: string;
+  readonly id: unknown;
+  readonly version: number;
+  getUncommittedEvents(): readonly DomainEvent[];
+  markEventsAsCommitted(): void;
+}
+
+async function saveWithUow(
+  deps: DistributionCommandDeps,
+  agg: AggWithEvents,
+  outboxAggregateId: string,
+  idempotencyKey: string | undefined,
+  commandType: string,
+  actorId: string,
+  requestPayload: unknown,
+  responsePayload: unknown,
+  legacySave: () => Promise<void>,
+): Promise<void> {
+  const events = agg.getUncommittedEvents();
+  if (events.length === 0) return;
+
+  if (deps.unitOfWorkFactory) {
+    const uow = deps.unitOfWorkFactory.create();
+    const expectedVersion = agg.version - events.length;
+    uow.registerAppend(agg.aggregateType, String(agg.id), events, expectedVersion);
+    for (const event of events) {
+      uow.registerOutbox(outboxAggregateId, event.eventType, event, idempotencyKey ?? "", `outbox:${event.eventId}`);
+    }
+    uow.registerIdempotency(
+      idempotencyKey ?? "", commandType, String(agg.id),
+      actorId, JSON.stringify(requestPayload), responsePayload,
+      events.map((e) => e.eventType),
+    );
+    await uow.commit();
+    agg.markEventsAsCommitted();
+  } else {
+    await legacySave();
+    await publishEvents(deps.outbox, outboxAggregateId, events, idempotencyKey ?? "");
+    await recordIdempotency(deps.idempotencyLedger, idempotencyKey, commandType, String(agg.id), actorId, requestPayload, responsePayload, events.map((e) => e.eventType));
+  }
+}
+
+async function saveRecipientWithSaga(
+  deps: DistributionCommandDeps,
+  recipient: AggWithEvents,
+  distributionId: DistributionId,
+  recEvents: readonly DomainEvent[],
+  expectedVersion: number,
+  idempotencyKey: string | undefined,
+  command: Command,
+  responsePayload: unknown,
+  legacySaveRecipient: () => Promise<void>,
+  sagaAction: (saga: DistributionSaga) => void,
+): Promise<void> {
+  let sagaEvents: { eventType: string; eventId: string }[] = [];
+  let saga: DistributionSaga | null = null;
+  const sagaRef = await deps.sagaRepo.findByDistributionId(distributionId);
+  if (sagaRef) {
+    saga = sagaRef;
+    sagaAction(saga);
+    sagaEvents = [...saga.getUncommittedEvents()];
+  }
+
+  const allEvents = [...recEvents, ...sagaEvents];
+  const recipientId = recipient.id as unknown as RecipientId;
+
+  if (deps.unitOfWorkFactory) {
+    const uow = deps.unitOfWorkFactory.create();
+    uow.registerAppend(recipient.aggregateType, String(recipient.id), recEvents, expectedVersion);
+    if (saga && sagaEvents.length > 0) {
+      const sagaExpectedVersion = saga.version - sagaEvents.length;
+      uow.registerAppend("saga", String(saga.sagaId), sagaEvents, sagaExpectedVersion);
+    }
+    for (const event of allEvents) {
+      uow.registerOutbox(String(recipientId), event.eventType, event, idempotencyKey ?? "", `outbox:${event.eventId}`);
+    }
+    uow.registerIdempotency(
+      idempotencyKey ?? "", command.type, String(recipientId),
+      getActorId(command), JSON.stringify(command.payload), responsePayload,
+      allEvents.map((e) => e.eventType),
+    );
+    await uow.commit();
+    recipient.markEventsAsCommitted();
+    saga?.markEventsAsCommitted();
+    if (saga) await deps.sagaRepo.save(saga);
+  } else {
+    await legacySaveRecipient();
+    if (saga) await deps.sagaRepo.save(saga);
+    await publishEvents(deps.outbox, String(recipientId), allEvents, idempotencyKey ?? "");
+    await recordIdempotency(deps.idempotencyLedger, idempotencyKey, command.type, String(recipientId), getActorId(command), command.payload, responsePayload, allEvents.map((e) => e.eventType));
+  }
+}
+
 // ─── CreateDistribution ────────────────────────────────────────────────
 
 export interface CreateDistributionPayload extends CreateDistributionCommandData {
@@ -143,26 +240,14 @@ export class CreateDistributionHandler
     };
 
     const aggregate = DistributionAggregate.create(distributionId, data);
-    const events = aggregate.getUncommittedEvents();
-    await this.deps.distributionRepo.save(aggregate);
-
-    await publishEvents(
-      this.deps.outbox,
-      String(distributionId),
-      events,
-      idempotencyKey ?? command.metadata.messageId,
-    );
-
+    aggregate.getUncommittedEvents();
     const result = { distributionId: String(distributionId) };
-    await recordIdempotency(
-      this.deps.idempotencyLedger,
-      idempotencyKey,
-      command.type,
-      String(distributionId),
-      getActorId(command),
-      command.payload,
-      result,
-      events.map((e) => e.eventType),
+
+    await saveWithUow(
+      this.deps, aggregate, String(distributionId),
+      idempotencyKey, command.type, getActorId(command),
+      command.payload, result,
+      () => this.deps.distributionRepo.save(aggregate),
     );
 
     return result;
@@ -197,25 +282,12 @@ export class ApproveDistributionHandler
 
     const approveData: ApproveDistributionCommandData = { approvals };
     aggregate.approve(approveData, approvalEpoch, reservationJournalId);
-    const events = aggregate.getUncommittedEvents();
-    await this.deps.distributionRepo.save(aggregate);
 
-    await publishEvents(
-      this.deps.outbox,
-      String(distributionId),
-      events,
-      idempotencyKey ?? command.metadata.messageId,
-    );
-
-    await recordIdempotency(
-      this.deps.idempotencyLedger,
-      idempotencyKey,
-      command.type,
-      String(distributionId),
-      getActorId(command),
-      command.payload,
-      null,
-      events.map((e) => e.eventType),
+    await saveWithUow(
+      this.deps, aggregate, String(distributionId),
+      idempotencyKey, command.type, getActorId(command),
+      command.payload, null,
+      () => this.deps.distributionRepo.save(aggregate),
     );
   }
 }
@@ -244,25 +316,12 @@ export class CancelDistributionHandler
 
     const aggregate = await this.deps.distributionRepo.getById(distributionId);
     aggregate.cancel(reason, cancelledBy);
-    const events = aggregate.getUncommittedEvents();
-    await this.deps.distributionRepo.save(aggregate);
 
-    await publishEvents(
-      this.deps.outbox,
-      String(distributionId),
-      events,
-      idempotencyKey ?? command.metadata.messageId,
-    );
-
-    await recordIdempotency(
-      this.deps.idempotencyLedger,
-      idempotencyKey,
-      command.type,
-      String(distributionId),
-      cancelledBy,
-      command.payload,
-      null,
-      events.map((e) => e.eventType),
+    await saveWithUow(
+      this.deps, aggregate, String(distributionId),
+      idempotencyKey, command.type, cancelledBy,
+      command.payload, null,
+      () => this.deps.distributionRepo.save(aggregate),
     );
   }
 }
@@ -317,8 +376,12 @@ export class MaterializeDistributionRecipientsHandler
 
     aggregate.materializeRecipients(snapshotId, totalEligibleAmount, recipients.length, manifestHash);
     const distEvents = aggregate.getUncommittedEvents();
+    const distExpectedVersion = aggregate.version - distEvents.length;
 
-    const allocationEvents: { eventType: string; eventId: string }[] = [];
+    const allAggs: { agg: AggWithEvents; outboxId: string }[] = [
+      { agg: aggregate, outboxId: String(distributionId) },
+    ];
+
     for (const entry of recipients) {
       const proof = EligibilityProof.create({
         snapshotId: entry.proof.snapshotId,
@@ -337,32 +400,43 @@ export class MaterializeDistributionRecipientsHandler
         proof,
       );
 
-      allocationEvents.push(...recipientAgg.getUncommittedEvents());
-
-      await this.deps.recipientRepo.save(recipientAgg);
+      allAggs.push({ agg: recipientAgg, outboxId: String(entry.recipientId) });
     }
 
-    await this.deps.distributionRepo.save(aggregate);
+    if (this.deps.unitOfWorkFactory) {
+      const uow = this.deps.unitOfWorkFactory.create();
+      for (const { agg, outboxId } of allAggs) {
+        const evts = agg.getUncommittedEvents();
+        if (evts.length === 0) continue;
+        const expectedVer = agg.version - evts.length;
+        uow.registerAppend(agg.aggregateType, String(agg.id), evts, expectedVer);
+        for (const event of evts) {
+          uow.registerOutbox(outboxId, event.eventType, event, idempotencyKey ?? "", `outbox:${event.eventId}`);
+        }
+      }
+      uow.registerIdempotency(
+        idempotencyKey ?? "", command.type, String(distributionId),
+        getActorId(command), JSON.stringify(command.payload), null,
+        allAggs.flatMap(({ agg }) => agg.getUncommittedEvents().map((e) => e.eventType)),
+      );
+      await uow.commit();
+      for (const { agg } of allAggs) {
+        agg.markEventsAsCommitted();
+      }
+    } else {
+      for (const { agg } of allAggs) {
+        if (agg === aggregate) {
+          await this.deps.distributionRepo.save(agg as typeof aggregate);
+        } else {
+          await this.deps.recipientRepo.save(agg as DistributionRecipientAggregate);
+        }
+      }
 
-    const allEvents = [...distEvents, ...allocationEvents];
+      const allEvents = allAggs.flatMap(({ agg }) => agg.getUncommittedEvents());
 
-    await publishEvents(
-      this.deps.outbox,
-      String(distributionId),
-      allEvents,
-      idempotencyKey ?? command.metadata.messageId,
-    );
-
-    await recordIdempotency(
-      this.deps.idempotencyLedger,
-      idempotencyKey,
-      command.type,
-      String(distributionId),
-      getActorId(command),
-      command.payload,
-      null,
-      allEvents.map((e) => e.eventType),
-    );
+      await publishEvents(this.deps.outbox, String(distributionId), allEvents, idempotencyKey ?? command.metadata.messageId);
+      await recordIdempotency(this.deps.idempotencyLedger, idempotencyKey, command.type, String(distributionId), getActorId(command), command.payload, null, allEvents.map((e) => e.eventType));
+    }
   }
 }
 
@@ -408,29 +482,33 @@ export class ExecuteDistributionHandler
 
     const distEvents = aggregate.getUncommittedEvents();
     const sagaEvents = saga.getUncommittedEvents();
-    await this.deps.distributionRepo.save(aggregate);
-    await this.deps.sagaRepo.save(saga);
-
     const allEvents = [...distEvents, ...sagaEvents];
-
-    await publishEvents(
-      this.deps.outbox,
-      String(distributionId),
-      allEvents,
-      idempotencyKey ?? command.metadata.messageId,
-    );
-
     const result = { sagaId: String(sagaId) };
-    await recordIdempotency(
-      this.deps.idempotencyLedger,
-      idempotencyKey,
-      command.type,
-      String(distributionId),
-      getActorId(command),
-      command.payload,
-      result,
-      allEvents.map((e) => e.eventType),
-    );
+
+    if (this.deps.unitOfWorkFactory) {
+      const uow = this.deps.unitOfWorkFactory.create();
+      const expectedVersion = aggregate.version - distEvents.length;
+      uow.registerAppend(aggregate.aggregateType, String(aggregate.id), distEvents, expectedVersion);
+      const sagaExpectedVersion = saga.version - sagaEvents.length;
+      uow.registerAppend("saga", String(saga.sagaId), sagaEvents, sagaExpectedVersion);
+      for (const event of allEvents) {
+        uow.registerOutbox(String(distributionId), event.eventType, event, idempotencyKey ?? "", `outbox:${event.eventId}`);
+      }
+      uow.registerIdempotency(
+        idempotencyKey ?? "", command.type, String(distributionId),
+        getActorId(command), JSON.stringify(command.payload), result,
+        allEvents.map((e) => e.eventType),
+      );
+      await uow.commit();
+      aggregate.markEventsAsCommitted();
+      saga.markEventsAsCommitted();
+      await this.deps.sagaRepo.save(saga);
+    } else {
+      await this.deps.distributionRepo.save(aggregate);
+      await this.deps.sagaRepo.save(saga);
+      await publishEvents(this.deps.outbox, String(distributionId), allEvents, idempotencyKey ?? command.metadata.messageId);
+      await recordIdempotency(this.deps.idempotencyLedger, idempotencyKey, command.type, String(distributionId), getActorId(command), command.payload, result, allEvents.map((e) => e.eventType));
+    }
 
     return result;
   }
@@ -463,35 +541,39 @@ export class CompleteDistributionHandler
     const distEvents = aggregate.getUncommittedEvents();
 
     let sagaEvents: { eventType: string; eventId: string }[] = [];
-    const saga = await this.deps.sagaRepo.findBySagaId(sagaId);
-    if (saga) {
+    let saga: DistributionSaga | null = null;
+    const sagaRef = await this.deps.sagaRepo.findBySagaId(sagaId);
+    if (sagaRef) {
+      saga = sagaRef;
       saga.compensate("Distribution completed");
       saga.complete();
       sagaEvents = [...saga.getUncommittedEvents()];
-      await this.deps.sagaRepo.save(saga);
     }
-
-    await this.deps.distributionRepo.save(aggregate);
 
     const allEvents = [...distEvents, ...sagaEvents];
 
-    await publishEvents(
-      this.deps.outbox,
-      String(distributionId),
-      allEvents,
-      idempotencyKey ?? command.metadata.messageId,
-    );
-
-    await recordIdempotency(
-      this.deps.idempotencyLedger,
-      idempotencyKey,
-      command.type,
-      String(distributionId),
-      getActorId(command),
-      command.payload,
-      null,
-      allEvents.map((e) => e.eventType),
-    );
+    if (this.deps.unitOfWorkFactory) {
+      const uow = this.deps.unitOfWorkFactory.create();
+      const expectedVersion = aggregate.version - distEvents.length;
+      uow.registerAppend(aggregate.aggregateType, String(aggregate.id), distEvents, expectedVersion);
+      if (saga && sagaEvents.length > 0) {
+        const sagaExpectedVersion = saga.version - sagaEvents.length;
+        uow.registerAppend("saga", String(saga.sagaId), sagaEvents, sagaExpectedVersion);
+      }
+      for (const event of allEvents) {
+        uow.registerOutbox(String(distributionId), event.eventType, event, idempotencyKey ?? "", `outbox:${event.eventId}`);
+      }
+      uow.registerIdempotency(idempotencyKey ?? "", command.type, String(distributionId), getActorId(command), JSON.stringify(command.payload), null, allEvents.map((e) => e.eventType));
+      await uow.commit();
+      aggregate.markEventsAsCommitted();
+      saga?.markEventsAsCommitted();
+      if (saga) await this.deps.sagaRepo.save(saga);
+    } else {
+      if (saga) await this.deps.sagaRepo.save(saga);
+      await this.deps.distributionRepo.save(aggregate);
+      await publishEvents(this.deps.outbox, String(distributionId), allEvents, idempotencyKey ?? command.metadata.messageId);
+      await recordIdempotency(this.deps.idempotencyLedger, idempotencyKey, command.type, String(distributionId), getActorId(command), command.payload, null, allEvents.map((e) => e.eventType));
+    }
   }
 }
 
@@ -523,35 +605,39 @@ export class FailDistributionHandler
     const distEvents = aggregate.getUncommittedEvents();
 
     let sagaEvents: { eventType: string; eventId: string }[] = [];
-    const saga = await this.deps.sagaRepo.findBySagaId(sagaId);
-    if (saga) {
+    let saga: DistributionSaga | null = null;
+    const sagaRef = await this.deps.sagaRepo.findBySagaId(sagaId);
+    if (sagaRef) {
+      saga = sagaRef;
       saga.compensate(reason ?? "Distribution execution failed");
       saga.fail(reason ?? "Distribution execution failed");
       sagaEvents = [...saga.getUncommittedEvents()];
-      await this.deps.sagaRepo.save(saga);
     }
-
-    await this.deps.distributionRepo.save(aggregate);
 
     const allEvents = [...distEvents, ...sagaEvents];
 
-    await publishEvents(
-      this.deps.outbox,
-      String(distributionId),
-      allEvents,
-      idempotencyKey ?? command.metadata.messageId,
-    );
-
-    await recordIdempotency(
-      this.deps.idempotencyLedger,
-      idempotencyKey,
-      command.type,
-      String(distributionId),
-      getActorId(command),
-      command.payload,
-      null,
-      allEvents.map((e) => e.eventType),
-    );
+    if (this.deps.unitOfWorkFactory) {
+      const uow = this.deps.unitOfWorkFactory.create();
+      const expectedVersion = aggregate.version - distEvents.length;
+      uow.registerAppend(aggregate.aggregateType, String(aggregate.id), distEvents, expectedVersion);
+      if (saga && sagaEvents.length > 0) {
+        const sagaExpectedVersion = saga.version - sagaEvents.length;
+        uow.registerAppend("saga", String(saga.sagaId), sagaEvents, sagaExpectedVersion);
+      }
+      for (const event of allEvents) {
+        uow.registerOutbox(String(distributionId), event.eventType, event, idempotencyKey ?? "", `outbox:${event.eventId}`);
+      }
+      uow.registerIdempotency(idempotencyKey ?? "", command.type, String(distributionId), getActorId(command), JSON.stringify(command.payload), null, allEvents.map((e) => e.eventType));
+      await uow.commit();
+      aggregate.markEventsAsCommitted();
+      saga?.markEventsAsCommitted();
+      if (saga) await this.deps.sagaRepo.save(saga);
+    } else {
+      if (saga) await this.deps.sagaRepo.save(saga);
+      await this.deps.distributionRepo.save(aggregate);
+      await publishEvents(this.deps.outbox, String(distributionId), allEvents, idempotencyKey ?? command.metadata.messageId);
+      await recordIdempotency(this.deps.idempotencyLedger, idempotencyKey, command.type, String(distributionId), getActorId(command), command.payload, null, allEvents.map((e) => e.eventType));
+    }
   }
 }
 
@@ -591,30 +677,17 @@ export class ReconcileDistributionHandler
 
     const aggregate = await this.deps.distributionRepo.getById(distributionId);
     aggregate.reconcile(expectedTotal, actualTotal);
-    const events = aggregate.getUncommittedEvents();
-    await this.deps.distributionRepo.save(aggregate);
-
-    await publishEvents(
-      this.deps.outbox,
-      String(distributionId),
-      events,
-      idempotencyKey ?? command.metadata.messageId,
-    );
 
     const result: ReconcileDistributionResult = {
       discrepancy: expectedTotal - actualTotal,
       reconciled: expectedTotal === actualTotal,
     };
 
-    await recordIdempotency(
-      this.deps.idempotencyLedger,
-      idempotencyKey,
-      command.type,
-      String(distributionId),
-      getActorId(command),
-      command.payload,
-      result,
-      events.map((e) => e.eventType),
+    await saveWithUow(
+      this.deps, aggregate, String(distributionId),
+      idempotencyKey, command.type, getActorId(command),
+      command.payload, result,
+      () => this.deps.distributionRepo.save(aggregate),
     );
 
     return result;
@@ -657,34 +730,14 @@ export class ProcessRecipientPaymentHandler
     };
     recipient.pay(payData);
     const recEvents = recipient.getUncommittedEvents();
-    await this.deps.recipientRepo.save(recipient);
+    const expectedVer = recipient.version - recEvents.length;
 
-    let sagaEvents: { eventType: string; eventId: string }[] = [];
-    const saga = await this.deps.sagaRepo.findByDistributionId(distributionId);
-    if (saga) {
-      saga.markRecipientPaid(String(recipientId));
-      sagaEvents = [...saga.getUncommittedEvents()];
-      await this.deps.sagaRepo.save(saga);
-    }
-
-    const allEvents = [...recEvents, ...sagaEvents];
-
-    await publishEvents(
-      this.deps.outbox,
-      String(recipientId),
-      allEvents,
-      idempotencyKey ?? command.metadata.messageId,
-    );
-
-    await recordIdempotency(
-      this.deps.idempotencyLedger,
-      idempotencyKey,
-      command.type,
-      String(recipientId),
-      getActorId(command),
-      command.payload,
-      null,
-      allEvents.map((e) => e.eventType),
+    await saveRecipientWithSaga(
+      this.deps, recipient, distributionId,
+      recEvents, expectedVer, idempotencyKey,
+      command, null,
+      () => this.deps.recipientRepo.save(recipient),
+      (saga) => saga.markRecipientPaid(String(recipientId)),
     );
   }
 }
@@ -718,34 +771,14 @@ export class FailRecipientPaymentHandler
 
     recipient.fail(distributionId, recipient.investorId, amount, currency, reason, errorCode);
     const recEvents = recipient.getUncommittedEvents();
-    await this.deps.recipientRepo.save(recipient);
+    const expectedVer = recipient.version - recEvents.length;
 
-    let sagaEvents: { eventType: string; eventId: string }[] = [];
-    const saga = await this.deps.sagaRepo.findByDistributionId(distributionId);
-    if (saga) {
-      saga.markRecipientFailed(String(recipientId));
-      sagaEvents = [...saga.getUncommittedEvents()];
-      await this.deps.sagaRepo.save(saga);
-    }
-
-    const allEvents = [...recEvents, ...sagaEvents];
-
-    await publishEvents(
-      this.deps.outbox,
-      String(recipientId),
-      allEvents,
-      idempotencyKey ?? command.metadata.messageId,
-    );
-
-    await recordIdempotency(
-      this.deps.idempotencyLedger,
-      idempotencyKey,
-      command.type,
-      String(recipientId),
-      getActorId(command),
-      command.payload,
-      null,
-      allEvents.map((e) => e.eventType),
+    await saveRecipientWithSaga(
+      this.deps, recipient, distributionId,
+      recEvents, expectedVer, idempotencyKey,
+      command, null,
+      () => this.deps.recipientRepo.save(recipient),
+      (saga) => saga.markRecipientFailed(String(recipientId)),
     );
   }
 }
@@ -783,34 +816,14 @@ export class RecoverRecipientPaymentHandler
     };
     recipient.recover(recoverData, settlementRef);
     const recEvents = recipient.getUncommittedEvents();
-    await this.deps.recipientRepo.save(recipient);
+    const expectedVer = recipient.version - recEvents.length;
 
-    let sagaEvents: { eventType: string; eventId: string }[] = [];
-    const saga = await this.deps.sagaRepo.findByDistributionId(distributionId);
-    if (saga) {
-      saga.markRecipientRecovered(String(recipientId));
-      sagaEvents = [...saga.getUncommittedEvents()];
-      await this.deps.sagaRepo.save(saga);
-    }
-
-    const allEvents = [...recEvents, ...sagaEvents];
-
-    await publishEvents(
-      this.deps.outbox,
-      String(recipientId),
-      allEvents,
-      idempotencyKey ?? command.metadata.messageId,
-    );
-
-    await recordIdempotency(
-      this.deps.idempotencyLedger,
-      idempotencyKey,
-      command.type,
-      String(recipientId),
-      getActorId(command),
-      command.payload,
-      null,
-      allEvents.map((e) => e.eventType),
+    await saveRecipientWithSaga(
+      this.deps, recipient, distributionId,
+      recEvents, expectedVer, idempotencyKey,
+      command, null,
+      () => this.deps.recipientRepo.save(recipient),
+      (saga) => saga.markRecipientRecovered(String(recipientId)),
     );
   }
 }
@@ -859,26 +872,14 @@ export class CreateScheduleHandler
     };
 
     const aggregate = DistributionScheduleAggregate.create(scheduleId, data);
-    const events = aggregate.getUncommittedEvents();
-    await this.deps.scheduleRepo.save(aggregate);
-
-    await publishEvents(
-      this.deps.outbox,
-      String(scheduleId),
-      events,
-      idempotencyKey ?? command.metadata.messageId,
-    );
-
+    aggregate.getUncommittedEvents();
     const result = { scheduleId: String(scheduleId) };
-    await recordIdempotency(
-      this.deps.idempotencyLedger,
-      idempotencyKey,
-      command.type,
-      String(scheduleId),
-      getActorId(command),
-      command.payload,
-      result,
-      events.map((e) => e.eventType),
+
+    await saveWithUow(
+      this.deps, aggregate, String(scheduleId),
+      idempotencyKey, command.type, getActorId(command),
+      command.payload, result,
+      () => this.deps.scheduleRepo.save(aggregate),
     );
 
     return result;
@@ -909,25 +910,12 @@ export class ActivateScheduleHandler
     const aggregate = await this.deps.scheduleRepo.getById(scheduleId);
     const activateData: ActivateScheduleCommandData = { activatedBy };
     aggregate.activate(activateData);
-    const events = aggregate.getUncommittedEvents();
-    await this.deps.scheduleRepo.save(aggregate);
 
-    await publishEvents(
-      this.deps.outbox,
-      String(scheduleId),
-      events,
-      idempotencyKey ?? command.metadata.messageId,
-    );
-
-    await recordIdempotency(
-      this.deps.idempotencyLedger,
-      idempotencyKey,
-      command.type,
-      String(scheduleId),
-      activatedBy,
-      command.payload,
-      null,
-      events.map((e) => e.eventType),
+    await saveWithUow(
+      this.deps, aggregate, String(scheduleId),
+      idempotencyKey, command.type, activatedBy,
+      command.payload, null,
+      () => this.deps.scheduleRepo.save(aggregate),
     );
   }
 }
@@ -957,25 +945,12 @@ export class CloseScheduleHandler
     const aggregate = await this.deps.scheduleRepo.getById(scheduleId);
     const closeData: CloseScheduleCommandData = { closedBy, reason };
     aggregate.close(closeData);
-    const events = aggregate.getUncommittedEvents();
-    await this.deps.scheduleRepo.save(aggregate);
 
-    await publishEvents(
-      this.deps.outbox,
-      String(scheduleId),
-      events,
-      idempotencyKey ?? command.metadata.messageId,
-    );
-
-    await recordIdempotency(
-      this.deps.idempotencyLedger,
-      idempotencyKey,
-      command.type,
-      String(scheduleId),
-      closedBy,
-      command.payload,
-      null,
-      events.map((e) => e.eventType),
+    await saveWithUow(
+      this.deps, aggregate, String(scheduleId),
+      idempotencyKey, command.type, closedBy,
+      command.payload, null,
+      () => this.deps.scheduleRepo.save(aggregate),
     );
   }
 }

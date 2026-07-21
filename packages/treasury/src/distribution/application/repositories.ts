@@ -40,6 +40,9 @@ export interface ISagaRepository {
   save(saga: DistributionSaga): Promise<void>;
   findBySagaId(sagaId: SagaId): Promise<DistributionSaga | null>;
   findByDistributionId(distributionId: DistributionId): Promise<DistributionSaga | null>;
+
+  acquire(sagaId: SagaId, workerId: string, ttlMs: number): Promise<boolean>;
+  release(sagaId: SagaId, workerId: string): Promise<void>;
 }
 
 export interface DistributionReadModel {

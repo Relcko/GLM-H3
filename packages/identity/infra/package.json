@@ -4,6 +4,11 @@
   "private": true,
   "description": "Identity v2.0 — infrastructure layer (event-store adapters, repository implementations, persistence)",
   "type": "module",
+<<<<<<< Updated upstream
+=======
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+>>>>>>> Stashed changes
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -11,6 +16,7 @@
       "default": "./dist/index.js"
     }
   },
+<<<<<<< Updated upstream
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -23,6 +29,18 @@
     "test:coverage": "vitest run --coverage",
     "test:run": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit"
+=======
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist .turbo"
+>>>>>>> Stashed changes
   },
   "dependencies": {
     "@relcko/event-store": "workspace:*",

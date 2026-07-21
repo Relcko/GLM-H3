@@ -92,6 +92,10 @@ export class DistributionRecipientAggregate extends AggregateRoot<RecipientId> {
     return this._eligibleAmount;
   }
 
+  get currency(): string {
+    return this._currency;
+  }
+
   private materialize(
     distributionId: DistributionId,
     investorId: string,

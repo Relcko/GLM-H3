@@ -23,4 +23,6 @@ export interface IOutbox {
   markDelivered(outboxId: string): Promise<void>;
 
   getPending(): Promise<readonly OutboxRecord[]>;
+
+  remove(deliveredIdempotencyKey: string): Promise<void>;
 }

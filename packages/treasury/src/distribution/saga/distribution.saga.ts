@@ -143,6 +143,7 @@ export class DistributionSaga {
   get maxParallelism(): number { return this._maxParallelism; }
   get recoveryPolicyId(): string | null { return this._state.recoveryPolicyId; }
   get totalRecipients(): number { return this._state.totalRecipients; }
+  get startedAt(): number { return this._state.startedAt; }
 
   get isTerminal(): boolean {
     return this._state.state === SagaState.Completed || this._state.state === SagaState.Failed;

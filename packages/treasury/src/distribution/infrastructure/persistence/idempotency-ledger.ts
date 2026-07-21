@@ -26,12 +26,31 @@ export class InMemoryIdempotencyLedger implements IIdempotencyLedger {
     });
   }
 
+  async tryRecord(
+    key: string,
+    commandType: string,
+    aggregateId: string,
+    actorId: string,
+    requestHash: string,
+    responsePayload: unknown,
+    responseStatus: string,
+    producedEvents: string[],
+  ): Promise<boolean> {
+    if (this.records.has(key)) return false;
+    await this.record(key, commandType, aggregateId, actorId, requestHash, responsePayload, responseStatus, producedEvents);
+    return true;
+  }
+
   async get(key: string): Promise<IdempotencyRecord | null> {
     return this.records.get(key) ?? null;
   }
 
   async exists(key: string): Promise<boolean> {
     return this.records.has(key);
+  }
+
+  async delete(key: string): Promise<void> {
+    this.records.delete(key);
   }
 
   clear(): void {

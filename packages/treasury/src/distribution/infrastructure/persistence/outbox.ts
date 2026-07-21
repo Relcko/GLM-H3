@@ -33,6 +33,13 @@ export class InMemoryOutbox implements IOutbox {
     }
   }
 
+  async remove(deliveredIdempotencyKey: string): Promise<void> {
+    const idx = this.records.findIndex((r) => r.deliveredIdempotencyKey === deliveredIdempotencyKey);
+    if (idx !== -1) {
+      this.records.splice(idx, 1);
+    }
+  }
+
   async getPending(): Promise<readonly OutboxRecord[]> {
     return this.records.filter((r) => !r.delivered);
   }

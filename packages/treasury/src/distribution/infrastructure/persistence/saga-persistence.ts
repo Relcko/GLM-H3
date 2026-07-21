@@ -8,6 +8,26 @@ import type { ISagaRepository } from "../../application/repositories";
 export class InMemorySagaPersistence implements ISagaRepository {
   private readonly states = new Map<string, SagaStateData>();
   private readonly checkpoints = new Map<string, SagaCheckpoint>();
+  private readonly leases = new Map<string, { workerId: string; expiresAt: number }>();
+
+  async acquire(sagaId: SagaId, workerId: string, ttlMs: number): Promise<boolean> {
+    const key = String(sagaId);
+    const now = Date.now();
+    const existing = this.leases.get(key);
+    if (existing && existing.expiresAt > now && existing.workerId !== workerId) {
+      return false;
+    }
+    this.leases.set(key, { workerId, expiresAt: now + ttlMs });
+    return true;
+  }
+
+  async release(sagaId: SagaId, workerId: string): Promise<void> {
+    const key = String(sagaId);
+    const existing = this.leases.get(key);
+    if (existing && existing.workerId === workerId) {
+      this.leases.delete(key);
+    }
+  }
 
   async save(saga: DistributionSaga): Promise<void> {
     this.states.set(String(saga.sagaId), {

@@ -22,7 +22,20 @@ export interface IIdempotencyLedger {
     producedEvents: string[],
   ): Promise<void>;
 
+  tryRecord(
+    key: string,
+    commandType: string,
+    aggregateId: string,
+    actorId: string,
+    requestHash: string,
+    responsePayload: unknown,
+    responseStatus: string,
+    producedEvents: string[],
+  ): Promise<boolean>;
+
   get(key: string): Promise<IdempotencyRecord | null>;
 
   exists(key: string): Promise<boolean>;
+
+  delete(key: string): Promise<void>;
 }

@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+<<<<<<< Updated upstream
 import path from 'path';
 
 export default defineConfig({
@@ -11,6 +12,10 @@ export default defineConfig({
       '@relcko/types': path.resolve(__dirname, 'packages/treasury/__test_utils__/types-shim.ts'),
     },
   },
+=======
+
+export default defineConfig({
+>>>>>>> Stashed changes
   test: {
     globals: true,
     environment: 'node',

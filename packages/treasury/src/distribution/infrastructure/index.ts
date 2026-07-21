@@ -15,6 +15,8 @@ export { InMemoryIdempotencyLedger } from "./persistence/idempotency-ledger";
 export { InMemoryOutbox } from "./persistence/outbox";
 export { InMemorySagaPersistence } from "./persistence/saga-persistence";
 export { InMemoryCheckpointStore } from "./persistence/checkpoint-persistence";
+export { UnitOfWork, type PendingAppend, type PendingOutboxEntry, type PendingIdempotencyRecord, DefaultUnitOfWorkFactory, type UnitOfWorkFactory, UnitOfWorkError } from "./persistence/unit-of-work";
+export { InMemorySagaSnapshotStore, type SagaSnapshotStore, type SagaSnapshot } from "./persistence/saga-snapshot-store";
 
 export { type IUuidProvider, CryptoUuidProvider } from "./services/uuid-provider";
 export { type IHashService, CryptoHashService } from "./services/hash-service";
