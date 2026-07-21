@@ -1,0 +1,42 @@
+{
+  "name": "@relcko/identity-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Identity v2.0 — application layer (command handlers, query handlers, event handlers, projections, CQRS orchestration)",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist .turbo",
+    "dev": "tsc --watch",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:run": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@relcko/cqrs": "workspace:*",
+    "@relcko/errors": "workspace:*",
+    "@relcko/event-bus": "workspace:*",
+    "@relcko/events": "workspace:*",
+    "@relcko/identity-domain": "workspace:*",
+    "@relcko/kernel": "workspace:*",
+    "@relcko/logger": "workspace:*",
+    "@relcko/outbox": "workspace:*",
+    "@relcko/types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}

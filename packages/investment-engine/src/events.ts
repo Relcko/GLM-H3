@@ -30,6 +30,8 @@ export const InvestmentEventType = {
   RecoveryFailed: "investment.recovery_failed",
   PortfolioUpdated: "investment.portfolio_updated",
   InvestmentCompleted: "investment.completed",
+  InvestmentConfirmed: "investment.confirmed",
+  CommissionCalculated: "investment.commission_calculated",
   InvestmentAuditLogged: "investment.audit_logged",
 } as const;
 

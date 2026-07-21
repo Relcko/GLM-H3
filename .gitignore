@@ -1,31 +1,34 @@
-node_modules
-.next
-out
-.env*
-!.env.example
+node_modules/
+dist/
+coverage/
+.next/
+.turbo/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Logs
-dev-err.log
-dev-out.log
-prod-err.log
-prod-out.log
 *.log
+logs/
 
-# Build artifacts
-tsconfig.tsbuildinfo
-next-env.d.ts
+# Test artifacts
+.vitest/
 
-# Build artifacts
-dist/
-
-# Archives
-*.zip
-
-# Staking dApp bundle
-Staking/
-
-# Local tooling
+# Tool directories
+broadcast/
+cache/
+.commandcode/
 .opencode/
-
-# Solidity cache
-.oz-cache/

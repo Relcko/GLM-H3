@@ -1,0 +1,40 @@
+{
+  "name": "@relcko/test-utils",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RELCKO testing foundation - reusable helpers for aggregates, event store, event bus, CQRS, and replay tests",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@relcko/cqrs": "workspace:*",
+    "@relcko/event-bus": "workspace:*",
+    "@relcko/event-store": "workspace:*",
+    "@relcko/events": "workspace:*",
+    "@relcko/kernel": "workspace:*",
+    "@relcko/replay": "workspace:*",
+    "@relcko/types": "workspace:*",
+    "vitest": "^2.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

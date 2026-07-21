@@ -19,6 +19,7 @@ import { PortfolioAnalytics } from "./analytics/service";
 import { PortfolioSearch } from "./search/service";
 import { PortfolioExport } from "./export/service";
 import { PortfolioHealthEngine } from "./health/service";
+import { ProjectionService } from "./projection/service";
 import { PortfolioEventsAdapter } from "./events-adapter/adapter";
 
 export class PortfolioModule {
@@ -38,6 +39,7 @@ export class PortfolioModule {
     public readonly search: PortfolioSearch,
     public readonly exportService: PortfolioExport,
     public readonly healthEngine: PortfolioHealthEngine,
+    public readonly projectionService: ProjectionService,
     public readonly eventsAdapter: PortfolioEventsAdapter,
     public readonly events: EventBus,
     public readonly performance?: PerformanceModuleContext,
@@ -71,7 +73,8 @@ export function createPortfolioModule(options: PortfolioModuleOptions): Portfoli
   const search = new PortfolioSearch(repository, events, logger);
   const exportService = new PortfolioExport(repository, events, logger);
   const healthEngine = new PortfolioHealthEngine(repository, logger);
-  const eventsAdapter = new PortfolioEventsAdapter(events, logger, options.performance);
+  const projectionService = new ProjectionService(repository, events, logger);
+  const eventsAdapter = new PortfolioEventsAdapter(events, portfolioService, logger, options.performance);
 
   if (options.autoSubscribe !== false) eventsAdapter.subscribeToExternalEvents();
 
@@ -81,7 +84,7 @@ export function createPortfolioModule(options: PortfolioModuleOptions): Portfoli
     networkStatsAdapter, performanceEngine, roiEngine,
     allocationEngine, cashflowEngine, timeline,
     analytics, search, exportService,
-    healthEngine, eventsAdapter,
+    healthEngine, projectionService, eventsAdapter,
     events, options.performance,
   );
 }

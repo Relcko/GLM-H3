@@ -1,12 +1,16 @@
 import type { EntityId } from "@relcko/types";
 import type { TreasuryRepository } from "./repository";
+import { ConcurrencyError } from "./errors";
 import type {
   TreasuryAccount, LedgerEntry, JournalEntry, AllocationRule, TreasuryAllocation,
   ReserveConfig, MovementRequest, ReconciliationRecord, TreasuryReport,
   DividendProposal, DividendEligibilityEntry, DividendDistributionEntry, DividendRecoveryEntry,
+  DividendSchedule, OwnershipSnapshot, SnapshotPosition,
   BuybackRequest, BurnRequest, CashflowProjection, FinancialStatement, TreasuryAnalyticsEntry,
   TreasuryHealthResult, TreasuryAccountType, MovementStatus, DividendStatus,
-  BuybackStatus, BurnStatus, TreasuryReportType,
+  ScheduleStatus, BuybackStatus, BurnStatus, TreasuryReportType,
+  MultiSigConfig, MultiSigSignature,
+  YieldRecord, DividendClaim, ClaimReceipt, ClaimStatus,
 } from "./types";
 
 export class InMemoryTreasuryRepository implements TreasuryRepository {
@@ -17,19 +21,29 @@ export class InMemoryTreasuryRepository implements TreasuryRepository {
   private readonly allocations: TreasuryAllocation[] = [];
   private readonly reserveConfigs = new Map<EntityId, ReserveConfig>();
   private readonly movements = new Map<EntityId, MovementRequest>();
+  private readonly multiSigConfigs = new Map<EntityId, MultiSigConfig>();
+  private readonly signatures: MultiSigSignature[] = [];
   private readonly reconciliations: ReconciliationRecord[] = [];
   private readonly reports: TreasuryReport[] = [];
   private readonly dividendProposals = new Map<EntityId, DividendProposal>();
   private readonly eligibility: DividendEligibilityEntry[] = [];
   private readonly distributions: DividendDistributionEntry[] = [];
   private readonly recoveries: DividendRecoveryEntry[] = [];
+  private readonly schedules = new Map<EntityId, DividendSchedule>();
+  private readonly snapshots = new Map<EntityId, OwnershipSnapshot>();
+  private readonly snapshotPositions = new Map<EntityId, SnapshotPosition[]>();
   private readonly buybacks = new Map<EntityId, BuybackRequest>();
   private readonly burns = new Map<EntityId, BurnRequest>();
   private readonly cashflows = new Map<string, CashflowProjection>();
   private readonly statements: FinancialStatement[] = [];
   private readonly analytics = new Map<string, TreasuryAnalyticsEntry>();
   private healthResult?: TreasuryHealthResult;
+  private readonly yieldRecords: YieldRecord[] = [];
+  private readonly yieldReferences = new Set<string>();
   private readonly processedEvents = new Set<string>();
+  private readonly claims = new Map<EntityId, DividendClaim>();
+  private readonly claimVersions = new Map<EntityId, number>();
+  private readonly claimReceipts = new Map<EntityId, ClaimReceipt>();
 
   saveAccount(a: TreasuryAccount): void { this.accounts.set(a.id, a); }
   getAccount(id: EntityId): TreasuryAccount | undefined { return this.accounts.get(id); }
@@ -81,6 +95,16 @@ export class InMemoryTreasuryRepository implements TreasuryRepository {
     return Array.from(this.movements.values()).filter(m => m.status === status);
   }
 
+  saveMultiSigConfig(c: MultiSigConfig): void { this.multiSigConfigs.set(c.accountId, c); }
+  getMultiSigConfig(accountId: EntityId): MultiSigConfig | undefined { return this.multiSigConfigs.get(accountId); }
+  saveSignature(s: MultiSigSignature): void { this.signatures.push(s); }
+  getSignaturesByMovement(movementId: EntityId): MultiSigSignature[] {
+    return this.signatures.filter(s => s.movementId === movementId);
+  }
+  hasSignerSigned(movementId: EntityId, signerId: EntityId): boolean {
+    return this.signatures.some(s => s.movementId === movementId && s.signerId === signerId);
+  }
+
   saveReconciliation(r: ReconciliationRecord): void {
     const idx = this.reconciliations.findIndex(existing => existing.id === r.id);
     if (idx >= 0) {
@@ -127,6 +151,31 @@ export class InMemoryTreasuryRepository implements TreasuryRepository {
     return this.recoveries.filter(r => r.dividendId === dividendId);
   }
 
+  saveSchedule(d: DividendSchedule): void { this.schedules.set(d.id, d); }
+  getSchedule(id: EntityId): DividendSchedule | undefined { return this.schedules.get(id); }
+  listSchedulesByProperty(propertyId: EntityId): DividendSchedule[] {
+    return Array.from(this.schedules.values()).filter(s => s.propertyId === propertyId);
+  }
+  listSchedulesByStatus(status: ScheduleStatus): DividendSchedule[] {
+    return Array.from(this.schedules.values()).filter(s => s.status === status);
+  }
+  listAllSchedules(): DividendSchedule[] {
+    return Array.from(this.schedules.values());
+  }
+
+  saveSnapshot(s: OwnershipSnapshot): void { this.snapshots.set(s.id, s); }
+  getSnapshot(id: EntityId): OwnershipSnapshot | undefined { return this.snapshots.get(id); }
+  getSnapshotBySchedule(scheduleId: EntityId): OwnershipSnapshot | undefined {
+    return Array.from(this.snapshots.values()).find(s => s.scheduleId === scheduleId);
+  }
+
+  saveSnapshotPositions(snapshotId: EntityId, positions: readonly SnapshotPosition[]): void {
+    this.snapshotPositions.set(snapshotId, [...positions]);
+  }
+  listSnapshotPositions(snapshotId: EntityId): SnapshotPosition[] {
+    return this.snapshotPositions.get(snapshotId) ?? [];
+  }
+
   saveBuybackRequest(b: BuybackRequest): void { this.buybacks.set(b.id, b); }
   getBuybackRequest(id: EntityId): BuybackRequest | undefined { return this.buybacks.get(id); }
   listBuybacksByStatus(status: BuybackStatus): BuybackRequest[] {
@@ -157,6 +206,59 @@ export class InMemoryTreasuryRepository implements TreasuryRepository {
   saveHealthResult(h: TreasuryHealthResult): void { this.healthResult = h; }
   getLatestHealthResult(): TreasuryHealthResult | undefined { return this.healthResult; }
 
+  saveYieldRecord(r: YieldRecord): void { this.yieldRecords.push(r); }
+  getYieldRecord(id: EntityId): YieldRecord | undefined { return this.yieldRecords.find(r => r.id === id); }
+  listYieldRecords(accountId: EntityId): YieldRecord[] {
+    return this.yieldRecords.filter(r => r.treasuryAccountId === accountId);
+  }
+  listYieldRecordsByAccount(accountId: EntityId): YieldRecord[] {
+    return this.yieldRecords.filter(r => r.treasuryAccountId === accountId);
+  }
+  isYieldReferenceProcessed(reference: string): boolean { return this.yieldReferences.has(reference); }
+  markYieldReference(reference: string): void { this.yieldReferences.add(reference); }
+
   isEventProcessed(eventId: string): boolean { return this.processedEvents.has(eventId); }
   markEventProcessed(eventId: string): void { this.processedEvents.add(eventId); }
+
+  saveClaim(claim: DividendClaim, expectedVersion?: number): void {
+    if (expectedVersion !== undefined) {
+      const currentVersion = this.claimVersions.get(claim.id) ?? 0;
+      if (currentVersion !== expectedVersion) {
+        throw new ConcurrencyError(claim.id as string, expectedVersion, currentVersion);
+      }
+    }
+    const nextVersion = (this.claimVersions.get(claim.id) ?? 0) + 1;
+    this.claims.set(claim.id, { ...claim, version: nextVersion });
+    this.claimVersions.set(claim.id, nextVersion);
+  }
+
+  getClaim(id: EntityId): DividendClaim | undefined {
+    const claim = this.claims.get(id);
+    return claim ? { ...claim } : undefined;
+  }
+
+  listClaimsBySchedule(scheduleId: EntityId): DividendClaim[] {
+    return Array.from(this.claims.values()).filter(c => c.scheduleId === scheduleId).map(c => ({ ...c }));
+  }
+
+  listClaimsByInvestor(investorId: EntityId): DividendClaim[] {
+    return Array.from(this.claims.values()).filter(c => c.investorId === investorId).map(c => ({ ...c }));
+  }
+
+  listClaimsByStatus(status: ClaimStatus): DividendClaim[] {
+    return Array.from(this.claims.values()).filter(c => c.status === status).map(c => ({ ...c }));
+  }
+
+  saveClaimReceipt(receipt: ClaimReceipt): void {
+    this.claimReceipts.set(receipt.id, { ...receipt });
+  }
+
+  getClaimReceipt(id: EntityId): ClaimReceipt | undefined {
+    const receipt = this.claimReceipts.get(id);
+    return receipt ? { ...receipt } : undefined;
+  }
+
+  listClaimReceiptsByInvestor(investorId: EntityId): ClaimReceipt[] {
+    return Array.from(this.claimReceipts.values()).filter(r => r.investorId === investorId).map(r => ({ ...r }));
+  }
 }

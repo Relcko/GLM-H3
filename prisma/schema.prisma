@@ -1,0 +1,885 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Account {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String?
+  displayName   String?
+  walletAddress String?  @unique
+  role          String   @default("investor")
+  accountStatus String   @default("active")
+  kycState      String   @default("not-started")
+  verified      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions                Session[]
+  identityInfo            IdentityInfo?
+  kycDocuments            KycDocument[]
+  kycSubmissions          KycSubmission[]
+  investments             Investment[]
+  transactions            Transaction[]
+  portfolioViews          PropertyView[]
+  dividendAllocations     DividendAllocation[]
+  certificates            OwnershipCertificate[]
+  proposals               GovernanceProposal[]
+  votes                   GovernanceVote[]
+  agentProfile            AgentProfile?
+  agentReferralsGiven     Referral[]              @relation("AgentReferrals")
+  agentReferralsReceived  Referral[]              @relation("ReferredInvestor")
+  commissions             Commission[]
+  notifications           Notification[]
+  notificationPreferences NotificationPreference?
+  documents               Document[]
+  documentAccesses        DocumentAccess[]
+  distributionAllocations DistributionAllocation[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  accountId String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  account   Account  @relation(fields: [accountId], references: [id])
+
+  @@index([token])
+  @@index([accountId])
+}
+
+model WalletNonce {
+  id        String    @id @default(cuid())
+  wallet    String
+  nonce     String    @unique
+  message   String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([wallet])
+  @@index([nonce])
+  @@index([expiresAt])
+}
+
+model IdentityInfo {
+  id               String   @id @default(cuid())
+  accountId        String   @unique
+  fullName         String?
+  dateOfBirth      String?
+  nationality      String?
+  phone            String?
+  addressLine1     String?
+  addressLine2     String?
+  city             String?
+  state            String?
+  postalCode       String?
+  country          String?
+  taxId            String?
+  employmentStatus String?
+  sourceOfFunds    String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
+
+model KycDocument {
+  id              String    @id @default(cuid())
+  accountId       String
+  documentType    String
+  status          String    @default("pending")
+  filePath        String?
+  mimeType        String?
+  fileSize        Int?
+  uploadedAt      DateTime  @default(now())
+  reviewedAt      DateTime?
+  reviewerId      String?
+  rejectionReason String?
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([status])
+}
+
+model KycSubmission {
+  id              String    @id @default(cuid())
+  accountId       String
+  status          String    @default("draft")
+  submittedAt     DateTime?
+  reviewedAt      DateTime?
+  reviewerId      String?
+  reviewNotes     String?
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([status])
+}
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String
+  resource   String
+  resourceId String
+  details    String?
+  ipAddress  String?
+  metadata   String?
+  createdAt  DateTime @default(now())
+
+  @@index([resource, resourceId])
+  @@index([actorId])
+  @@index([createdAt])
+}
+
+model Property {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  name             String
+  description      String
+  country          String
+  city             String
+  address          String
+  assetType        String   @default("residential")
+  status           String   @default("draft")
+  totalValue          Int
+  tokenPrice          Int
+  totalTokens         Int
+  availableTokens     Int
+  inventoryReserved   Int      @default(0)
+  inventoryCommitted  Int      @default(0)
+  expectedRoi      Float
+  rentalYield      Float
+  appreciationRate Float
+  minInvestment    Int
+  occupancy        Float    @default(0)
+  blockchain       String   @default("ethereum")
+  contractAddress  String?
+  tokenId          String?
+  featured         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  images         PropertyImage[]
+  documents      PropertyDocument[]
+  amenities      PropertyAmenity[]
+  timeline       PropertyTimelineEvent[]
+  views          PropertyView[]
+  investments    Investment[]
+  certificates   OwnershipCertificate[]
+  vaultDocuments Document[]              @relation("PropertyVaultDocuments")
+  distributions  Distribution[]
+  snapshots      DistributionSnapshot[]
+
+  @@index([status])
+  @@index([assetType])
+  @@index([country])
+  @@index([featured])
+  @@index([createdAt])
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String
+  url        String
+  title      String?
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+}
+
+model PropertyDocument {
+  id         String   @id @default(cuid())
+  propertyId String
+  title      String
+  category   String   @default("financial")
+  kind       String   @default("PDF")
+  fileUrl    String
+  fileSize   Int?
+  public     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+}
+
+model PropertyAmenity {
+  id         String @id @default(cuid())
+  propertyId String
+  category   String
+  name       String
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+}
+
+model PropertyTimelineEvent {
+  id          String   @id @default(cuid())
+  propertyId  String
+  title       String
+  description String
+  eventDate   DateTime
+  status      String   @default("upcoming")
+  createdAt   DateTime @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+}
+
+model PropertyView {
+  id         String   @id @default(cuid())
+  propertyId String
+  accountId  String?
+  createdAt  DateTime @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  account  Account? @relation(fields: [accountId], references: [id])
+
+  @@index([propertyId])
+  @@index([accountId])
+  @@index([createdAt])
+}
+
+model Investment {
+  id         String    @id @default(cuid())
+  accountId  String
+  propertyId String
+  tokens     Int
+  amount     Int
+  tokenPrice Int
+  status     String    @default("pending")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  settledAt  DateTime?
+  confirmedAt DateTime?
+
+  account             Account               @relation(fields: [accountId], references: [id])
+  property            Property              @relation(fields: [propertyId], references: [id])
+  transactions        Transaction[]
+  dividendAllocations DividendAllocation[]
+  certificate         OwnershipCertificate?
+  commissions         Commission[]
+  documents           Document[]
+  paymentReference    PaymentReference?
+
+  @@index([accountId])
+  @@index([propertyId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Transaction {
+  id           String   @id @default(cuid())
+  investmentId String
+  accountId    String
+  type         String   @default("investment")
+  amount       Int
+  status       String   @default("pending")
+  reference    String?
+  description  String?
+  createdAt    DateTime @default(now())
+
+  investment Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  account    Account    @relation(fields: [accountId], references: [id])
+
+  @@unique([investmentId, type])
+  @@index([investmentId])
+  @@index([accountId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model Distribution {
+  id               String    @id @default(cuid())
+  period           String
+  propertyId       String
+  totalAmount      Int
+  status           String    @default("pending")
+  totalDistributed Int       @default(0)
+  eligibleTokens   Int       @default(0)
+  perTokenAmount   Int       @default(0)
+  notes            String?
+  approvedAt       DateTime?
+  distributedAt    DateTime?
+  snapshotId       String?   @unique
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  property    Property                  @relation(fields: [propertyId], references: [id])
+  allocations DividendAllocation[]
+  snapshot    DistributionSnapshot?     @relation("DistributionSnapshot")
+
+  @@index([period])
+  @@index([status])
+  @@index([propertyId])
+  @@index([createdAt])
+}
+
+model DividendAllocation {
+  id             String    @id @default(cuid())
+  distributionId String
+  accountId      String
+  investmentId   String
+  tokens         Int
+  amount         Int
+  status         String    @default("pending")
+  paidAt         DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  distribution Distribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
+  account      Account      @relation(fields: [accountId], references: [id])
+  investment   Investment   @relation(fields: [investmentId], references: [id])
+
+  @@unique([distributionId, accountId, investmentId])
+  @@index([distributionId])
+  @@index([accountId])
+  @@index([investmentId])
+  @@index([status])
+}
+
+/// Immutable snapshot of token ownership at distribution time (Sprint 4.2).
+/// Created by the Snapshot Engine when a distribution starts. Future transfers
+/// or investments do NOT affect this snapshot.
+model DistributionSnapshot {
+  id                  String   @id @default(cuid())
+  distributionId      String   @unique
+  propertyId          String
+  totalEligibleTokens Int
+  snapshotTime        DateTime @default(now())
+  createdAt           DateTime @default(now())
+
+  distribution Distribution              @relation("DistributionSnapshot", fields: [distributionId], references: [id], onDelete: Cascade)
+  property     Property                  @relation(fields: [propertyId], references: [id])
+  allocations  DistributionAllocation[]
+
+  @@index([propertyId])
+}
+
+/// Per-investor allocation from a distribution snapshot (Sprint 4.2).
+/// Created by the Allocation Engine with deterministic residual distribution.
+/// Claimed via CAS-protected, idempotent Claim Engine.
+model DistributionAllocation {
+  id             String    @id @default(cuid())
+  snapshotId     String
+  investorId     String
+  investmentId   String
+  eligibleTokens Int
+  percentageBps  Int
+  grossAmount    Int
+  claimStatus    String    @default("pending")
+  claimedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  snapshot DistributionSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  account  Account              @relation(fields: [investorId], references: [id])
+
+  @@unique([snapshotId, investorId, investmentId])
+  @@index([snapshotId])
+  @@index([investorId])
+  @@index([claimStatus])
+}
+
+model OwnershipCertificate {
+  id           String    @id @default(cuid())
+  investmentId String    @unique
+  accountId    String
+  propertyId   String
+  tokenId      String?   @unique
+  status       String    @default("draft")
+  metadata     String?
+  metadataUri  String?
+  imageUrl     String?
+  generatedAt  DateTime?
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  investment Investment         @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  account    Account            @relation(fields: [accountId], references: [id])
+  property   Property           @relation(fields: [propertyId], references: [id])
+  events     CertificateEvent[]
+  documents  Document[]
+
+  @@index([accountId])
+  @@index([propertyId])
+  @@index([status])
+}
+
+model CertificateEvent {
+  id            String   @id @default(cuid())
+  certificateId String
+  eventType     String
+  details       String?
+  metadata      String?
+  createdAt     DateTime @default(now())
+
+  certificate OwnershipCertificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+
+  @@index([certificateId])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+model GovernanceProposal {
+  id                 String    @id @default(cuid())
+  title              String
+  description        String
+  category           String    @default("treasury")
+  status             String    @default("draft")
+  creatorId          String
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  startDate          DateTime?
+  endDate            DateTime?
+  forVotes           Float     @default(0)
+  againstVotes       Float     @default(0)
+  abstainVotes       Float     @default(0)
+  quorum             Int       @default(0)
+  totalVotes         Int       @default(0)
+  voterParticipation Float     @default(0)
+  metadata           String?
+  publishedAt        DateTime?
+  closedAt           DateTime?
+  executedAt         DateTime?
+
+  creator Account @relation(fields: [creatorId], references: [id])
+
+  votes       GovernanceVote[]
+  attachments ProposalAttachment[]
+  events      ProposalEvent[]
+
+  @@index([creatorId])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model GovernanceVote {
+  id          String   @id @default(cuid())
+  proposalId  String
+  accountId   String
+  choice      String
+  votingPower Float    @default(0)
+  castAt      DateTime @default(now())
+
+  proposal GovernanceProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  account  Account            @relation(fields: [accountId], references: [id])
+
+  @@unique([proposalId, accountId])
+  @@index([proposalId])
+  @@index([accountId])
+}
+
+model ProposalAttachment {
+  id         String   @id @default(cuid())
+  proposalId String
+  title      String
+  url        String
+  kind       String   @default("document")
+  fileSize   Int?
+  createdAt  DateTime @default(now())
+
+  proposal GovernanceProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([proposalId])
+}
+
+model ProposalEvent {
+  id         String   @id @default(cuid())
+  proposalId String
+  eventType  String
+  details    String?
+  metadata   String?
+  createdAt  DateTime @default(now())
+
+  proposal GovernanceProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([proposalId])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+model AgentProfile {
+  id                 String    @id @default(cuid())
+  accountId          String    @unique
+  referralCode       String    @unique
+  status             String    @default("pending")
+  rank               String    @default("associate")
+  tier               String    @default("standard")
+  commissionRate     Float     @default(0.05)
+  totalSales         Float     @default(0)
+  totalCommissions   Float     @default(0)
+  pendingCommissions Float     @default(0)
+  totalWithdrawn     Float     @default(0)
+  approvedAt         DateTime?
+  approvedBy         String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([referralCode])
+  @@index([status])
+  @@index([rank])
+}
+
+model Referral {
+  id                String    @id @default(cuid())
+  agentId           String
+  referredAccountId String    @unique
+  status            String    @default("pending")
+  referralCode      String
+  registeredAt      DateTime  @default(now())
+  firstInvestmentAt DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  agent    Account @relation("AgentReferrals", fields: [agentId], references: [id])
+  referred Account @relation("ReferredInvestor", fields: [referredAccountId], references: [id])
+
+  commissions Commission[]
+
+  @@index([agentId])
+  @@index([referredAccountId])
+  @@index([status])
+  @@index([referralCode])
+}
+
+model Commission {
+  id           String    @id @default(cuid())
+  agentId      String
+  referralId   String
+  investmentId String
+  type         String    @default("direct")
+  amount       Float
+  rate         Float     @default(0.05)
+  status       String    @default("pending")
+  source       String?
+  approvedAt   DateTime?
+  approvedBy   String?
+  paidAt       DateTime?
+  paidTxHash   String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  agent      Account           @relation(fields: [agentId], references: [id])
+  referral   Referral          @relation(fields: [referralId], references: [id])
+  investment Investment        @relation(fields: [investmentId], references: [id])
+  events     CommissionEvent[]
+
+  @@index([agentId])
+  @@index([referralId])
+  @@index([investmentId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model CommissionEvent {
+  id           String   @id @default(cuid())
+  commissionId String
+  eventType    String
+  details      String?
+  metadata     String?
+  createdAt    DateTime @default(now())
+
+  commission Commission @relation(fields: [commissionId], references: [id], onDelete: Cascade)
+
+  @@index([commissionId])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+model Notification {
+  id           String    @id @default(cuid())
+  accountId    String
+  type         String    @default("transactional")
+  title        String
+  message      String
+  priority     String    @default("medium")
+  category     String    @default("system")
+  read         Boolean   @default(false)
+  acknowledged Boolean   @default(false)
+  readAt       DateTime?
+  link         String?
+  resourceType String?
+  resourceId   String?
+  createdAt    DateTime  @default(now())
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([read])
+  @@index([type])
+  @@index([priority])
+  @@index([createdAt])
+}
+
+model NotificationPreference {
+  id                    String   @id @default(cuid())
+  accountId             String   @unique
+  emailDistributions    Boolean  @default(true)
+  emailProposals        Boolean  @default(true)
+  emailSecurity         Boolean  @default(true)
+  emailMarketing        Boolean  @default(false)
+  pushDistributions     Boolean  @default(true)
+  pushProposals         Boolean  @default(false)
+  pushPriceAlerts       Boolean  @default(true)
+  distributionThreshold Float    @default(0)
+  quietHoursEnabled     Boolean  @default(false)
+  quietHoursStart       String   @default("22:00")
+  quietHoursEnd         String   @default("08:00")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+}
+
+model Document {
+  id            String    @id @default(cuid())
+  title         String
+  type          String    @default("agreement")
+  category      String    @default("General")
+  status        String    @default("draft")
+  fileUrl       String?
+  fileSize      Int?
+  mimeType      String?
+  accountId     String
+  propertyId    String?
+  investmentId  String?
+  certificateId String?
+  signed        Boolean   @default(false)
+  publishedAt   DateTime?
+  archivedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  account     Account               @relation(fields: [accountId], references: [id])
+  property    Property?             @relation("PropertyVaultDocuments", fields: [propertyId], references: [id])
+  investment  Investment?           @relation(fields: [investmentId], references: [id])
+  certificate OwnershipCertificate? @relation(fields: [certificateId], references: [id])
+  versions    DocumentVersion[]
+  accesses    DocumentAccess[]
+  events      DocumentEvent[]
+
+  @@index([accountId])
+  @@index([status])
+  @@index([type])
+  @@index([category])
+  @@index([propertyId])
+  @@index([investmentId])
+  @@index([certificateId])
+  @@index([createdAt])
+}
+
+model DocumentVersion {
+  id          String   @id @default(cuid())
+  documentId  String
+  version     Int
+  title       String
+  fileUrl     String?
+  fileSize    Int?
+  changeNotes String?
+  createdAt   DateTime @default(now())
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([version])
+}
+
+model DocumentAccess {
+  id         String   @id @default(cuid())
+  documentId String
+  accountId  String
+  action     String   @default("view")
+  ipAddress  String?
+  accessedAt DateTime @default(now())
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  account  Account  @relation(fields: [accountId], references: [id])
+
+  @@index([documentId])
+  @@index([accountId])
+  @@index([action])
+  @@index([accessedAt])
+}
+
+model DocumentEvent {
+  id         String   @id @default(cuid())
+  documentId String
+  actorId    String
+  eventType  String
+  details    String?
+  metadata   String?
+  createdAt  DateTime @default(now())
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([actorId])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+/// Tracks external payment reference for the investment lifecycle (Sprint 3D).
+/// Created when payment moves from authorized → settled. Links the internal
+/// investment to a PSP payment record without coupling to any specific provider.
+model PaymentReference {
+  id               String    @id @default(cuid())
+  investmentId     String    @unique
+  paymentStatus    String    @default("pending")
+  capturedAmount   Int
+  capturedCurrency String    @default("USD")
+  capturedAt       DateTime?
+  paymentProvider  String    @default("internal")
+  providerPaymentId String?
+  providerEventId  String?   @unique
+  providerResponse String?
+  consumedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  investment Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+
+  @@index([investmentId])
+  @@index([paymentStatus])
+  @@index([paymentProvider])
+  @@index([providerEventId])
+}
+
+/// Tracks payout requests for distribution claims (Sprint 4.3).
+/// Created when an investor claims a distribution, processed by the Payout Engine.
+model Payout {
+  id                String    @id @default(cuid())
+  distributionId    String
+  allocationId      String    @unique
+  investorId        String
+  amount            Int
+  currency          String    @default("USD")
+  status            String    @default("pending") // pending → processing → completed | failed
+  providerPayoutId  String?
+  providerResponse  String?
+  retryCount        Int       @default(0)
+  lastError         String?
+  processedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([distributionId])
+  @@index([investorId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+/// Immutable payout ledger entry (Sprint 4.3).
+/// Created when a payout completes successfully.
+model PayoutLedger {
+  id          String   @id @default(cuid())
+  payoutId    String   @unique
+  allocationId String
+  investorId  String
+  amount      Int
+  currency    String   @default("USD")
+  completedAt DateTime @default(now())
+
+  @@index([investorId])
+  @@index([allocationId])
+}
+
+/// Reconciliation report generated by the Reconciliation Engine (Sprint 4.3).
+model ReconciliationReport {
+  id          String   @id @default(cuid())
+  reportType  String   // daily, manual
+  status      String   @default("completed") // completed, failed
+  summary     String   // JSON summary of findings
+  details     String?  // JSON detailed findings
+  startedAt   DateTime @default(now())
+  completedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([reportType])
+  @@index([createdAt])
+}
+
+/// Tracks scheduled job executions (Sprint 4.3).
+model ScheduledJob {
+  id          String   @id @default(cuid())
+  jobType     String   // daily_reconciliation, payout_retry, refund_retry, stale_payout_detection
+  status      String   @default("pending") // pending, running, completed, failed
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  result      String?  // JSON result summary
+  error       String?
+
+  @@index([jobType])
+  @@index([status])
+  @@index([startedAt])
+}
+
+/// Stores idempotency keys for financial endpoints to prevent duplicate
+/// processing caused by network retries. The key is scoped per-account
+/// (or per-admin for server-side operations) and per endpoint, so the same
+/// key used on different endpoints does not collide.
+///
+/// Claim-first strategy (Sprint 3B — execute-at-most-once):
+///   1. INSERT with status="in_progress" + ownerToken (UUID) BEFORE logic.
+///      The unique constraint on (accountId, endpoint, key) makes this
+///      an atomic claim — only one request can succeed.
+///   2. If P2002 → a record exists:
+///        a. completed → replay stored response.
+///        b. in_progress + fresh → 409 (retry later).
+///        c. in_progress + stale (>STALE_TIMEOUT) → CAS reclaim via
+///           conditional updateMany on ownerToken IS NULL OR version=X.
+///           Only ONE reclaimer wins; others get 409.
+///   3. The business transaction and the idempotency completion are ONE
+///      logical unit: the handler receives the Prisma `tx` and completes
+///      the idempotency record INSIDE the same $transaction. This closes
+///      the crash-after-commit window — if the business commit succeeds,
+///      the idempotency record is already completed.
+///   4. Completion/release verify ownerToken so a request never affects
+///      another request's lease.
+model IdempotencyKey {
+  id           String    @id @default(cuid())
+  key          String
+  accountId    String
+  endpoint     String
+  requestBody  String
+  status       String    @default("in_progress")
+  statusCode   Int       @default(0)
+  responseBody String    @default("")
+  ownerToken   String?
+  version      Int       @default(0)
+  createdAt    DateTime  @default(now())
+  processedAt  DateTime?
+  expiresAt    DateTime
+
+  @@unique([accountId, endpoint, key])
+  @@index([key])
+  @@index([accountId])
+  @@index([endpoint])
+  @@index([expiresAt])
+  @@index([status])
+  @@index([ownerToken])
+}

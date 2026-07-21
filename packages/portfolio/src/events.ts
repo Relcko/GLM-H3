@@ -19,6 +19,7 @@ export const PortfolioEventType = {
   PortfolioSearchExecuted: "portfolio.search_executed",
   PortfolioExportGenerated: "portfolio.export_generated",
   PortfolioHealthChecked: "portfolio.health_checked",
+  PortfolioRecomputed: "portfolio.recomputed",
 } as const;
 
 export type PortfolioEventType = (typeof PortfolioEventType)[keyof typeof PortfolioEventType];

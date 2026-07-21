@@ -2,10 +2,16 @@ import type { EventBus } from "@relcko/events";
 import type { Logger } from "@relcko/logging";
 import type { PerformanceModuleContext } from "@relcko/performance";
 import { PerformanceEventType, publishPerformanceEvent } from "@relcko/performance";
+import type { EntityId } from "@relcko/types";
+import { Currency } from "@relcko/types";
+import type { PortfolioService } from "../portfolio/service";
+import { PortfolioAssetType } from "../types";
+import { PortfolioEventType, publishPortfolioEvent } from "../events";
 
 export class PortfolioEventsAdapter {
   constructor(
     private readonly events: EventBus,
+    private readonly portfolioService: PortfolioService,
     private readonly logger?: Logger,
     private readonly performance?: PerformanceModuleContext,
   ) {}
@@ -22,14 +28,92 @@ export class PortfolioEventsAdapter {
     }
   }
 
+  private async handleInvestmentCompleted(payload: Record<string, unknown>, aggregateId: string): Promise<void> {
+    const investorId = payload.investorId as EntityId | undefined;
+    const propertyId = (payload.propertyId as string) ?? aggregateId;
+    const tokensStr = payload.tokens as string | undefined;
+    const amountStr = payload.amount as string | undefined;
+    const currency = (payload.currency as Currency) ?? Currency.USDT;
+
+    if (!investorId) {
+      this.logger?.warn("portfolio adapter: investment event missing investorId", { aggregateId });
+      return;
+    }
+
+    const tokens = tokensStr ? BigInt(tokensStr) : 0n;
+    const amount = amountStr ? BigInt(amountStr) : 0n;
+
+    try {
+      let portfolio = this.portfolioService.get(investorId);
+      if (!portfolio) {
+        portfolio = this.portfolioService.create(investorId as EntityId, investorId);
+      }
+
+      const existingHoldings = this.portfolioService.listHoldings(investorId);
+      const existing = existingHoldings.find(h => h.assetId === (propertyId as EntityId));
+
+      if (existing) {
+        const newQty = existing.quantity + tokens;
+        const totalInvestedIncrement = amount;
+
+        this.portfolioService.update(investorId as EntityId, investorId, {
+          totalInvested: { amount: (portfolio.totalInvested.amount + totalInvestedIncrement), currency },
+          currentValue: { amount: (portfolio.currentValue.amount + totalInvestedIncrement), currency },
+        });
+      } else {
+        this.portfolioService.addHolding(investorId as EntityId, investorId, {
+          assetType: PortfolioAssetType.Investment,
+          assetId: propertyId as EntityId,
+          name: `Property ${propertyId}`,
+          quantity: tokens,
+          costBasis: { amount, currency },
+          currentValue: { amount, currency },
+          acquiredAt: new Date().toISOString(),
+        });
+
+        this.portfolioService.update(investorId as EntityId, investorId, {
+          totalInvested: { amount: (portfolio.totalInvested.amount + amount), currency },
+          currentValue: { amount: (portfolio.currentValue.amount + amount), currency },
+        });
+      }
+
+      await publishPortfolioEvent(
+        this.events,
+        PortfolioEventType.PortfolioRecomputed,
+        portfolio.id,
+        investorId as EntityId,
+        {
+          investorId: investorId as string,
+          totalInvested: portfolio.totalInvested.amount.toString(),
+          totalValue: portfolio.currentValue.amount.toString(),
+          currency: portfolio.currentValue.currency,
+        },
+      );
+
+      this.logger?.info("portfolio recomputed from investment event", {
+        investorId,
+        propertyId,
+        tokens: tokens.toString(),
+      });
+    } catch (err) {
+      this.logger?.error("portfolio adapter failed to process investment event", {
+        error: (err as Error).message,
+        investorId,
+        propertyId,
+      });
+    }
+  }
+
   subscribeToExternalEvents(): (() => void)[] {
     const unsubInvestment = this.events.subscribe("investment.completed", async (envelope) => {
+      const payload = envelope.payload as Record<string, unknown>;
       this.logger?.info("portfolio adapter received investment.completed event", {
         type: envelope.type,
         aggregateId: envelope.aggregateId,
-        investorId: (envelope.payload as Record<string, unknown>)?.investorId,
+        investorId: payload.investorId,
       });
       this.recordMetric(envelope.type);
+      await this.handleInvestmentCompleted(payload, envelope.aggregateId as string);
     });
 
     const unsubSettlement = this.events.subscribe("investment.settlement_completed", async (envelope) => {

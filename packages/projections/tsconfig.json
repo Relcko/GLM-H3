@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "composite": true
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../types" },
+    { "path": "../errors" },
+    { "path": "../events" },
+    { "path": "../event-store" },
+    { "path": "../kernel" },
+    { "path": "../logger" },
+    { "path": "../event-bus" },
+    { "path": "../test-utils" }
+  ]
+}

@@ -5,10 +5,11 @@ import type { TreasuryRepository } from "../repository";
 import type { PortfolioAdapter } from "./portfolio-adapter";
 import type {
   DividendProposal, DividendEligibilityEntry, DividendDistributionEntry, DividendRecoveryEntry,
+  DividendSchedule, OwnershipSnapshot, SnapshotPosition,
   JournalEntry, LedgerEntry,
 } from "../types";
 import {
-  DividendStatus, JournalStatus, TreasuryEntryType, TreasuryAccountType,
+  DividendStatus, ScheduleStatus, JournalStatus, TreasuryEntryType, TreasuryAccountType,
 } from "../types";
 import { TreasuryEventType, publishTreasuryEvent } from "../events";
 import { DividendError } from "../errors";
@@ -389,5 +390,174 @@ export default class DividendService {
 
   listDistributionsByInvestor(investorId: EntityId): DividendDistributionEntry[] {
     return this.repository.listDistributionsByInvestor(investorId);
+  }
+
+  async createSchedule(
+    actorId: EntityId,
+    params: {
+      readonly propertyId: EntityId;
+      readonly period: string;
+      readonly totalAmount: bigint;
+      readonly perTokenAmount: bigint;
+      readonly currency: string;
+    },
+  ): Promise<DividendSchedule> {
+    const id = generateId("treasury") as EntityId;
+    const schedule: DividendSchedule = {
+      id,
+      propertyId: params.propertyId,
+      period: params.period,
+      totalAmount: { amount: params.totalAmount, currency: params.currency } as any,
+      perTokenAmount: { amount: params.perTokenAmount, currency: params.currency } as any,
+      currency: params.currency as any,
+      status: ScheduleStatus.Draft,
+      createdAt: new Date().toISOString() as any,
+    };
+
+    this.repository.saveSchedule(schedule);
+
+    await publishTreasuryEvent(this.events, TreasuryEventType.DividendScheduleCreated, id, actorId, {
+      scheduleId: id as string,
+      propertyId: params.propertyId as string,
+      period: params.period,
+      totalAmount: String(params.totalAmount),
+      perTokenAmount: String(params.perTokenAmount),
+      currency: params.currency,
+    });
+
+    return schedule;
+  }
+
+  async activateSchedule(actorId: EntityId, scheduleId: EntityId): Promise<DividendSchedule> {
+    const schedule = this.repository.getSchedule(scheduleId);
+    if (!schedule) throw new DividendError(`Schedule ${scheduleId} not found`, { scheduleId: scheduleId as string });
+
+    if (schedule.status !== ScheduleStatus.Draft) {
+      throw new DividendError(
+        `Cannot activate schedule from status ${schedule.status}`,
+        { scheduleId: scheduleId as string, currentStatus: schedule.status },
+      );
+    }
+
+    const updated: DividendSchedule = { ...schedule, status: ScheduleStatus.Scheduled };
+    this.repository.saveSchedule(updated);
+
+    await publishTreasuryEvent(this.events, TreasuryEventType.DividendScheduled, scheduleId, actorId, {
+      scheduleId: scheduleId as string,
+    });
+
+    return updated;
+  }
+
+  async closeSchedule(actorId: EntityId, scheduleId: EntityId): Promise<DividendSchedule> {
+    const schedule = this.repository.getSchedule(scheduleId);
+    if (!schedule) throw new DividendError(`Schedule ${scheduleId} not found`, { scheduleId: scheduleId as string });
+
+    if (schedule.status !== ScheduleStatus.Snapshotted) {
+      throw new DividendError(
+        `Cannot close schedule from status ${schedule.status}`,
+        { scheduleId: scheduleId as string, currentStatus: schedule.status },
+      );
+    }
+
+    const updated: DividendSchedule = { ...schedule, status: ScheduleStatus.Closed };
+    this.repository.saveSchedule(updated);
+
+    await publishTreasuryEvent(this.events, TreasuryEventType.DividendCompleted, scheduleId, actorId, {
+      scheduleId: scheduleId as string,
+    });
+
+    return updated;
+  }
+
+  async cancelSchedule(actorId: EntityId, scheduleId: EntityId): Promise<DividendSchedule> {
+    const schedule = this.repository.getSchedule(scheduleId);
+    if (!schedule) throw new DividendError(`Schedule ${scheduleId} not found`, { scheduleId: scheduleId as string });
+
+    if (schedule.status !== ScheduleStatus.Draft && schedule.status !== ScheduleStatus.Scheduled) {
+      throw new DividendError(
+        `Cannot cancel schedule from status ${schedule.status}`,
+        { scheduleId: scheduleId as string, currentStatus: schedule.status },
+      );
+    }
+
+    const updated: DividendSchedule = { ...schedule, status: ScheduleStatus.Cancelled };
+    this.repository.saveSchedule(updated);
+
+    return updated;
+  }
+
+  async createSnapshot(actorId: EntityId, scheduleId: EntityId): Promise<OwnershipSnapshot> {
+    const schedule = this.repository.getSchedule(scheduleId);
+    if (!schedule) throw new DividendError(`Schedule ${scheduleId} not found`, { scheduleId: scheduleId as string });
+
+    if (schedule.status !== ScheduleStatus.Scheduled) {
+      throw new DividendError(
+        `Cannot snapshot schedule from status ${schedule.status}`,
+        { scheduleId: scheduleId as string, currentStatus: schedule.status },
+      );
+    }
+
+    const investors = await this.portfolioAdapter.getEligibleInvestors(scheduleId);
+
+    let totalSupply = 0n;
+    for (const inv of investors) {
+      totalSupply += inv.units;
+    }
+
+    const positions: SnapshotPosition[] = investors.map(inv => ({
+      investorId: inv.investorId as EntityId,
+      quantity: inv.units,
+      ownershipPercentage: totalSupply > 0n
+        ? Number((inv.units * 10000n) / totalSupply) / 100
+        : 0,
+    }));
+
+    const now = new Date().toISOString() as any;
+    const snapshotId = generateId("treasury") as EntityId;
+
+    const snapshot: OwnershipSnapshot = {
+      id: snapshotId,
+      scheduleId: schedule.id,
+      propertyId: schedule.propertyId,
+      version: 1,
+      totalSupply,
+      positions: [],
+      snapshotAt: now,
+    };
+
+    this.repository.saveSnapshot(snapshot);
+    this.repository.saveSnapshotPositions(snapshotId, positions);
+
+    const updated: DividendSchedule = { ...schedule, status: ScheduleStatus.Snapshotted };
+    this.repository.saveSchedule(updated);
+
+    await publishTreasuryEvent(this.events, TreasuryEventType.OwnershipSnapshotted, scheduleId, actorId, {
+      scheduleId: scheduleId as string,
+      propertyId: schedule.propertyId as string,
+      positionCount: positions.length,
+      totalSupply: String(totalSupply),
+    });
+
+    return snapshot;
+  }
+
+  getSchedule(id: EntityId): DividendSchedule | undefined {
+    return this.repository.getSchedule(id);
+  }
+
+  listSchedules(propertyId?: EntityId): DividendSchedule[] {
+    if (propertyId) {
+      return this.repository.listSchedulesByProperty(propertyId);
+    }
+    return this.repository.listAllSchedules();
+  }
+
+  getSnapshot(scheduleId: EntityId): OwnershipSnapshot | undefined {
+    return this.repository.getSnapshotBySchedule(scheduleId);
+  }
+
+  getPositions(snapshotId: EntityId): SnapshotPosition[] {
+    return this.repository.listSnapshotPositions(snapshotId);
   }
 }
