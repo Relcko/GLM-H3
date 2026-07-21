@@ -20,6 +20,7 @@ export { RewardQualificationEngine } from "./reward-qualification/service";
 export { CampaignEngine } from "./campaign/service";
 export { NetworkAnalytics } from "./network-analytics/service";
 export { NetworkPortfolioAdapter } from "./network-portfolio/adapter";
+export { TeamService } from "./team/service";
 
 export { NetworkEngine, createNetworkEngine } from "./composition-root";
 export type { NetworkEngineOptions } from "./composition-root";
@@ -27,4 +28,4 @@ export type { NetworkEngineOptions } from "./composition-root";
 export * from "./types";
 export * from "./events";
 export * from "./errors";
-export { NetworkValidation, NetworkSchema } from "./validation";
+export { NetworkValidation, NetworkSchema, TeamSchema } from "./validation";

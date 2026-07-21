@@ -18,6 +18,8 @@ import { ReservationEngine } from "./reservation/engine";
 import { TransactionEngine } from "./transaction/engine";
 import { TransactionMonitor } from "./transaction/monitor";
 import { SettlementOrchestrator } from "./settlement/orchestrator";
+import { SettlementWorker } from "./settlement/worker";
+import type { SettlementWorkerConfig } from "./settlement/worker";
 import { OwnershipAllocator } from "./ownership/allocator";
 import { LedgerAdapter } from "./ledger/adapter";
 import { RecoveryEngine } from "./recovery/engine";
@@ -35,6 +37,7 @@ export interface InvestmentOrchestratorDeps {
   logger?: Logger;
   performance?: PerformanceModuleContext;
   commissionOptions?: CommissionAdapterOptions;
+  settlementWorkerConfig?: Partial<SettlementWorkerConfig>;
 }
 
 export class InvestmentOrchestrator {
@@ -43,6 +46,7 @@ export class InvestmentOrchestrator {
   readonly transactions: TransactionEngine;
   readonly monitor: TransactionMonitor;
   readonly settlement: SettlementOrchestrator;
+  readonly settlementWorker: SettlementWorker;
   readonly ownership: OwnershipAllocator;
   readonly ledger: LedgerAdapter;
   readonly recovery: RecoveryEngine;
@@ -81,6 +85,13 @@ export class InvestmentOrchestrator {
       this.ownership,
       this.ledger,
       deps.logger,
+    );
+    this.settlementWorker = new SettlementWorker(
+      deps.repository,
+      deps.eventBus,
+      this.settlement,
+      deps.logger,
+      deps.settlementWorkerConfig,
     );
     this.recovery = new RecoveryEngine(deps.repository, deps.eventBus, deps.blockchain, deps.logger);
     this.history = new InvestmentHistoryService(deps.repository);

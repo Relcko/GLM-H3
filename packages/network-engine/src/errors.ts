@@ -149,3 +149,51 @@ export class CircularSponsorError extends NetworkEngineError {
     super("Circular sponsorship detected", "CIRCULAR_SPONSOR");
   }
 }
+
+export class TeamError extends NetworkEngineError {
+  constructor(message: string, metadata?: RelckoError["metadata"]) {
+    super(message, "TEAM_ERROR", metadata);
+  }
+}
+
+export class TeamNotFoundError extends NetworkEngineError {
+  constructor(id: string) {
+    super(`Team ${id} not found`, "TEAM_NOT_FOUND", { id });
+  }
+}
+
+export class TeamMemberNotFoundError extends NetworkEngineError {
+  constructor(id: string) {
+    super(`Team member ${id} not found`, "TEAM_MEMBER_NOT_FOUND", { id });
+  }
+}
+
+export class DuplicateTeamMembershipError extends NetworkEngineError {
+  constructor(memberId: string, teamId: string) {
+    super(`Member ${memberId} already belongs to team ${teamId}`, "DUPLICATE_TEAM_MEMBERSHIP", { memberId, teamId });
+  }
+}
+
+export class CircularTeamHierarchyError extends NetworkEngineError {
+  constructor(teamId: string, parentId: string) {
+    super(`Moving team ${teamId} under ${parentId} would create a cycle`, "CIRCULAR_TEAM_HIERARCHY", { teamId, parentId });
+  }
+}
+
+export class InactiveTeamMemberError extends NetworkEngineError {
+  constructor(memberId: string) {
+    super(`Member ${memberId} is inactive and cannot perform management actions`, "INACTIVE_TEAM_MEMBER", { memberId });
+  }
+}
+
+export class TeamOwnerInactiveError extends NetworkEngineError {
+  constructor(teamId: string, ownerId: string) {
+    super(`Team ${teamId} owner ${ownerId} is inactive`, "TEAM_OWNER_INACTIVE", { teamId, ownerId });
+  }
+}
+
+export class ParentTeamNotFoundError extends NetworkEngineError {
+  constructor(parentId: string) {
+    super(`Parent team ${parentId} not found`, "PARENT_TEAM_NOT_FOUND", { parentId });
+  }
+}

@@ -5,6 +5,7 @@ export { ReservationEngine } from "./reservation/engine";
 export { TransactionEngine } from "./transaction/engine";
 export { TransactionMonitor } from "./transaction/monitor";
 export { SettlementOrchestrator } from "./settlement/orchestrator";
+export { SettlementWorker, type SettlementWorkerConfig } from "./settlement/worker";
 export { OwnershipAllocator } from "./ownership/allocator";
 export { LedgerAdapter, type TreasuryLedger, type LedgerAdapterDeps } from "./ledger/adapter";
 export { RecoveryEngine } from "./recovery/engine";
@@ -41,6 +42,7 @@ export {
   TransactionExpiredError,
   ConfirmationTimeoutError,
   SettlementFailedError,
+  SettlementInProgressError,
   OwnershipError,
   LedgerError,
   BlockchainError,

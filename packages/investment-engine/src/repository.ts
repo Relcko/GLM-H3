@@ -36,6 +36,10 @@ export interface InvestmentEngineRepository {
   saveSettlement(s: SettlementRecord): void;
   getSettlement(id: EntityId): SettlementRecord | undefined;
   getSettlementByInvestment(investmentId: EntityId): SettlementRecord | undefined;
+  reserveSettlement(id: EntityId, processorId: string): SettlementRecord | undefined;
+  listPendingSettlements(): SettlementRecord[];
+  listClaimedSettlements(processorId: string): SettlementRecord[];
+  listStaleClaimedSettlements(claimedBefore: string): SettlementRecord[];
 
   saveOwnership(o: Ownership): void;
   getOwnership(investorId: EntityId, propertyId: EntityId): Ownership | undefined;

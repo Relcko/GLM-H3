@@ -115,6 +115,37 @@ export class InMemoryInvestmentEngineRepository implements InvestmentEngineRepos
     return [...this.settlements.values()].find(s => s.investmentId === investmentId);
   }
 
+  reserveSettlement(id: EntityId, processorId: string): SettlementRecord | undefined {
+    const existing = this.settlements.get(id);
+    if (!existing || existing.status !== "pending") return undefined;
+    if (existing.processorId && existing.processorId !== processorId) return undefined;
+
+    const reserved: SettlementRecord = {
+      ...existing,
+      processorId,
+      claimedAt: new Date().toISOString(),
+      status: "settling" as never,
+    };
+    this.settlements.set(id, reserved);
+    return reserved;
+  }
+
+  listPendingSettlements(): SettlementRecord[] {
+    return [...this.settlements.values()].filter(s => s.status === "pending");
+  }
+
+  listClaimedSettlements(processorId: string): SettlementRecord[] {
+    return [...this.settlements.values()].filter(
+      s => s.processorId === processorId && s.status === "settling",
+    );
+  }
+
+  listStaleClaimedSettlements(claimedBefore: string): SettlementRecord[] {
+    return [...this.settlements.values()].filter(
+      s => s.status === "settling" && s.claimedAt && s.claimedAt < claimedBefore,
+    );
+  }
+
   saveOwnership(o: Ownership): void {
     this.ownerships.set(this.ownershipKey(o.investorId, o.propertyId), o);
   }

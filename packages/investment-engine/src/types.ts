@@ -87,6 +87,12 @@ export interface SettlementRecord {
   readonly status: SettlementStatus;
   readonly completedAt?: string;
   readonly createdAt: string;
+  readonly retryCount: number;
+  readonly maxRetries: number;
+  readonly lastAttemptAt?: string;
+  readonly lastError?: string;
+  readonly processorId?: string;
+  readonly claimedAt?: string;
 }
 
 export enum SettlementStatus {

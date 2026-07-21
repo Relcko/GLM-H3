@@ -68,6 +68,12 @@ export class SettlementFailedError extends InvestmentEngineError {
   }
 }
 
+export class SettlementInProgressError extends InvestmentEngineError {
+  constructor(investmentId: string, processorId: string) {
+    super(`Settlement ${investmentId} is already in progress by ${processorId}`, "SETTLEMENT_IN_PROGRESS", { investmentId, processorId });
+  }
+}
+
 export class OwnershipError extends InvestmentEngineError {
   constructor(message: string, metadata?: RelckoError["metadata"]) {
     super(message, "OWNERSHIP_ERROR", metadata);

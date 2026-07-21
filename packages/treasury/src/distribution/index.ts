@@ -1,0 +1,10 @@
+export * from "./domain/value-objects";
+export * from "./domain/errors";
+export * from "./domain/events";
+export * from "./domain/state-machine";
+export { DistributionAggregate } from "./domain/distribution.aggregate";
+export { DistributionRecipientAggregate } from "./domain/distribution-recipient.aggregate";
+export { DistributionScheduleAggregate } from "./domain/distribution-schedule.aggregate";
+export * from "./saga";
+export * from "./application";
+export * from "./infrastructure";

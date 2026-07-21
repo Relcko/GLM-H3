@@ -100,6 +100,47 @@ export enum RewardStatus {
   Expired = "expired",
 }
 
+export enum TeamRole {
+  Founder = "founder",
+  Director = "director",
+  Manager = "manager",
+  Advisor = "advisor",
+  Agent = "agent",
+  Member = "member",
+}
+
+export enum TeamStatus {
+  Active = "active",
+  Inactive = "inactive",
+  Archived = "archived",
+  Suspended = "suspended",
+}
+
+export interface Team {
+  readonly id: EntityId;
+  readonly name: string;
+  readonly ownerId: EntityId;
+  readonly parentTeamId?: EntityId;
+  readonly status: TeamStatus;
+  readonly metadata: Record<string, unknown>;
+  readonly createdAt: Timestamp;
+}
+
+export interface TeamMember {
+  readonly id: EntityId;
+  readonly teamId: EntityId;
+  readonly memberId: EntityId;
+  readonly role: TeamRole;
+  readonly joinedAt: Timestamp;
+  readonly leftAt?: Timestamp;
+  readonly active: boolean;
+}
+
+export interface TeamHierarchy {
+  readonly team: Team;
+  readonly children: readonly TeamHierarchy[];
+}
+
 export interface NetworkAgent {
   readonly id: EntityId;
   readonly userId: EntityId;

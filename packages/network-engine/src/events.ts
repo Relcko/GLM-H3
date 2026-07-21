@@ -42,6 +42,11 @@ export const NetworkEventType = {
   RewardDisbursed: "network.reward_disbursed",
   NetworkAnalyticsUpdated: "network.network_analytics_updated",
   PortfolioUpdated: "network.portfolio_updated",
+  TeamCreated: "network.team_created",
+  TeamMemberAdded: "network.team_member_added",
+  TeamMemberRemoved: "network.team_member_removed",
+  TeamRoleChanged: "network.team_role_changed",
+  TeamMoved: "network.team_moved",
 } as const;
 
 export type NetworkEventType = (typeof NetworkEventType)[keyof typeof NetworkEventType];

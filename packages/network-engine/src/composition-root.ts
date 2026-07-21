@@ -24,6 +24,7 @@ import { RewardQualificationEngine } from "./reward-qualification/service";
 import { CampaignEngine } from "./campaign/service";
 import { NetworkAnalytics } from "./network-analytics/service";
 import { NetworkPortfolioAdapter } from "./network-portfolio/adapter";
+import { TeamService } from "./team/service";
 
 export class NetworkEngine {
   constructor(
@@ -46,6 +47,7 @@ export class NetworkEngine {
     public readonly campaignEngine: CampaignEngine,
     public readonly networkAnalytics: NetworkAnalytics,
     public readonly networkPortfolioAdapter: NetworkPortfolioAdapter,
+    public readonly teamService: TeamService,
     public readonly events: EventBus,
     public readonly performance?: PerformanceModuleContext,
   ) {}
@@ -83,6 +85,7 @@ export function createNetworkEngine(options: NetworkEngineOptions): NetworkEngin
   const campaignEngine = new CampaignEngine(repository, events, logger);
   const networkAnalytics = new NetworkAnalytics(repository, events, logger);
   const networkPortfolioAdapter = new NetworkPortfolioAdapter(repository, events, logger);
+  const teamService = new TeamService(repository, events, logger);
 
   return new NetworkEngine(
     networkService,
@@ -104,6 +107,7 @@ export function createNetworkEngine(options: NetworkEngineOptions): NetworkEngin
     campaignEngine,
     networkAnalytics,
     networkPortfolioAdapter,
+    teamService,
     events,
     options.performance,
   );

@@ -21,6 +21,9 @@ import type {
   CommissionStatus,
   LeaderboardPeriod,
   LeaderboardMetric,
+  Team,
+  TeamMember,
+  TeamStatus,
 } from "./types";
 
 export class InMemoryNetworkRepository implements NetworkRepository {
@@ -44,6 +47,11 @@ export class InMemoryNetworkRepository implements NetworkRepository {
   private readonly analytics: NetworkAnalyticsEntry[] = [];
   private readonly portfolioEntries = new Map<EntityId, NetworkPortfolioEntry>();
   private readonly processedEvents = new Set<string>();
+  private readonly teams = new Map<EntityId, Team>();
+  private readonly teamsByName = new Map<string, EntityId>();
+  private readonly teamMembers = new Map<EntityId, TeamMember>();
+  private readonly teamMembersByTeam = new Map<EntityId, TeamMember[]>();
+  private readonly teamMembersByMember = new Map<EntityId, TeamMember[]>();
 
   saveAgent(a: NetworkAgent): void {
     this.agents.set(a.id, a);
@@ -284,6 +292,79 @@ export class InMemoryNetworkRepository implements NetworkRepository {
 
   getPortfolioEntry(agentId: EntityId): NetworkPortfolioEntry | undefined {
     return this.portfolioEntries.get(agentId);
+  }
+
+  saveTeam(t: Team): void {
+    this.teams.set(t.id, t);
+    this.teamsByName.set(t.name, t.id);
+  }
+
+  getTeam(id: EntityId): Team | undefined {
+    return this.teams.get(id);
+  }
+
+  getTeamByName(name: string): Team | undefined {
+    const id = this.teamsByName.get(name);
+    return id ? this.teams.get(id) : undefined;
+  }
+
+  listTeams(): Team[] {
+    return [...this.teams.values()];
+  }
+
+  listTeamsByOwner(ownerId: EntityId): Team[] {
+    return [...this.teams.values()].filter(t => t.ownerId === ownerId);
+  }
+
+  listTeamsByParent(parentTeamId: EntityId): Team[] {
+    return [...this.teams.values()].filter(t => t.parentTeamId === parentTeamId);
+  }
+
+  listTeamsByStatus(status: TeamStatus): Team[] {
+    return [...this.teams.values()].filter(t => t.status === status);
+  }
+
+  saveMember(m: TeamMember): void {
+    this.teamMembers.set(m.id, m);
+
+    const byTeam = this.teamMembersByTeam.get(m.teamId) ?? [];
+    const existingIdx = byTeam.findIndex(existing => existing.memberId === m.memberId);
+    if (existingIdx >= 0) {
+      byTeam[existingIdx] = m;
+    } else {
+      byTeam.push(m);
+    }
+    this.teamMembersByTeam.set(m.teamId, byTeam);
+
+    const byMember = this.teamMembersByMember.get(m.memberId) ?? [];
+    const memberIdx = byMember.findIndex(existing => existing.teamId === m.teamId);
+    if (memberIdx >= 0) {
+      byMember[memberIdx] = m;
+    } else {
+      byMember.push(m);
+    }
+    this.teamMembersByMember.set(m.memberId, byMember);
+  }
+
+  getMember(id: EntityId): TeamMember | undefined {
+    return this.teamMembers.get(id);
+  }
+
+  getMemberByTeamAndUser(teamId: EntityId, memberId: EntityId): TeamMember | undefined {
+    const byTeam = this.teamMembersByTeam.get(teamId) ?? [];
+    return byTeam.find(m => m.memberId === memberId);
+  }
+
+  listMembersByTeam(teamId: EntityId): TeamMember[] {
+    return [...(this.teamMembersByTeam.get(teamId) ?? [])];
+  }
+
+  listActiveMembersByTeam(teamId: EntityId): TeamMember[] {
+    return (this.teamMembersByTeam.get(teamId) ?? []).filter(m => m.active);
+  }
+
+  listTeamsByMember(memberId: EntityId): TeamMember[] {
+    return [...(this.teamMembersByMember.get(memberId) ?? [])];
   }
 
   isEventProcessed(eventId: string): boolean {

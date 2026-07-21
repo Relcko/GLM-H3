@@ -14,6 +14,8 @@ export const NetworkValidation = {
     "platinum", "diamond", "elite", "legend",
   ]),
   activeStatus: z.enum(["qualified", "at_risk", "lapsed"]),
+  teamRole: z.enum(["founder", "director", "manager", "advisor", "agent", "member"]),
+  teamStatus: z.enum(["active", "inactive", "archived", "suspended"]),
 };
 
 export const NetworkSchema = {
@@ -48,5 +50,31 @@ export const NetworkSchema = {
     rewardType: z.string(),
     startAt: NetworkValidation.timestamp,
     endAt: NetworkValidation.timestamp,
+  }),
+};
+
+export const TeamSchema = {
+  createTeam: z.object({
+    name: z.string().min(1).max(128),
+    ownerId: NetworkValidation.entityId,
+    parentTeamId: NetworkValidation.entityId.optional(),
+  }),
+  addMember: z.object({
+    teamId: NetworkValidation.entityId,
+    memberId: NetworkValidation.entityId,
+    role: NetworkValidation.teamRole,
+  }),
+  removeMember: z.object({
+    teamId: NetworkValidation.entityId,
+    memberId: NetworkValidation.entityId,
+  }),
+  changeRole: z.object({
+    teamId: NetworkValidation.entityId,
+    memberId: NetworkValidation.entityId,
+    role: NetworkValidation.teamRole,
+  }),
+  moveTeam: z.object({
+    teamId: NetworkValidation.entityId,
+    newParentTeamId: NetworkValidation.entityId.optional(),
   }),
 };

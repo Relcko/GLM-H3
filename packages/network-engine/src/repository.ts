@@ -22,6 +22,9 @@ import type {
   CommissionStatus,
   LeaderboardPeriod,
   LeaderboardMetric,
+  Team,
+  TeamMember,
+  TeamStatus,
 } from "./types";
 
 export interface NetworkRepository {
@@ -92,6 +95,21 @@ export interface NetworkRepository {
 
   savePortfolioEntry(p: NetworkPortfolioEntry): void;
   getPortfolioEntry(agentId: EntityId): NetworkPortfolioEntry | undefined;
+
+  saveTeam(t: Team): void;
+  getTeam(id: EntityId): Team | undefined;
+  getTeamByName(name: string): Team | undefined;
+  listTeams(): Team[];
+  listTeamsByOwner(ownerId: EntityId): Team[];
+  listTeamsByParent(parentTeamId: EntityId): Team[];
+  listTeamsByStatus(status: TeamStatus): Team[];
+
+  saveMember(m: TeamMember): void;
+  getMember(id: EntityId): TeamMember | undefined;
+  getMemberByTeamAndUser(teamId: EntityId, memberId: EntityId): TeamMember | undefined;
+  listMembersByTeam(teamId: EntityId): TeamMember[];
+  listActiveMembersByTeam(teamId: EntityId): TeamMember[];
+  listTeamsByMember(memberId: EntityId): TeamMember[];
 
   isEventProcessed(eventId: string): boolean;
   markEventProcessed(eventId: string): void;

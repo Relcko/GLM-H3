@@ -41,4 +41,5 @@ export type { TreasuryRepository } from "./repository";
 export * from "./types";
 export * from "./errors";
 export * from "./events";
+export * from "./distribution";
 export { createAccountSchema, postJournalSchema, movementSchema, dividendProposalSchema, buybackSchema, burnSchema } from "./validation";
